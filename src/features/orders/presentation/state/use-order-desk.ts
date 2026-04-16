@@ -2,11 +2,11 @@
 
 import { useSyncExternalStore } from "react";
 import {
+  getServerOrdersSnapshot,
   getStoredOrdersSnapshot,
-  listOrders,
   subscribeToStoredOrders,
-} from "@/src/features/orders/data/repositories/mock-order-repository";
+} from "@/src/features/orders/data/repositories/order-repository";
 
 export function useOrderDesk() {
-  return useSyncExternalStore(subscribeToStoredOrders, getStoredOrdersSnapshot, listOrders);
+  return useSyncExternalStore(subscribeToStoredOrders, getStoredOrdersSnapshot, getServerOrdersSnapshot);
 }

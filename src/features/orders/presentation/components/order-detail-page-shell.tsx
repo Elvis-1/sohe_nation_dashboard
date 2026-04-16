@@ -6,9 +6,10 @@ import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
+import { ApiError } from "@/src/core/api/http-client";
 import {
   updateOrderRecord,
-} from "@/src/features/orders/data/repositories/mock-order-repository";
+} from "@/src/features/orders/data/repositories/order-repository";
 import { useOrderDesk } from "@/src/features/orders/presentation/state/use-order-desk";
 
 type OrderDetailPageShellProps = {
@@ -25,6 +26,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
   const [fulfillmentNote, setFulfillmentNote] = useState(order?.fulfillmentNote ?? "");
   const [internalNote, setInternalNote] = useState(order?.internalNote ?? "");
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   if (!order) {
     return (
@@ -37,19 +39,30 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!order) {
       return;
     }
 
-    updateOrderRecord({
-      ...order,
-      status: (status || order.status) as DashboardOrderRecord["status"],
-      fulfillmentNote,
-      internalNote,
-    });
+    setSaveMessage(null);
+    setSaveError(null);
 
-    setSaveMessage("Order updates saved to the mocked desk.");
+    try {
+      await updateOrderRecord({
+        ...order,
+        status: (status || order.status) as DashboardOrderRecord["status"],
+        fulfillmentNote,
+        internalNote,
+      });
+
+      setSaveMessage("Order updates saved.");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setSaveError(error.message);
+        return;
+      }
+      setSaveError("Unable to save order updates right now.");
+    }
   }
 
   return (
@@ -206,6 +219,11 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
           {saveMessage ? (
             <p style={{ marginTop: 14, color: "var(--color-success)", lineHeight: 1.5 }}>
               {saveMessage}
+            </p>
+          ) : null}
+          {saveError ? (
+            <p style={{ marginTop: 14, color: "var(--color-danger)", lineHeight: 1.5 }}>
+              {saveError}
             </p>
           ) : null}
         </SectionCard>

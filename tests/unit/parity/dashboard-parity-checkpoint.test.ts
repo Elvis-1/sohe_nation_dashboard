@@ -4,7 +4,7 @@ import {
 } from "@/src/features/settings/data/repositories/mock-setting-repository";
 import { listContentEntries } from "@/src/features/content/data/repositories/mock-content-repository";
 import { listCustomers } from "@/src/features/customers/data/repositories/mock-customer-repository";
-import { getStoredOrdersSnapshot, updateOrderRecord } from "@/src/features/orders/data/repositories/mock-order-repository";
+import { getStoredOrdersSnapshot, updateOrderRecord } from "@/src/features/orders/data/repositories/order-repository";
 import {
   getProductById,
   getStoredProductsSnapshot,
@@ -20,7 +20,7 @@ describe("dashboard parity checkpoint", () => {
     window.localStorage.clear();
   });
 
-  it("keeps overview operational summaries aligned with live stored dashboard state", () => {
+  it("keeps overview operational summaries aligned with live stored dashboard state", async () => {
     const initialProduct = getProductById("prod_lunar_utility_jacket");
     const initialOrder = getStoredOrdersSnapshot().find((order) => order.id === "order_soh_2034");
     const initialReturn = getReturnById("RET-103");
@@ -33,7 +33,7 @@ describe("dashboard parity checkpoint", () => {
       ...initialProduct!,
       inventoryQuantity: 2,
     });
-    updateOrderRecord({
+    await updateOrderRecord({
       ...initialOrder!,
       status: "delivered",
     });

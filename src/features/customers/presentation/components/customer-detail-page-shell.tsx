@@ -6,7 +6,7 @@ import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { getCustomerById } from "@/src/features/customers/data/repositories/mock-customer-repository";
-import { getOrderByOrderNumber } from "@/src/features/orders/data/repositories/mock-order-repository";
+import { getOrderByOrderNumber } from "@/src/features/orders/data/repositories/order-repository";
 import { useOrderDesk } from "@/src/features/orders/presentation/state/use-order-desk";
 import { useReturnDesk } from "@/src/features/returns/presentation/state/use-return-desk";
 

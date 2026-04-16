@@ -4,7 +4,7 @@ import {
   overviewModules,
   quickActions,
 } from "@/src/features/overview/data/mock-overview";
-import { listRecentOrders } from "@/src/features/orders/data/repositories/mock-order-repository";
+import { listRecentOrders } from "@/src/features/orders/data/repositories/order-repository";
 import { listLowStockProducts } from "@/src/features/products/data/repositories/mock-product-repository";
 import { listPendingReturns } from "@/src/features/returns/data/repositories/mock-return-repository";
 
