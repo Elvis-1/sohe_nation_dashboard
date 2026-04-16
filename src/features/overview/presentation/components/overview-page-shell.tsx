@@ -32,7 +32,6 @@ export function OverviewPageShell() {
     lowStockProducts,
     overviewMetrics,
     overviewModules,
-    prioritySummary,
     quickActions,
     recentOrders,
     returnQueue,

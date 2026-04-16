@@ -16,10 +16,33 @@
 
 ## 2. Current Project Context
 
-- `web/storefront` is already the most mature surface in the repo.
-- Storefront UI phases 0 to 4 are materially in place in fixture mode.
-- The dashboard is the next major product surface to define and build.
-- Live API integration comes after the dashboard reaches UI readiness.
+- `web/storefront` remains the most mature product surface in the repo.
+- Storefront UI phases 0 to 4 are materially in place in fixture mode and remain the contract reference for the dashboard.
+- `dashboard/` is now actively implemented as its own Next.js app with a live fixture-backed shell and module scaffolds.
+- Live API integration still comes after the dashboard reaches broader UI readiness.
+
+### Current Dashboard Status — 2026-04-16
+
+- Phase 0 – Dashboard Foundations: complete
+- Phase 1 – Auth: complete
+- Phase 1.5 – Shell: complete
+- Phase 2 – Overview: complete
+- Phase 3 – Products: complete
+- Phase 4 – Orders: pending
+- Phase 5 – Content: pending
+- Phase 6 – Returns: pending
+- Phase 7 – Customers: pending
+- Phase 8 – Settings: pending
+- Phase 8.5 – Dashboard parity checkpoint: pending
+
+### Implemented Today
+
+- Staff can sign in through the mocked auth flow and land on the protected overview route.
+- The protected dashboard shell, navigation, loading/error/not-found states, and shared empty-state pattern are in place.
+- The overview screen now aligns to the documented operator flow: KPI strip, recent orders, low-stock watch, returns pending, and direct module handoffs.
+- The products module now supports list, filter/search, create, edit, and draft/publish workflow in fixture mode.
+- Orders, content, returns, customers, and settings currently remain scaffold surfaces rather than complete operator workflows.
+- Automated coverage exists for dashboard foundations, auth, shell behavior, overview behavior, and the currently implemented module surfaces.
 
 ## 3. Dashboard MVP Features
 
@@ -330,13 +353,13 @@ Auth lives outside the main navigation as the dashboard access gate.
 **Phase 2 completion notes**
 - The overview landing surface is implemented in `src/features/overview/presentation/components/overview-page-shell.tsx`.
 - Overview reads through `src/features/overview/data/repositories/mock-overview-repository.ts` and summarizes fixture-backed products, orders, returns, and content state.
-- The command brief now reflects live fixture counts for active orders, low-stock products, and returns pending review.
-- Overview includes KPI cards, quick actions, module entry cards, recent orders, low-stock watch, and returns-ready panels.
+- Overview copy and structure now stay tightly aligned to the documented feature flow instead of using extra narrative detail.
+- Overview includes KPI cards, quick actions, recent orders, low-stock watch, returns pending, and direct module handoffs.
 - Module handoffs from the overview route into live dashboard modules without dead ends.
 - The overview now has an explicit empty-state fallback in case fixture data is missing.
 - Automated verification covers overview repository composition, KPI/summary visibility, and module handoff behavior.
 
-### Phase 3 – Products — _Status: Pending_
+### Phase 3 – Products — _Status: Complete_
 
 **Goals**
 - Build the catalog management surface as its own module.
@@ -349,6 +372,14 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Dashboard can represent the live storefront catalog in fixture mode.
 - Staff can manage product records without relying on order-management screens.
 - Product list, editor flow, and status interactions are covered by automated verification once implemented.
+
+**Phase 3 completion notes**
+- The products list workflow is implemented in `src/features/products/presentation/components/products-page-shell.tsx`.
+- Product creation and editing routes now exist at `/products/new` and `/products/[id]`.
+- The mocked catalog supports search, visibility filtering, audience filtering, create, edit, and draft/publish state changes.
+- Product records expose the key storefront-facing fields: title, slug, subtitle, category, audience, price, stock, variants, visibility, and primary media.
+- The catalog workflow uses a fixture-backed client repository in `src/features/products/data/repositories/mock-product-repository.ts` and shared client state through `src/features/products/presentation/state/use-product-catalog.ts`.
+- Automated verification now covers product list rendering, filter/search behavior, product creation, and product editing/publish flow.
 
 ### Phase 4 – Orders — _Status: Pending_
 
@@ -462,7 +493,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Create the `dashboard/` app shell and architecture first.
-- Start with Phase 0, Phase 1, and Phase 1.5 before building data-heavy modules.
-- Build each dashboard feature as its own phase rather than merging multiple features into one implementation block.
-- Use the storefront feature map as the source of truth for what the dashboard must eventually support.
+- Move into Phase 4 – Orders as the next implementation priority.
+- Build the orders module around the documented MVP flow: list, filter/search, order detail, fulfillment updates, and internal notes.
+- Keep the order contracts aligned to checkout, order-history, and payment-provider assumptions already present in storefront fixture mode.
+- Extend automated coverage as the order workflow deepens so phase completion remains test-backed.

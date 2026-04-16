@@ -114,6 +114,14 @@ Current Phase 2 overview foundation:
 - the overview must summarize products, orders, returns, and content in one screen and hand staff into deeper modules without dead ends
 - overview state should retain automated coverage for KPI visibility, summary blocks, handoff links, and empty-state behavior
 
+Current Phase 3 products foundation:
+
+- the products module now owns the first complete operator workflow in the dashboard
+- list, filter/search, create, edit, and draft/publish behavior should stay inside the products feature boundary
+- fixture-backed product changes should flow through `src/features/products/data/repositories/mock-product-repository.ts`
+- product editor fields must stay aligned to storefront catalog and PDP assumptions: title, slug, category, audience, price, stock, variants, visibility, and media
+- product workflow coverage should continue to protect list rendering, filtering, creation, editing, and status transitions
+
 ## Rendering Rules
 
 - Use Next.js App Router.

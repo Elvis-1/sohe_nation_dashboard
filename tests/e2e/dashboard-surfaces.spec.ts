@@ -51,17 +51,14 @@ test.describe("dashboard implemented surfaces", () => {
   });
 
   test("overview shows the planned operational summary blocks", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Daily control across the line." })).toBeVisible();
-    await expect(page.getByText(/active order movements/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Daily operations at a glance." })).toBeVisible();
     await expect(page.getByText("Orders today", { exact: true })).toBeVisible();
     await expect(page.getByText("Revenue staged", { exact: true })).toBeVisible();
     await expect(page.getByText("Low stock", { exact: true })).toBeVisible();
     await expect(page.getByText("Returns awaiting review", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recent orders" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Low stock watch" })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Returns ready for review", exact: true }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Returns pending", exact: true })).toBeVisible();
   });
 
   test("overview quick actions and module cards lead to live module routes without dead ends", async ({
@@ -72,7 +69,7 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByRole("heading", { name: "Process customer requests with a clear queue." })).toBeVisible();
 
     await page.goto("/");
-    await page.getByRole("link", { name: "Go to orders" }).click();
+    await page.getByRole("link", { name: "Review orders" }).click();
     await expect(page).toHaveURL("/orders");
     await expect(page.getByRole("heading", { name: "Track every purchase handoff." })).toBeVisible();
 
@@ -86,9 +83,59 @@ test.describe("dashboard implemented surfaces", () => {
     await page.goto("/products");
 
     await expect(page.getByRole("heading", { name: "Catalog control for discovery and PDP." })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Product list" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Catalog desk" })).toBeVisible();
     await expect(page.getByText("Lunar Utility Jacket")).toBeVisible();
     await expect(page.getByText("Varsity Crest Cap")).toBeVisible();
+  });
+
+  test("products module supports search and visibility filtering", async ({ page }) => {
+    await page.goto("/products");
+
+    await page.getByLabel("Search catalog").fill("Rally");
+    await expect(page.getByText("Rally Knit Set")).toBeVisible();
+    await expect(page.getByText("Lunar Utility Jacket")).not.toBeVisible();
+
+    await page.getByLabel("Search catalog").fill("");
+    await page.getByLabel("Visibility filter").selectOption("draft");
+    await expect(page.getByText("Rally Knit Set")).toBeVisible();
+    await expect(page.getByText("Varsity Crest Cap")).not.toBeVisible();
+  });
+
+  test("staff can create a new draft product and return to the catalog list", async ({ page }) => {
+    await page.goto("/products/new");
+
+    await page.getByLabel("Product title").fill("Sunline Training Tee");
+    await page.getByLabel("Product slug").fill("sunline-training-tee");
+    await page.getByLabel("Product subtitle").fill("Lightweight top for warm-weather sessions.");
+    await page.getByLabel("Product category").selectOption("tops");
+    await page.getByLabel("Product audience").selectOption("unisex");
+    await page.getByLabel("Product price").fill("62000");
+    await page.getByLabel("Product stock").fill("14");
+    await page.getByLabel("Primary media URL").fill("/fixtures/products/sunline-training-tee.jpg");
+    await page.getByLabel("Primary media alt").fill("Sunline Training Tee front view");
+    await page.getByLabel("Variant 1 SKU").fill("SN-STT-WHT-M");
+    await page.getByLabel("Variant 1 size").fill("M");
+    await page.getByLabel("Variant 1 color").fill("White");
+    await page.getByLabel("Variant 1 stock").fill("14");
+
+    await page.getByRole("button", { name: "Save as draft" }).click();
+
+    await expect(page).toHaveURL("/products");
+    await expect(page.getByText("Sunline Training Tee")).toBeVisible();
+  });
+
+  test("staff can edit an existing product and publish changes", async ({ page }) => {
+    await page.goto("/products/prod_rally_knit_set");
+
+    await page.getByLabel("Product title").fill("Rally Knit Set Updated");
+    await page.getByRole("button", { name: "Published" }).click();
+    await page.getByRole("button", { name: "Save and publish" }).click();
+
+    await expect(page).toHaveURL("/products");
+    const updatedCard = page.locator("article").filter({ hasText: "Rally Knit Set Updated" });
+
+    await expect(updatedCard).toBeVisible();
+    await expect(updatedCard.getByText("published", { exact: true })).toBeVisible();
   });
 
   test("orders module renders the fixture-backed order scaffold", async ({ page }) => {

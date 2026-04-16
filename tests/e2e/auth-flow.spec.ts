@@ -24,7 +24,7 @@ test.describe("dashboard phase 1 auth flow", () => {
     await page.getByRole("button", { name: "Continue to overview" }).click();
 
     await expect(page).toHaveURL("/");
-    await expect(page.getByRole("heading", { name: "Daily control across the line." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Daily operations at a glance." })).toBeVisible();
   });
 
   test("invalid staff credentials show a clear error and do not enter the dashboard", async ({
@@ -78,7 +78,7 @@ test.describe("dashboard phase 1 auth flow", () => {
     await page.goto("/signin");
 
     await expect(page).toHaveURL("/");
-    await expect(page.getByRole("heading", { name: "Daily control across the line." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Daily operations at a glance." })).toBeVisible();
   });
 
   test("staff can sign out from the dashboard shell", async ({ page }) => {
