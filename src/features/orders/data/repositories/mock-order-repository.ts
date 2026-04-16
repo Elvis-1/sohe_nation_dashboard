@@ -18,6 +18,10 @@ export function getOrderById(orderId: string) {
   return getStoredOrdersSnapshot().find((order) => order.id === orderId) ?? null;
 }
 
+export function getOrderByOrderNumber(orderNumber: string) {
+  return getStoredOrdersSnapshot().find((order) => order.orderNumber === orderNumber) ?? null;
+}
+
 function cloneOrders() {
   return JSON.parse(JSON.stringify(mockOrders)) as typeof mockOrders;
 }

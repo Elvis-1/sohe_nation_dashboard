@@ -147,6 +147,14 @@ Current Phase 6 returns foundation:
 - return records must stay aligned to the live storefront account returns flow already present in fixture mode: customer context, order context, item summary, request reason, and staff decision handling
 - returns workflow coverage should continue to protect queue rendering, filtering, detail review, lifecycle transitions, persistence, and customer handoff
 
+Current Phase 7 customers foundation:
+
+- the customers module now owns the customer lookup and record-review workflow in the dashboard
+- customer search, profile review, linked order history, and linked return history should stay inside the customers feature boundary
+- customer-linked order and return handoff should resolve against the current fixture-backed dashboard records where those records exist
+- customer records must stay aligned to the live storefront account, checkout, and returns context already present in fixture mode
+- customers workflow coverage should continue to protect list rendering, lookup behavior, detail review, and linked order/return handoff
+
 ## Rendering Rules
 
 - Use Next.js App Router.

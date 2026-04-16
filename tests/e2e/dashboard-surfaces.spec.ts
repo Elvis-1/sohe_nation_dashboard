@@ -430,13 +430,47 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByRole("link", { name: "Back to returns" })).toBeVisible();
   });
 
-  test("customers module renders the fixture-backed customer scaffold", async ({ page }) => {
+  test("customers module renders the fixture-backed customer workflow", async ({ page }) => {
     await page.goto("/customers");
 
     await expect(page.getByRole("heading", { name: "Profile, order, and return context in one place." })).toBeVisible();
     await expect(page.getByText("Customer list")).toBeVisible();
     await expect(page.getByText("Ada Nwosu")).toBeVisible();
     await expect(page.getByText("ada@example.com")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open customer" }).first()).toBeVisible();
+  });
+
+  test("customers module supports lookup by name, email, and customer id", async ({ page }) => {
+    await page.goto("/customers");
+
+    await page.getByLabel("Search customers").fill("tomi");
+    await expect(page.getByText("Tomi Alade")).toBeVisible();
+    await expect(page.getByText("Ada Nwosu")).not.toBeVisible();
+
+    await page.getByLabel("Search customers").fill("customer_kemi_adeyemi");
+    await expect(page.getByText("Kemi Adeyemi")).toBeVisible();
+    await expect(page.getByText("Tomi Alade")).not.toBeVisible();
+  });
+
+  test("customer detail exposes linked order and return records with dashboard handoff", async ({
+    page,
+  }) => {
+    await page.goto("/customers/customer_ada_nwosu");
+
+    await expect(page.getByRole("heading", { name: "Ada Nwosu" })).toBeVisible();
+    await expect(page.getByText("ada@example.com")).toBeVisible();
+    await expect(page.getByText("Saved addresses", { exact: true })).toBeVisible();
+    await expect(page.getByText("SOH-2034")).toBeVisible();
+    await expect(page.getByText("RET-103")).toBeVisible();
+
+    await page.getByRole("link", { name: "Open order" }).first().click();
+    await expect(page).toHaveURL("/orders/order_soh_2034");
+    await expect(page.getByRole("heading", { name: "Order SOH-2034" })).toBeVisible();
+
+    await page.goto("/customers/customer_ada_nwosu");
+    await page.getByRole("link", { name: "Open return" }).click();
+    await expect(page).toHaveURL("/returns/RET-103");
+    await expect(page.getByRole("heading", { name: "Return RET-103" })).toBeVisible();
   });
 
   test("settings module renders the operational placeholder scaffold", async ({ page }) => {
