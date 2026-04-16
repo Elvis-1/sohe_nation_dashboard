@@ -30,7 +30,7 @@
 - Phase 3 – Products: complete
 - Phase 4 – Orders: complete
 - Phase 5 – Content: complete
-- Phase 6 – Returns: pending
+- Phase 6 – Returns: complete
 - Phase 7 – Customers: pending
 - Phase 8 – Settings: pending
 - Phase 8.5 – Dashboard parity checkpoint: pending
@@ -43,7 +43,8 @@
 - The products module now supports list, filter/search, create, edit, and draft/publish workflow in fixture mode.
 - The orders module now supports list filtering, order detail review, fulfillment status updates, internal notes, and a live handoff into a lightweight customer record.
 - The content module now supports content-area selection, homepage editing, stories editing, linked product management, preview structure, and draft/ready state changes in fixture mode.
-- Returns, customers, and settings still remain later-phase scaffold surfaces, with customer detail only implemented as an orders handoff dependency.
+- The returns module now supports queue filtering, return detail review, lifecycle status updates, internal decision capture, and live handoff into lightweight customer records.
+- Customers and settings still remain later-phase scaffold surfaces, with customer detail currently implemented as an orders and returns handoff dependency.
 - Automated coverage exists for dashboard foundations, auth, shell behavior, overview behavior, and the currently implemented module surfaces.
 
 ## 3. Dashboard MVP Features
@@ -427,7 +428,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Content state persists through `src/features/content/data/repositories/mock-content-repository.ts` and shared client state in `src/features/content/presentation/state/use-content-desk.ts`.
 - Automated verification now covers content hub navigation, homepage editing, stories editing, and draft/ready state behavior.
 
-### Phase 6 – Returns — _Status: Pending_
+### Phase 6 – Returns — _Status: Complete_
 
 **Goals**
 - Build the post-purchase returns operations module.
@@ -439,6 +440,15 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Dashboard can process customer return requests in a clear mocked workflow.
 - Return handling is shaped to match the storefront account returns flow.
 - Return queue, decision flow, and lifecycle transitions are covered by automated verification once implemented.
+
+**Phase 6 completion notes**
+- The returns queue workflow is implemented in `src/features/returns/presentation/components/returns-page-shell.tsx`.
+- Return detail now exists at `/returns/[id]` through `src/features/returns/presentation/components/return-detail-page-shell.tsx`.
+- Staff can search returns by return ID, order ID, customer, email, or reason and filter by lifecycle status.
+- Return detail reflects the key account-side request assumptions already present in the storefront: customer context, order context, item summary, request reason, customer note, and internal decision.
+- Return status and internal decision now persist through `src/features/returns/data/repositories/mock-return-repository.ts` and shared client state in `src/features/returns/presentation/state/use-return-desk.ts`.
+- Returns can hand staff into a lightweight customer drill-in at `/customers/[id]` so the Phase 6 flow does not end in a dead link before the full customers phase is built.
+- Automated verification now covers return queue rendering, search/filter behavior, return detail review, lifecycle updates, persistence, and customer handoff.
 
 ### Phase 7 – Customers — _Status: Pending_
 
@@ -512,7 +522,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Move into Phase 6 – Returns as the next implementation priority.
-- Build the returns module around the documented MVP flow: queue filtering, return detail review, internal decision capture, and status transitions.
-- Keep returns contracts aligned to the live storefront account returns flow already present in fixture mode.
-- Extend automated coverage as the returns workflow deepens so phase completion remains test-backed.
+- Move into Phase 7 – Customers as the next implementation priority.
+- Build the customers module around the documented MVP flow: lookup, customer detail review, linked orders, and linked returns.
+- Keep customer contracts aligned to the live storefront account, checkout, and returns context already present in fixture mode.
+- Extend automated coverage as the customers workflow deepens so phase completion remains test-backed.

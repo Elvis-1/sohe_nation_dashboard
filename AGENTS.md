@@ -139,6 +139,14 @@ Current Phase 5 content foundation:
 - content records must stay aligned to the live storefront homepage, stories/lookbooks, featured drop, and navigation-promos surfaces already present in fixture mode
 - content workflow coverage should continue to protect hub navigation, editor behavior, linked-product editing, and draft/ready transitions
 
+Current Phase 6 returns foundation:
+
+- the returns module now owns the internal return-processing workflow in the dashboard
+- queue filtering, return detail review, lifecycle updates, and internal decision capture should stay inside the returns feature boundary
+- fixture-backed return changes should flow through `src/features/returns/data/repositories/mock-return-repository.ts`
+- return records must stay aligned to the live storefront account returns flow already present in fixture mode: customer context, order context, item summary, request reason, and staff decision handling
+- returns workflow coverage should continue to protect queue rendering, filtering, detail review, lifecycle transitions, persistence, and customer handoff
+
 ## Rendering Rules
 
 - Use Next.js App Router.

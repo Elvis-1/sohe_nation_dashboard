@@ -115,10 +115,13 @@ export type DashboardReturnRecord = {
   orderId: string;
   customerId: string;
   customerName: string;
+  customerEmail: string;
   status: ReturnStatus;
   reason: string;
   requestedAt: string;
   itemSummary: string;
+  customerNote: string;
+  internalDecision: string;
 };
 
 export type DashboardCustomerRecord = {

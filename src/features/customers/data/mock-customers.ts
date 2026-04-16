@@ -31,4 +31,14 @@ export const mockCustomers: DashboardCustomerRecord[] = [
     returnIds: ["RET-104"],
     addressCount: 1,
   },
+  {
+    id: "customer_kemi_adeyemi",
+    email: "kemi@example.com",
+    firstName: "Kemi",
+    lastName: "Adeyemi",
+    defaultRegion: "NG",
+    orderIds: ["SOH-2022", "SOH-2008"],
+    returnIds: ["RET-102"],
+    addressCount: 1,
+  },
 ];

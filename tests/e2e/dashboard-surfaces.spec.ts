@@ -358,13 +358,76 @@ test.describe("dashboard implemented surfaces", () => {
     );
   });
 
-  test("returns module renders the fixture-backed queue scaffold", async ({ page }) => {
+  test("returns module renders the fixture-backed queue workflow", async ({ page }) => {
     await page.goto("/returns");
 
     await expect(page.getByRole("heading", { name: "Process customer requests with a clear queue." })).toBeVisible();
     await expect(page.getByText("Returns queue")).toBeVisible();
     await expect(page.getByText("RET-104")).toBeVisible();
     await expect(page.getByText("Fit exchange")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open return" }).first()).toBeVisible();
+  });
+
+  test("returns module supports search and lifecycle filtering", async ({ page }) => {
+    await page.goto("/returns");
+
+    await page.getByLabel("Search returns").fill("Ada");
+    await expect(page.getByText("RET-103")).toBeVisible();
+    await expect(page.getByText("RET-104")).not.toBeVisible();
+
+    await page.getByLabel("Search returns").fill("");
+    await page.getByLabel("Return status filter").selectOption("approved");
+    await expect(page.getByText("RET-102")).toBeVisible();
+    await expect(page.getByText("RET-104")).not.toBeVisible();
+  });
+
+  test("staff can review and update a return record, then hand off into the linked customer record", async ({
+    page,
+  }) => {
+    await page.goto("/returns/RET-103");
+
+    await expect(page.getByRole("heading", { name: "Return RET-103" })).toBeVisible();
+    await expect(page.getByText("Ada Nwosu")).toBeVisible();
+    await expect(page.getByText("ada@example.com")).toBeVisible();
+    await expect(page.getByText("SOH-2026")).toBeVisible();
+    await expect(page.getByText("Varsity Crest Cap / Sand / One size")).toBeVisible();
+    await expect(page.getByLabel("Customer note")).toHaveValue(
+      "The brim arrived bent and the front panel stitching looks split.",
+    );
+
+    await page.getByLabel("Return status").selectOption("approved");
+    await page
+      .getByLabel("Internal decision")
+      .fill("Approved after damage verification. Replacement cap can be released.");
+    await page.getByRole("button", { name: "Save return updates" }).click();
+
+    await expect(page.getByText("Return updates saved to the mocked queue.")).toBeVisible();
+
+    await page.getByRole("link", { name: "Back to returns" }).click();
+    await expect(page).toHaveURL("/returns");
+    await expect(
+      page.locator("article").filter({ hasText: "RET-103" }).getByText("approved", { exact: true }),
+    ).toBeVisible();
+
+    await page.goto("/returns/RET-103");
+    await expect(page.getByLabel("Internal decision")).toHaveValue(
+      "Approved after damage verification. Replacement cap can be released.",
+    );
+
+    await page.getByRole("link", { name: "Open customer" }).click();
+    await expect(page).toHaveURL("/customers/customer_ada_nwosu");
+    await expect(page.getByRole("heading", { name: "Ada Nwosu" })).toBeVisible();
+    await expect(page.getByText("RET-103")).toBeVisible();
+  });
+
+  test("missing return routes resolve to the return-state fallback instead of a broken detail screen", async ({
+    page,
+  }) => {
+    await page.goto("/returns/RET-404");
+
+    await expect(page.getByText("This return record is missing")).toBeVisible();
+    await expect(page.getByText("not available in the current fixture queue")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to returns" })).toBeVisible();
   });
 
   test("customers module renders the fixture-backed customer scaffold", async ({ page }) => {
