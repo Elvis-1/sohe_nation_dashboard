@@ -1,0 +1,118 @@
+import type { DashboardProductRecord } from "@/src/core/types/dashboard";
+
+export const mockProducts: DashboardProductRecord[] = [
+  {
+    id: "prod_lunar_utility_jacket",
+    slug: "lunar-utility-jacket",
+    title: "Lunar Utility Jacket",
+    subtitle: "Technical outerwear for evening movement.",
+    category: "outerwear",
+    audience: "men",
+    visibility: "published",
+    price: {
+      amount: 214000,
+      currency: "NGN",
+      formatted: "NGN 214,000",
+    },
+    compareAtPrice: {
+      amount: 240000,
+      currency: "NGN",
+      formatted: "NGN 240,000",
+    },
+    inventoryQuantity: 4,
+    primaryMedia: {
+      id: "media_lunar_utility_jacket_hero",
+      alt: "Lunar Utility Jacket hero frame",
+      kind: "image",
+      url: "/fixtures/products/lunar-utility-jacket.jpg",
+    },
+    variants: [
+      {
+        id: "variant_lunar_black_m",
+        sku: "SN-LUJ-BLK-M",
+        size: "M",
+        color: "Black",
+        inventoryQuantity: 2,
+        isAvailable: true,
+      },
+      {
+        id: "variant_lunar_black_l",
+        sku: "SN-LUJ-BLK-L",
+        size: "L",
+        color: "Black",
+        inventoryQuantity: 2,
+        isAvailable: true,
+      },
+    ],
+  },
+  {
+    id: "prod_rally_knit_set",
+    slug: "rally-knit-set",
+    title: "Rally Knit Set",
+    subtitle: "Soft structure for travel and recovery days.",
+    category: "tracksuit",
+    audience: "women",
+    visibility: "draft",
+    price: {
+      amount: 184000,
+      currency: "NGN",
+      formatted: "NGN 184,000",
+    },
+    inventoryQuantity: 5,
+    primaryMedia: {
+      id: "media_rally_knit_set_hero",
+      alt: "Rally Knit Set folded on campaign bench",
+      kind: "image",
+      url: "/fixtures/products/rally-knit-set.jpg",
+    },
+    variants: [
+      {
+        id: "variant_rally_oat_s",
+        sku: "SN-RKS-OAT-S",
+        size: "S",
+        color: "Oat",
+        inventoryQuantity: 2,
+        isAvailable: true,
+      },
+      {
+        id: "variant_rally_oat_m",
+        sku: "SN-RKS-OAT-M",
+        size: "M",
+        color: "Oat",
+        inventoryQuantity: 3,
+        isAvailable: true,
+      },
+    ],
+  },
+  {
+    id: "prod_varsity_crest_cap",
+    slug: "varsity-crest-cap",
+    title: "Varsity Crest Cap",
+    subtitle: "Headwear accent for the current drop.",
+    category: "headwear",
+    audience: "unisex",
+    visibility: "published",
+    price: {
+      amount: 48000,
+      currency: "NGN",
+      formatted: "NGN 48,000",
+    },
+    inventoryQuantity: 3,
+    primaryMedia: {
+      id: "media_varsity_crest_cap_hero",
+      alt: "Varsity Crest Cap in sand twill",
+      kind: "image",
+      url: "/fixtures/products/varsity-crest-cap.jpg",
+    },
+    variants: [
+      {
+        id: "variant_cap_sand_os",
+        sku: "SN-VCC-SND-OS",
+        size: "One size",
+        color: "Sand",
+        inventoryQuantity: 3,
+        isAvailable: true,
+      },
+    ],
+  },
+];

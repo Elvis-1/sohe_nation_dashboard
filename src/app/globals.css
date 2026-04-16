@@ -1,0 +1,65 @@
+:root {
+  --color-bg: #f5f1e8;
+  --color-surface: #fffdf8;
+  --color-surface-strong: #f0e6d2;
+  --color-surface-inverse: #15110d;
+  --color-border: #d9c8a8;
+  --color-border-strong: #b89453;
+  --color-text: #18130f;
+  --color-text-muted: #64594a;
+  --color-text-inverse: #f7f0e1;
+  --color-accent: #b37b1f;
+  --color-accent-soft: #ead7b1;
+  --color-success: #2f7d32;
+  --color-warning: #c97a14;
+  --color-danger: #c94736;
+  --shadow-soft: 0 18px 48px rgba(27, 17, 7, 0.08);
+  --radius-card: 24px;
+  --radius-pill: 999px;
+  --font-heading: "Bebas Neue", "Archivo Black", sans-serif;
+  --font-body: "Space Grotesk", "Source Sans 3", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+html {
+  height: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(179, 123, 31, 0.16), transparent 28%),
+    linear-gradient(180deg, #fbf7ef 0%, #f3ead7 100%);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+*::selection {
+  background: rgba(179, 123, 31, 0.2);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

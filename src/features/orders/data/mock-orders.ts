@@ -1,0 +1,110 @@
+import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
+
+export const mockOrders: DashboardOrderRecord[] = [
+  {
+    id: "order_soh_2034",
+    orderNumber: "SOH-2034",
+    customerId: "customer_ada_nwosu",
+    customerName: "Ada Nwosu",
+    customerEmail: "ada@example.com",
+    status: "ready_to_fulfill",
+    paymentProvider: "paypal",
+    total: {
+      amount: 414000,
+      currency: "NGN",
+      formatted: "NGN 414,000",
+    },
+    createdAt: "2026-04-15T10:15:00.000Z",
+    fulfillmentNote: "Awaiting final pack confirmation before courier handoff.",
+    lines: [
+      {
+        id: "line_soh_2034_1",
+        productId: "prod_lunar_utility_jacket",
+        variantId: "variant_lunar_black_l",
+        title: "Lunar Utility Jacket",
+        variantLabel: "Black / L",
+        quantity: 1,
+        unitPrice: {
+          amount: 214000,
+          currency: "NGN",
+          formatted: "NGN 214,000",
+        },
+      },
+      {
+        id: "line_soh_2034_2",
+        productId: "prod_varsity_crest_cap",
+        variantId: "variant_cap_sand_os",
+        title: "Varsity Crest Cap",
+        variantLabel: "Sand / One size",
+        quantity: 2,
+        unitPrice: {
+          amount: 48000,
+          currency: "NGN",
+          formatted: "NGN 48,000",
+        },
+      },
+    ],
+  },
+  {
+    id: "order_soh_2033",
+    orderNumber: "SOH-2033",
+    customerId: "customer_tomi_alade",
+    customerName: "Tomi Alade",
+    customerEmail: "tomi@example.com",
+    status: "awaiting_capture",
+    paymentProvider: "flutterwave",
+    total: {
+      amount: 216000,
+      currency: "NGN",
+      formatted: "NGN 216,000",
+    },
+    createdAt: "2026-04-15T08:40:00.000Z",
+    fulfillmentNote: "Payment capture check is pending before pick-pack begins.",
+    lines: [
+      {
+        id: "line_soh_2033_1",
+        productId: "prod_rally_knit_set",
+        variantId: "variant_rally_oat_m",
+        title: "Rally Knit Set",
+        variantLabel: "Oat / M",
+        quantity: 1,
+        unitPrice: {
+          amount: 184000,
+          currency: "NGN",
+          formatted: "NGN 184,000",
+        },
+      },
+    ],
+  },
+  {
+    id: "order_soh_2032",
+    orderNumber: "SOH-2032",
+    customerId: "customer_ife_balogun",
+    customerName: "Ife Balogun",
+    customerEmail: "ife@example.com",
+    status: "delivered",
+    paymentProvider: "paypal",
+    total: {
+      amount: 154000,
+      currency: "NGN",
+      formatted: "NGN 154,000",
+    },
+    createdAt: "2026-04-14T14:10:00.000Z",
+    fulfillmentNote: "Delivered successfully and marked complete.",
+    lines: [
+      {
+        id: "line_soh_2032_1",
+        productId: "prod_varsity_crest_cap",
+        variantId: "variant_cap_sand_os",
+        title: "Varsity Crest Cap",
+        variantLabel: "Sand / One size",
+        quantity: 1,
+        unitPrice: {
+          amount: 48000,
+          currency: "NGN",
+          formatted: "NGN 48,000",
+        },
+      },
+    ],
+  },
+];
