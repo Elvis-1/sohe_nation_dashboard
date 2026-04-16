@@ -32,7 +32,7 @@
 - Phase 5 – Content: complete
 - Phase 6 – Returns: complete
 - Phase 7 – Customers: complete
-- Phase 8 – Settings: pending
+- Phase 8 – Settings: complete
 - Phase 8.5 – Dashboard parity checkpoint: pending
 
 ### Implemented Today
@@ -45,7 +45,7 @@
 - The content module now supports content-area selection, homepage editing, stories editing, linked product management, preview structure, and draft/ready state changes in fixture mode.
 - The returns module now supports queue filtering, return detail review, lifecycle status updates, internal decision capture, and live handoff into lightweight customer records.
 - The customers module now supports lookup, customer detail review, and linked handoff into live orders and returns records.
-- Settings still remains the later-phase scaffold surface.
+- The settings module now supports grouped placeholder review, fixture-backed editing, and persistence for operational defaults.
 - Automated coverage exists for dashboard foundations, auth, shell behavior, overview behavior, and the currently implemented module surfaces.
 
 ## 3. Dashboard MVP Features
@@ -472,7 +472,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Customer-linked order handoff is resolved through live order state using `src/features/orders/data/repositories/mock-order-repository.ts`.
 - Automated verification now covers customer list rendering, customer lookup, customer detail review, and linked order/return handoff behavior.
 
-### Phase 8 – Settings — _Status: Pending_
+### Phase 8 – Settings — _Status: Complete_
 
 **Goals**
 - Build the operational configuration placeholder module.
@@ -484,6 +484,13 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Settings provide clear placeholders for later backend integration.
 - The dashboard has a defined home for operational defaults before live API wiring.
 - Settings groups, placeholder editing behavior, and persistence expectations are covered by automated verification once implemented.
+
+**Phase 8 completion notes**
+- The settings workflow is implemented in `src/features/settings/presentation/components/settings-page-shell.tsx`.
+- Settings now render as grouped editable defaults for store profile, payments, shipping, and staff roles.
+- Fixture-backed settings persistence is implemented in `src/features/settings/data/repositories/mock-setting-repository.ts` and shared client state in `src/features/settings/presentation/state/use-setting-groups.ts`.
+- Staff can review grouped placeholders, update values, save the current defaults, and reload to confirm persistence.
+- Automated verification now covers settings rendering, grouped field editing, save behavior, and persistence expectations.
 
 ### Phase 8.5 – Dashboard Parity Checkpoint — _Status: Pending_
 
@@ -531,7 +538,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Move into Phase 8 – Settings as the next implementation priority.
-- Build the settings module around the documented MVP flow: grouped settings review, placeholder editing, and simple fixture-backed persistence.
-- Keep settings contracts aligned to the operational defaults the storefront and dashboard will eventually consume during API wiring.
-- Extend automated coverage as the settings workflow deepens so phase completion remains test-backed.
+- Move into Phase 8.5 – Dashboard parity checkpoint as the next implementation priority.
+- Review the completed dashboard scope against storefront feature needs and confirm the fixture contracts are aligned across products, orders, content, returns, customers, and settings.
+- Log any remaining contract gaps before the API phase begins.
+- Extend automated coverage where useful so the parity handoff into API work remains test-backed.

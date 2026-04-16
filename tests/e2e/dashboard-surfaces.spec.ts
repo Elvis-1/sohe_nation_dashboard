@@ -473,13 +473,45 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByRole("heading", { name: "Return RET-103" })).toBeVisible();
   });
 
-  test("settings module renders the operational placeholder scaffold", async ({ page }) => {
+  test("settings module renders the operational defaults workflow", async ({ page }) => {
     await page.goto("/settings");
 
     await expect(page.getByRole("heading", { name: "Operational defaults before live wiring." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Settings groups" })).toBeVisible();
     await expect(page.getByText("Store profile", { exact: true })).toBeVisible();
     await expect(page.getByText("Staff roles placeholder", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save settings" })).toBeVisible();
+  });
+
+  test("settings module supports fixture-backed placeholder editing and persistence", async ({
+    page,
+  }) => {
+    await page.goto("/settings");
+
+    await page
+      .getByLabel("Store profile Support email")
+      .fill("operations@sohesnation.com");
+    await page
+      .getByLabel("Shipping placeholder Pickup window")
+      .fill("Weekdays 2pm");
+    await page
+      .getByLabel("Staff roles placeholder Session mode")
+      .fill("Fixture mode with persistence");
+    await page.getByRole("button", { name: "Save settings" }).click();
+
+    await expect(page.getByText("Settings changes saved to the mocked control desk.")).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByLabel("Store profile Support email")).toHaveValue(
+      "operations@sohesnation.com",
+    );
+    await expect(page.getByLabel("Shipping placeholder Pickup window")).toHaveValue(
+      "Weekdays 2pm",
+    );
+    await expect(page.getByLabel("Staff roles placeholder Session mode")).toHaveValue(
+      "Fixture mode with persistence",
+    );
   });
 
   test("unknown dashboard routes show the app not-found state", async ({ page }) => {

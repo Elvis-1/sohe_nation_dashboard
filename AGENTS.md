@@ -155,6 +155,14 @@ Current Phase 7 customers foundation:
 - customer records must stay aligned to the live storefront account, checkout, and returns context already present in fixture mode
 - customers workflow coverage should continue to protect list rendering, lookup behavior, detail review, and linked order/return handoff
 
+Current Phase 8 settings foundation:
+
+- the settings module now owns the grouped operational-defaults workflow in the dashboard
+- grouped settings review, placeholder editing, and save behavior should stay inside the settings feature boundary
+- fixture-backed settings changes should flow through `src/features/settings/data/repositories/mock-setting-repository.ts`
+- settings records must stay aligned to the operational defaults the storefront and dashboard will eventually consume during API wiring
+- settings workflow coverage should continue to protect grouped rendering, editable placeholder behavior, save flow, and persistence
+
 ## Rendering Rules
 
 - Use Next.js App Router.
