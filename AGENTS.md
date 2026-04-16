@@ -11,7 +11,7 @@ The dashboard is a staff-only operational surface for managing products, orders,
 - Shared services and live integrations belong in `api/`.
 - Keep the dashboard fixture-first until the API phase begins.
 
-## Current Project Status (2026-04-15)
+## Current Project Status (2026-04-16)
 
 - `web/storefront` is the most mature app in the repo and is already live in fixture mode.
 - The dashboard is the next major product surface to build.
@@ -121,6 +121,15 @@ Current Phase 3 products foundation:
 - fixture-backed product changes should flow through `src/features/products/data/repositories/mock-product-repository.ts`
 - product editor fields must stay aligned to storefront catalog and PDP assumptions: title, slug, category, audience, price, stock, variants, visibility, and media
 - product workflow coverage should continue to protect list rendering, filtering, creation, editing, and status transitions
+
+Current Phase 4 orders foundation:
+
+- the orders module now owns the post-purchase list/detail workflow in the dashboard
+- list filtering, detail review, fulfillment updates, and internal notes should stay inside the orders feature boundary
+- fixture-backed order changes should flow through `src/features/orders/data/repositories/mock-order-repository.ts`
+- order records must stay aligned to storefront checkout and account-history assumptions: items, totals, customer details, shipping details, payment provider, fulfillment note, and internal note
+- orders can hand staff into a lightweight customer drill-in at `/customers/[id]` until the full customers phase lands
+- order workflow coverage should continue to protect list rendering, filtering, detail review, status updates, note persistence, and customer handoff
 
 ## Rendering Rules
 

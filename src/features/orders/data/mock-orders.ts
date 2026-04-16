@@ -15,7 +15,9 @@ export const mockOrders: DashboardOrderRecord[] = [
       formatted: "NGN 414,000",
     },
     createdAt: "2026-04-15T10:15:00.000Z",
+    shippingAddress: "12 Admiralty Way, Lekki Phase 1, Lagos",
     fulfillmentNote: "Awaiting final pack confirmation before courier handoff.",
+    internalNote: "VIP customer. Confirm jacket garment bag before dispatch.",
     lines: [
       {
         id: "line_soh_2034_1",
@@ -59,7 +61,9 @@ export const mockOrders: DashboardOrderRecord[] = [
       formatted: "NGN 216,000",
     },
     createdAt: "2026-04-15T08:40:00.000Z",
+    shippingAddress: "4 Raymond Njoku Street, Ikoyi, Lagos",
     fulfillmentNote: "Payment capture check is pending before pick-pack begins.",
+    internalNote: "Hold fulfillment until payment capture clears.",
     lines: [
       {
         id: "line_soh_2033_1",
@@ -90,7 +94,9 @@ export const mockOrders: DashboardOrderRecord[] = [
       formatted: "NGN 154,000",
     },
     createdAt: "2026-04-14T14:10:00.000Z",
+    shippingAddress: "22 Bourdillon Road, Ikoyi, Lagos",
     fulfillmentNote: "Delivered successfully and marked complete.",
+    internalNote: "Completed. No follow-up needed unless return is opened.",
     lines: [
       {
         id: "line_soh_2032_1",

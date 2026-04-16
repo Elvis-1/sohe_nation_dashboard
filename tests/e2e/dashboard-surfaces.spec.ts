@@ -138,13 +138,137 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(updatedCard.getByText("published", { exact: true })).toBeVisible();
   });
 
-  test("orders module renders the fixture-backed order scaffold", async ({ page }) => {
+  test("orders module renders the fixture-backed order workflow", async ({ page }) => {
     await page.goto("/orders");
+
+    const primaryOrderCard = page.locator("article").filter({ hasText: "SOH-2034" });
 
     await expect(page.getByRole("heading", { name: "Track every purchase handoff." })).toBeVisible();
     await expect(page.getByText("Orders in motion")).toBeVisible();
     await expect(page.getByText("SOH-2034")).toBeVisible();
-    await expect(page.getByText("Awaiting capture")).toBeVisible();
+    await expect(primaryOrderCard.getByText("ready to fulfill", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open order" }).first()).toBeVisible();
+  });
+
+  test("orders module supports search, status, date, and payment filtering", async ({ page }) => {
+    await page.goto("/orders");
+
+    await page.getByLabel("Search orders").fill("Tomi");
+    await expect(page.getByText("SOH-2033")).toBeVisible();
+    await expect(page.getByText("SOH-2034")).not.toBeVisible();
+
+    await page.getByLabel("Search orders").fill("");
+    await page.getByLabel("Status filter").selectOption("delivered");
+    await expect(page.getByText("SOH-2032")).toBeVisible();
+    await expect(page.getByText("SOH-2034")).not.toBeVisible();
+
+    await page.getByLabel("Status filter").selectOption("all");
+    await page.getByLabel("Placed on filter").fill("2026-04-15");
+    await expect(page.getByText("SOH-2034")).toBeVisible();
+    await expect(page.getByText("SOH-2033")).toBeVisible();
+    await expect(page.getByText("SOH-2032")).not.toBeVisible();
+
+    await page.getByLabel("Placed on filter").fill("");
+    await page.getByLabel("Payment filter").selectOption("flutterwave");
+    await expect(page.getByText("SOH-2033")).toBeVisible();
+    await expect(page.getByText("SOH-2034")).not.toBeVisible();
+  });
+
+  test("order detail exposes the core phase 4 review fields for staff", async ({ page }) => {
+    await page.goto("/orders/order_soh_2034");
+
+    await expect(page.getByRole("heading", { name: "Order SOH-2034" })).toBeVisible();
+    await expect(page.getByText("Ada Nwosu")).toBeVisible();
+    await expect(page.getByText("ada@example.com")).toBeVisible();
+    await expect(page.getByText("2026-04-15", { exact: true })).toBeVisible();
+    await expect(page.getByText("paypal", { exact: true })).toBeVisible();
+    await expect(page.getByText("NGN 414,000", { exact: true })).toBeVisible();
+    await expect(page.getByText("12 Admiralty Way, Lekki Phase 1, Lagos")).toBeVisible();
+    await expect(page.getByText("Lunar Utility Jacket")).toBeVisible();
+    await expect(page.getByText("Black / L")).toBeVisible();
+    await expect(page.getByText("Varsity Crest Cap")).toBeVisible();
+    await expect(page.getByLabel("Fulfillment note")).toHaveValue(
+      "Awaiting final pack confirmation before courier handoff.",
+    );
+    await expect(page.getByLabel("Internal note")).toHaveValue(
+      "VIP customer. Confirm jacket garment bag before dispatch.",
+    );
+  });
+
+  test("staff can update an order and hand off into the linked customer record", async ({
+    page,
+  }) => {
+    await page.goto("/orders/order_soh_2033");
+
+    await expect(page.getByRole("heading", { name: "Order SOH-2033" })).toBeVisible();
+    await expect(page.getByText("4 Raymond Njoku Street, Ikoyi, Lagos")).toBeVisible();
+    await expect(page.getByText("Rally Knit Set")).toBeVisible();
+
+    await page.getByLabel("Fulfillment status").selectOption("paid");
+    await page
+      .getByLabel("Internal note")
+      .fill("Capture confirmed by finance. Release to fulfillment.");
+    await page.getByRole("button", { name: "Save order updates" }).click();
+
+    await expect(page.getByText("Order updates saved to the mocked desk.")).toBeVisible();
+
+    await page.getByRole("link", { name: "Back to orders" }).click();
+    await expect(page).toHaveURL("/orders");
+    await expect(
+      page.locator("article").filter({ hasText: "SOH-2033" }).getByText("paid", { exact: true }),
+    ).toBeVisible();
+
+    await page.goto("/orders/order_soh_2033");
+    await expect(page.getByLabel("Internal note")).toHaveValue(
+      "Capture confirmed by finance. Release to fulfillment.",
+    );
+
+    await page.getByRole("link", { name: "Open customer" }).click();
+    await expect(page).toHaveURL("/customers/customer_tomi_alade");
+    await expect(page.getByRole("heading", { name: "Tomi Alade" })).toBeVisible();
+    await expect(page.getByText("SOH-2033")).toBeVisible();
+  });
+
+  test("order updates persist after reload and remain visible in the orders desk", async ({
+    page,
+  }) => {
+    await page.goto("/orders/order_soh_2034");
+
+    await page.getByLabel("Fulfillment status").selectOption("fulfilled");
+    await page
+      .getByLabel("Fulfillment note")
+      .fill("Packed, sealed, and transferred to courier staging.");
+    await page
+      .getByLabel("Internal note")
+      .fill("Courier pickup booked for the afternoon dispatch window.");
+    await page.getByRole("button", { name: "Save order updates" }).click();
+
+    await expect(page.getByText("Order updates saved to the mocked desk.")).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByLabel("Fulfillment status")).toHaveValue("fulfilled");
+    await expect(page.getByLabel("Fulfillment note")).toHaveValue(
+      "Packed, sealed, and transferred to courier staging.",
+    );
+    await expect(page.getByLabel("Internal note")).toHaveValue(
+      "Courier pickup booked for the afternoon dispatch window.",
+    );
+
+    await page.goto("/orders");
+    await expect(
+      page.locator("article").filter({ hasText: "SOH-2034" }).getByText("fulfilled", { exact: true }),
+    ).toBeVisible();
+  });
+
+  test("missing order routes resolve to the order-state fallback instead of a broken detail screen", async ({
+    page,
+  }) => {
+    await page.goto("/orders/order_missing_record");
+
+    await expect(page.getByText("This order record is missing")).toBeVisible();
+    await expect(page.getByText("not available in the current fixture desk")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to orders" })).toBeVisible();
   });
 
   test("content module renders the fixture-backed content hub scaffold", async ({ page }) => {

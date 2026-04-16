@@ -28,7 +28,7 @@
 - Phase 1.5 – Shell: complete
 - Phase 2 – Overview: complete
 - Phase 3 – Products: complete
-- Phase 4 – Orders: pending
+- Phase 4 – Orders: complete
 - Phase 5 – Content: pending
 - Phase 6 – Returns: pending
 - Phase 7 – Customers: pending
@@ -41,7 +41,8 @@
 - The protected dashboard shell, navigation, loading/error/not-found states, and shared empty-state pattern are in place.
 - The overview screen now aligns to the documented operator flow: KPI strip, recent orders, low-stock watch, returns pending, and direct module handoffs.
 - The products module now supports list, filter/search, create, edit, and draft/publish workflow in fixture mode.
-- Orders, content, returns, customers, and settings currently remain scaffold surfaces rather than complete operator workflows.
+- The orders module now supports list filtering, order detail review, fulfillment status updates, internal notes, and a live handoff into a lightweight customer record.
+- Content, returns, customers, and settings still remain later-phase scaffold surfaces, with customer detail only implemented as an orders handoff dependency.
 - Automated coverage exists for dashboard foundations, auth, shell behavior, overview behavior, and the currently implemented module surfaces.
 
 ## 3. Dashboard MVP Features
@@ -381,7 +382,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 - The catalog workflow uses a fixture-backed client repository in `src/features/products/data/repositories/mock-product-repository.ts` and shared client state through `src/features/products/presentation/state/use-product-catalog.ts`.
 - Automated verification now covers product list rendering, filter/search behavior, product creation, and product editing/publish flow.
 
-### Phase 4 – Orders — _Status: Pending_
+### Phase 4 – Orders — _Status: Complete_
 
 **Goals**
 - Build the post-purchase operations surface as its own module.
@@ -394,6 +395,15 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Dashboard can represent the storefront order lifecycle in fixture mode.
 - Staff can review and update orders without relying on product-management screens.
 - Order list, detail, fulfillment updates, and notes behavior are covered by automated verification once implemented.
+
+**Phase 4 completion notes**
+- The orders list workflow is implemented in `src/features/orders/presentation/components/orders-page-shell.tsx`.
+- Order detail now exists at `/orders/[id]` through `src/features/orders/presentation/components/order-detail-page-shell.tsx`.
+- Staff can search orders by customer or order number and filter by status, date, and payment provider.
+- Order detail reflects the key checkout and account-history assumptions already present in the storefront: line items, totals, customer details, shipping details, payment provider, fulfillment note, and internal note.
+- Fulfillment status and notes now persist through `src/features/orders/data/repositories/mock-order-repository.ts` and shared client state in `src/features/orders/presentation/state/use-order-desk.ts`.
+- Orders can hand staff into a lightweight customer drill-in at `/customers/[id]` so the Phase 4 flow does not end in a dead link before the full customers phase is built.
+- Automated verification now covers order list rendering, search/filter behavior, order detail review, fulfillment updates, note persistence, and customer handoff.
 
 ### Phase 5 – Content — _Status: Pending_
 
@@ -493,7 +503,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Move into Phase 4 – Orders as the next implementation priority.
-- Build the orders module around the documented MVP flow: list, filter/search, order detail, fulfillment updates, and internal notes.
-- Keep the order contracts aligned to checkout, order-history, and payment-provider assumptions already present in storefront fixture mode.
-- Extend automated coverage as the order workflow deepens so phase completion remains test-backed.
+- Move into Phase 5 – Content as the next implementation priority.
+- Build the content module around the documented MVP flow: content-area selection, text/media editing, linked products, preview structure, and draft/ready states.
+- Keep content contracts aligned to the live storefront homepage, stories, featured drop, and navigation-promos surfaces already present in fixture mode.
+- Extend automated coverage as the content workflow deepens so phase completion remains test-backed.

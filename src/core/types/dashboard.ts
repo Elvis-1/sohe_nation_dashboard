@@ -78,7 +78,9 @@ export type DashboardOrderRecord = {
   paymentProvider: PaymentProvider;
   total: Money;
   createdAt: string;
+  shippingAddress: string;
   fulfillmentNote: string;
+  internalNote: string;
   lines: DashboardOrderLine[];
 };
 
