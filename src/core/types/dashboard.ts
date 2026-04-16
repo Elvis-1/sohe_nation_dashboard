@@ -97,8 +97,14 @@ export type DashboardContentRecord = {
   area: DashboardContentArea;
   title: string;
   visibility: ContentVisibility;
+  eyebrow: string;
+  headline: string;
+  body: string;
+  callToActionLabel: string;
+  callToActionHref: string;
   linkedProductIds: string[];
   mediaReferences: DashboardMediaReference[];
+  previewBullets: string[];
   summary: string;
 };
 

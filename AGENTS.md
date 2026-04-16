@@ -131,6 +131,14 @@ Current Phase 4 orders foundation:
 - orders can hand staff into a lightweight customer drill-in at `/customers/[id]` until the full customers phase lands
 - order workflow coverage should continue to protect list rendering, filtering, detail review, status updates, note persistence, and customer handoff
 
+Current Phase 5 content foundation:
+
+- the content module now owns the campaign and editorial management workflow in the dashboard
+- content-area selection, homepage editing, stories editing, linked products, media references, preview structure, and draft/ready behavior should stay inside the content feature boundary
+- fixture-backed content changes should flow through `src/features/content/data/repositories/mock-content-repository.ts`
+- content records must stay aligned to the live storefront homepage, stories/lookbooks, featured drop, and navigation-promos surfaces already present in fixture mode
+- content workflow coverage should continue to protect hub navigation, editor behavior, linked-product editing, and draft/ready transitions
+
 ## Rendering Rules
 
 - Use Next.js App Router.

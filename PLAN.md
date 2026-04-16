@@ -29,7 +29,7 @@
 - Phase 2 – Overview: complete
 - Phase 3 – Products: complete
 - Phase 4 – Orders: complete
-- Phase 5 – Content: pending
+- Phase 5 – Content: complete
 - Phase 6 – Returns: pending
 - Phase 7 – Customers: pending
 - Phase 8 – Settings: pending
@@ -42,7 +42,8 @@
 - The overview screen now aligns to the documented operator flow: KPI strip, recent orders, low-stock watch, returns pending, and direct module handoffs.
 - The products module now supports list, filter/search, create, edit, and draft/publish workflow in fixture mode.
 - The orders module now supports list filtering, order detail review, fulfillment status updates, internal notes, and a live handoff into a lightweight customer record.
-- Content, returns, customers, and settings still remain later-phase scaffold surfaces, with customer detail only implemented as an orders handoff dependency.
+- The content module now supports content-area selection, homepage editing, stories editing, linked product management, preview structure, and draft/ready state changes in fixture mode.
+- Returns, customers, and settings still remain later-phase scaffold surfaces, with customer detail only implemented as an orders handoff dependency.
 - Automated coverage exists for dashboard foundations, auth, shell behavior, overview behavior, and the currently implemented module surfaces.
 
 ## 3. Dashboard MVP Features
@@ -405,7 +406,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Orders can hand staff into a lightweight customer drill-in at `/customers/[id]` so the Phase 4 flow does not end in a dead link before the full customers phase is built.
 - Automated verification now covers order list rendering, search/filter behavior, order detail review, fulfillment updates, note persistence, and customer handoff.
 
-### Phase 5 – Content — _Status: Pending_
+### Phase 5 – Content — _Status: Complete_
 
 **Goals**
 - Build the campaign and editorial management module.
@@ -417,6 +418,14 @@ Auth lives outside the main navigation as the dashboard access gate.
 - Dashboard can manage the key storefront content areas currently live in `web/storefront`.
 - Staff can manage campaign and editorial records without relying on returns tooling.
 - Content hub navigation, editing flows, and publish/draft behavior are covered by automated verification once implemented.
+
+**Phase 5 completion notes**
+- The content hub is implemented in `src/features/content/presentation/components/content-page-shell.tsx`.
+- Strict Phase 5 routes now exist at `/content/homepage` and `/content/stories`.
+- The homepage editor covers both homepage hero and featured-drop merchandising structures, while the stories editor covers story/lookbook and navigation-promo content.
+- Content records now support fixture-backed editing for text, CTA fields, linked products, media references, preview structure, and draft/ready/published visibility.
+- Content state persists through `src/features/content/data/repositories/mock-content-repository.ts` and shared client state in `src/features/content/presentation/state/use-content-desk.ts`.
+- Automated verification now covers content hub navigation, homepage editing, stories editing, and draft/ready state behavior.
 
 ### Phase 6 – Returns — _Status: Pending_
 
@@ -503,7 +512,7 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Move into Phase 5 – Content as the next implementation priority.
-- Build the content module around the documented MVP flow: content-area selection, text/media editing, linked products, preview structure, and draft/ready states.
-- Keep content contracts aligned to the live storefront homepage, stories, featured drop, and navigation-promos surfaces already present in fixture mode.
-- Extend automated coverage as the content workflow deepens so phase completion remains test-backed.
+- Move into Phase 6 – Returns as the next implementation priority.
+- Build the returns module around the documented MVP flow: queue filtering, return detail review, internal decision capture, and status transitions.
+- Keep returns contracts aligned to the live storefront account returns flow already present in fixture mode.
+- Extend automated coverage as the returns workflow deepens so phase completion remains test-backed.

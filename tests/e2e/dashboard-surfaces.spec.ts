@@ -271,12 +271,91 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByRole("link", { name: "Back to orders" })).toBeVisible();
   });
 
-  test("content module renders the fixture-backed content hub scaffold", async ({ page }) => {
+  test("content module renders the phase 5 content hub with area selection", async ({ page }) => {
     await page.goto("/content");
 
     await expect(page.getByRole("heading", { name: "Manage campaign and editorial surfaces." })).toBeVisible();
     await expect(page.getByText("Content hub")).toBeVisible();
     await expect(page.getByText("Homepage hero and lead merchandising rail")).toBeVisible();
+    await expect(page.getByText("Featured drop", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open homepage editor" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open stories editor" })).toBeVisible();
+  });
+
+  test("homepage content editor supports fixture-backed editing and ready-state updates", async ({
+    page,
+  }) => {
+    await page.goto("/content/homepage");
+
+    await expect(
+      page.getByRole("heading", { name: "Homepage and featured drop editor." }),
+    ).toBeVisible();
+    await expect(page.getByText("Area: homepage")).toBeVisible();
+    await expect(page.getByText("Area: featured drop")).toBeVisible();
+
+    await page.getByLabel("homepage headline").fill("Campaign Reset For Week Two");
+    await page
+      .getByLabel("homepage body")
+      .fill("Updated homepage direction for the second campaign week and product push.");
+    await page
+      .getByLabel("homepage preview bullets")
+      .fill("Hero reset, Product rail, CTA refresh");
+    await page.getByLabel("featured_drop CTA label").fill("Shop Featured Pieces");
+    await page.getByRole("button", { name: "Mark ready for publish" }).click();
+
+    await expect(
+      page.getByText("Content entries marked ready for publish in the mocked content desk."),
+    ).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByLabel("homepage headline")).toHaveValue("Campaign Reset For Week Two");
+    await expect(page.getByLabel("homepage body")).toHaveValue(
+      "Updated homepage direction for the second campaign week and product push.",
+    );
+    await expect(page.getByLabel("homepage preview bullets")).toHaveValue(
+      "Hero reset, Product rail, CTA refresh",
+    );
+    await expect(page.getByLabel("featured_drop CTA label")).toHaveValue("Shop Featured Pieces");
+
+    await page.goto("/content");
+    await expect(
+      page.locator("article").filter({ hasText: "Homepage hero and lead merchandising rail" }).getByText("ready", { exact: true }),
+    ).toBeVisible();
+  });
+
+  test("stories editor supports lookbook and navigation promo updates from the content hub flow", async ({
+    page,
+  }) => {
+    await page.goto("/content");
+
+    await page
+      .locator("article")
+      .filter({ hasText: "Navigation promo slots and footer messaging" })
+      .getByRole("link", { name: "Edit area" })
+      .click();
+
+    await expect(page).toHaveURL(/\/content\/stories/);
+    await expect(page.getByRole("heading", { name: "Stories and navigation editor." })).toBeVisible();
+
+    await page.getByLabel("stories CTA label").fill("Read The Updated Story");
+    await page.getByLabel("navigation_promos headline").fill("Campaign support across nav");
+    await page
+      .getByLabel("navigation_promos summary")
+      .fill("Navigation and footer promo messaging for the active release.");
+    await page.getByRole("button", { name: "Save as draft" }).click();
+
+    await expect(page.getByText("Content entries saved as draft in the mocked content desk.")).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByLabel("stories CTA label")).toHaveValue("Read The Updated Story");
+    await expect(page.getByLabel("navigation_promos headline")).toHaveValue(
+      "Campaign support across nav",
+    );
+    await expect(page.getByLabel("navigation_promos summary")).toHaveValue(
+      "Navigation and footer promo messaging for the active release.",
+    );
   });
 
   test("returns module renders the fixture-backed queue scaffold", async ({ page }) => {
