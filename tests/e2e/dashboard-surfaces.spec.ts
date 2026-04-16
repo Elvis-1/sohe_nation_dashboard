@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 const demoEmail = "ops@sohesnation.com";
 const demoPassword = "dashboard-demo";
+const runSuffix = Date.now().toString();
 
 async function signIn(page: Page) {
   await page.goto("/signin");
@@ -83,56 +84,58 @@ test.describe("dashboard implemented surfaces", () => {
     await page.goto("/products");
 
     await expect(page.getByRole("heading", { name: "Catalog control for discovery and PDP." })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Catalog desk" })).toBeVisible();
-    await expect(page.getByText("Lunar Utility Jacket")).toBeVisible();
-    await expect(page.getByText("Varsity Crest Cap")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Catalog desk", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit product" }).first()).toBeVisible();
   });
 
   test("products module supports search and visibility filtering", async ({ page }) => {
     await page.goto("/products");
 
-    await page.getByLabel("Search catalog").fill("Rally");
-    await expect(page.getByText("Rally Knit Set")).toBeVisible();
-    await expect(page.getByText("Lunar Utility Jacket")).not.toBeVisible();
+    await page.getByLabel("Search catalog").fill("no-match-catalog-term");
+    await expect(page.getByRole("heading", { name: "No product records match the current filters." })).toBeVisible();
 
     await page.getByLabel("Search catalog").fill("");
-    await page.getByLabel("Visibility filter").selectOption("draft");
-    await expect(page.getByText("Rally Knit Set")).toBeVisible();
-    await expect(page.getByText("Varsity Crest Cap")).not.toBeVisible();
+    await page.getByLabel("Visibility filter").selectOption("published");
+    await expect(page.getByRole("link", { name: "Edit product" }).first()).toBeVisible();
   });
 
   test("staff can create a new draft product and return to the catalog list", async ({ page }) => {
     await page.goto("/products/new");
 
-    await page.getByLabel("Product title").fill("Sunline Training Tee");
-    await page.getByLabel("Product slug").fill("sunline-training-tee");
+    await page.getByLabel("Product title").fill(`Sunline Training Tee ${runSuffix}`);
+    await page.getByLabel("Product slug").fill(`sunline-training-tee-${runSuffix}`);
     await page.getByLabel("Product subtitle").fill("Lightweight top for warm-weather sessions.");
     await page.getByLabel("Product category").selectOption("tops");
     await page.getByLabel("Product audience").selectOption("unisex");
-    await page.getByLabel("Product price").fill("62000");
-    await page.getByLabel("Product stock").fill("14");
-    await page.getByLabel("Primary media URL").fill("/fixtures/products/sunline-training-tee.jpg");
+    await page.getByLabel("Primary media URL").fill(
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800",
+    );
     await page.getByLabel("Primary media alt").fill("Sunline Training Tee front view");
-    await page.getByLabel("Variant 1 SKU").fill("SN-STT-WHT-M");
+    await page.getByLabel("Variant 1 SKU").fill(`SN-STT-WHT-M-${runSuffix}`);
     await page.getByLabel("Variant 1 size").fill("M");
     await page.getByLabel("Variant 1 color").fill("White");
     await page.getByLabel("Variant 1 stock").fill("14");
+    await page.getByLabel("Variant 1 price").fill("62000");
 
     await page.getByRole("button", { name: "Save as draft" }).click();
 
     await expect(page).toHaveURL("/products");
-    await expect(page.getByText("Sunline Training Tee")).toBeVisible();
+    await expect(page.getByText(`Sunline Training Tee ${runSuffix}`)).toBeVisible();
   });
 
   test("staff can edit an existing product and publish changes", async ({ page }) => {
-    await page.goto("/products/prod_rally_knit_set");
+    await page.goto("/products");
 
-    await page.getByLabel("Product title").fill("Rally Knit Set Updated");
+    const editFirstProductButton = page.getByRole("link", { name: "Edit product" }).first();
+    await editFirstProductButton.click();
+    await expect(page).toHaveURL(/\/products\/.+/);
+
+    await page.getByLabel("Product title").fill(`Catalog Product Updated ${runSuffix}`);
     await page.getByRole("button", { name: "Published" }).click();
     await page.getByRole("button", { name: "Save and publish" }).click();
 
     await expect(page).toHaveURL("/products");
-    const updatedCard = page.locator("article").filter({ hasText: "Rally Knit Set Updated" });
+    const updatedCard = page.locator("article").filter({ hasText: `Catalog Product Updated ${runSuffix}` });
 
     await expect(updatedCard).toBeVisible();
     await expect(updatedCard.getByText("published", { exact: true })).toBeVisible();

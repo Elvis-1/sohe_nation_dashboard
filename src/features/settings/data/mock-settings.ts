@@ -29,6 +29,25 @@ export const mockSettingGroups: DashboardSettingGroup[] = [
     ],
   },
   {
+    id: "notifications",
+    title: "Notifications placeholder",
+    description: "Operational messaging defaults reserved for later workflow and delivery wiring.",
+    fields: [
+      {
+        id: "returns_alert_channel",
+        label: "Returns alert channel",
+        value: "Ops email digest",
+        placeholder: true,
+      },
+      {
+        id: "order_alert_window",
+        label: "Order alert window",
+        value: "Weekdays 9am-6pm",
+        placeholder: true,
+      },
+    ],
+  },
+  {
     id: "staff_roles",
     title: "Staff roles placeholder",
     description: "Simple access placeholders for the MVP staff flow.",

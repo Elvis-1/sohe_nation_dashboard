@@ -2,11 +2,15 @@
 
 import { useSyncExternalStore } from "react";
 import {
-  getStoredProductsSnapshot,
-  listProducts,
-  subscribeToStoredProducts,
-} from "@/src/features/products/data/repositories/mock-product-repository";
+  subscribeToProducts,
+  getProductsSnapshot,
+  getServerProductsSnapshot,
+} from "@/src/features/products/data/repositories/product-repository";
 
 export function useProductCatalog() {
-  return useSyncExternalStore(subscribeToStoredProducts, getStoredProductsSnapshot, listProducts);
+  return useSyncExternalStore(
+    subscribeToProducts,
+    getProductsSnapshot,
+    getServerProductsSnapshot,
+  );
 }

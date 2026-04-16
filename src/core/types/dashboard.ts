@@ -16,6 +16,7 @@ export type DashboardMediaReference = {
 export type ProductVisibility = "draft" | "published" | "scheduled";
 
 export type ProductAudience = "women" | "men" | "unisex";
+export type ProductRegion = "NG" | "US" | "GB" | "EU";
 
 export type ProductCategory =
   | "tracksuit"
@@ -31,6 +32,8 @@ export type DashboardProductVariant = {
   color: string;
   inventoryQuantity: number;
   isAvailable: boolean;
+  price: Money;
+  compareAtPrice?: Money;
 };
 
 export type DashboardProductRecord = {
@@ -40,11 +43,20 @@ export type DashboardProductRecord = {
   subtitle: string;
   category: ProductCategory;
   audience: ProductAudience;
+  defaultRegion: ProductRegion;
+  regionAvailability: ProductRegion[];
   visibility: ProductVisibility;
   price: Money;
   compareAtPrice?: Money;
   inventoryQuantity: number;
   primaryMedia: DashboardMediaReference;
+  narrative?: {
+    campaignNote: string;
+    fitGuidance: string;
+    materialStory: string;
+    sustainabilityNote: string;
+    deliveryNote: string;
+  };
   variants: DashboardProductVariant[];
 };
 

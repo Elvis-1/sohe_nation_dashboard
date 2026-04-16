@@ -33,7 +33,7 @@
 - Phase 6 – Returns: complete
 - Phase 7 – Customers: complete
 - Phase 8 – Settings: complete
-- Phase 8.5 – Dashboard parity checkpoint: pending
+- Phase 8.5 – Dashboard parity checkpoint: complete
 
 ### Implemented Today
 
@@ -507,6 +507,13 @@ Auth lives outside the main navigation as the dashboard access gate.
 - The team has a clear contract handoff into the API phase.
 - Cross-surface contract assumptions and the final parity checklist are backed by automated verification where feasible.
 
+**Phase 8.5 completion notes**
+- The dashboard/storefront parity review is documented in `PARITY_CHECKPOINT.md`.
+- Overview operational summaries now reflect live stored product, order, and return state, closing the remaining in-session parity gap for cross-module dashboard summaries.
+- Settings coverage now includes the planned notifications placeholder group, bringing the settings module in line with the documented MVP flow.
+- Automated verification now covers the parity checkpoint through `tests/unit/parity/dashboard-parity-checkpoint.test.ts`.
+- The remaining contract gaps are now explicit and logged for API planning instead of being left implicit across the two apps.
+
 ## 8. Suggested Dashboard Route Map
 
 - `/signin`
@@ -538,7 +545,6 @@ Auth lives outside the main navigation as the dashboard access gate.
 
 ## 10. Next Recommended Step
 
-- Move into Phase 8.5 – Dashboard parity checkpoint as the next implementation priority.
-- Review the completed dashboard scope against storefront feature needs and confirm the fixture contracts are aligned across products, orders, content, returns, customers, and settings.
-- Log any remaining contract gaps before the API phase begins.
-- Extend automated coverage where useful so the parity handoff into API work remains test-backed.
+- Move into the API phase with the dashboard and storefront contract handoff captured.
+- Use `PARITY_CHECKPOINT.md` and the dashboard/storefront fixture contracts as the source of truth for Django/API scoping.
+- Address the logged contract gaps deliberately during API design rather than treating them as accidental omissions.

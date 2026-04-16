@@ -11,7 +11,7 @@ export function listOrders() {
 }
 
 export function listRecentOrders(limit = 3) {
-  return mockOrders.slice(0, limit);
+  return getStoredOrdersSnapshot().slice(0, limit);
 }
 
 export function getOrderById(orderId: string) {

@@ -6,15 +6,26 @@ import { useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import type { DashboardProductRecord } from "@/src/core/types/dashboard";
+import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/dashboard";
 import {
   createProductRecord,
   updateProductRecord,
-} from "@/src/features/products/data/repositories/mock-product-repository";
+} from "@/src/features/products/data/repositories/product-repository";
 import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
 
 type ProductEditorPageShellProps = {
   productId?: string;
+};
+
+type VariantFormItem = {
+  localId: string;       // stable React key (always present)
+  apiId?: string;        // real UUID from API — present on persisted variants
+  sku: string;
+  size: string;
+  color: string;
+  inventoryQuantity: string;
+  priceAmount: string;
+  compareAtPriceAmount: string;
 };
 
 type ProductFormState = {
@@ -24,21 +35,20 @@ type ProductFormState = {
   subtitle: string;
   category: DashboardProductRecord["category"];
   audience: DashboardProductRecord["audience"];
+  defaultRegion: ProductRegion;
+  regionAvailability: ProductRegion[];
   visibility: DashboardProductRecord["visibility"];
-  priceAmount: string;
-  compareAtPriceAmount: string;
-  inventoryQuantity: string;
   primaryMediaUrl: string;
   primaryMediaAlt: string;
-  variants: Array<{
-    id: string;
-    sku: string;
-    size: string;
-    color: string;
-    inventoryQuantity: string;
-    isAvailable: boolean;
-  }>;
+  campaignNote: string;
+  fitGuidance: string;
+  materialStory: string;
+  sustainabilityNote: string;
+  deliveryNote: string;
+  variants: VariantFormItem[];
 };
+
+const REGION_OPTIONS: ProductRegion[] = ["NG", "US", "GB", "EU"];
 
 function createFormState(product?: DashboardProductRecord): ProductFormState {
   if (product) {
@@ -49,19 +59,25 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       subtitle: product.subtitle,
       category: product.category,
       audience: product.audience,
+      defaultRegion: product.defaultRegion,
+      regionAvailability: product.regionAvailability,
       visibility: product.visibility,
-      priceAmount: String(product.price.amount),
-      compareAtPriceAmount: product.compareAtPrice ? String(product.compareAtPrice.amount) : "",
-      inventoryQuantity: String(product.inventoryQuantity),
       primaryMediaUrl: product.primaryMedia.url,
       primaryMediaAlt: product.primaryMedia.alt,
+      campaignNote: product.narrative?.campaignNote ?? "",
+      fitGuidance: product.narrative?.fitGuidance ?? "",
+      materialStory: product.narrative?.materialStory ?? "",
+      sustainabilityNote: product.narrative?.sustainabilityNote ?? "",
+      deliveryNote: product.narrative?.deliveryNote ?? "",
       variants: product.variants.map((variant) => ({
-        id: variant.id,
+        localId: variant.id,
+        apiId: variant.id,
         sku: variant.sku,
         size: variant.size,
         color: variant.color,
         inventoryQuantity: String(variant.inventoryQuantity),
-        isAvailable: variant.isAvailable,
+        priceAmount: String(variant.price.amount),
+        compareAtPriceAmount: variant.compareAtPrice ? String(variant.compareAtPrice.amount) : "",
       })),
     };
   }
@@ -75,70 +91,27 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     subtitle: "",
     category: "tops",
     audience: "unisex",
+    defaultRegion: "NG",
+    regionAvailability: ["NG"],
     visibility: "draft",
-    priceAmount: "0",
-    compareAtPriceAmount: "",
-    inventoryQuantity: "0",
     primaryMediaUrl: "",
     primaryMediaAlt: "",
+    campaignNote: "",
+    fitGuidance: "",
+    materialStory: "",
+    sustainabilityNote: "",
+    deliveryNote: "",
     variants: [
       {
-        id: `${draftId}_variant_1`,
+        localId: `${draftId}_v1`,
         sku: "",
         size: "",
         color: "",
         inventoryQuantity: "0",
-        isAvailable: true,
+        priceAmount: "0",
+        compareAtPriceAmount: "",
       },
     ],
-  };
-}
-
-function formatCurrency(amount: number) {
-  return `NGN ${amount.toLocaleString("en-NG")}`;
-}
-
-function buildProductRecord(formState: ProductFormState): DashboardProductRecord {
-  const priceAmount = Number(formState.priceAmount) || 0;
-  const compareAtPriceAmount = Number(formState.compareAtPriceAmount) || 0;
-  const inventoryQuantity = Number(formState.inventoryQuantity) || 0;
-
-  return {
-    id: formState.id,
-    slug: formState.slug,
-    title: formState.title,
-    subtitle: formState.subtitle,
-    category: formState.category,
-    audience: formState.audience,
-    visibility: formState.visibility,
-    price: {
-      amount: priceAmount,
-      currency: "NGN",
-      formatted: formatCurrency(priceAmount),
-    },
-    compareAtPrice:
-      compareAtPriceAmount > 0
-        ? {
-            amount: compareAtPriceAmount,
-            currency: "NGN",
-            formatted: formatCurrency(compareAtPriceAmount),
-          }
-        : undefined,
-    inventoryQuantity,
-    primaryMedia: {
-      id: `${formState.id}_primary_media`,
-      alt: formState.primaryMediaAlt || `${formState.title} primary image`,
-      kind: "image",
-      url: formState.primaryMediaUrl || "/fixtures/products/placeholder.jpg",
-    },
-    variants: formState.variants.map((variant, index) => ({
-      id: variant.id || `${formState.id}_variant_${index + 1}`,
-      sku: variant.sku,
-      size: variant.size,
-      color: variant.color,
-      inventoryQuantity: Number(variant.inventoryQuantity) || 0,
-      isAvailable: variant.isAvailable,
-    })),
   };
 }
 
@@ -170,17 +143,26 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
     }));
   }
 
-  function updateVariantField(
-    variantId: string,
-    field: keyof ProductFormState["variants"][number],
-    value: string | boolean,
-  ) {
+  function updateVariantField(localId: string, field: keyof VariantFormItem, value: string) {
     setFormState((currentState) => ({
       ...currentState,
       variants: currentState.variants.map((variant) =>
-        variant.id === variantId ? { ...variant, [field]: value } : variant,
+        variant.localId === localId ? { ...variant, [field]: value } : variant,
       ),
     }));
+  }
+
+  function toggleRegionAvailability(region: ProductRegion, isChecked: boolean) {
+    setFormState((currentState) => {
+      const nextRegions = isChecked
+        ? [...new Set([...currentState.regionAvailability, region])]
+        : currentState.regionAvailability.filter((currentRegion) => currentRegion !== region);
+
+      return {
+        ...currentState,
+        regionAvailability: nextRegions,
+      };
+    });
   }
 
   function addVariant() {
@@ -189,44 +171,131 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
       variants: [
         ...currentState.variants,
         {
-          id: `${currentState.id}_variant_${currentState.variants.length + 1}`,
+          localId: `${currentState.id}_v${currentState.variants.length + 1}_${Date.now()}`,
           sku: "",
           size: "",
           color: "",
           inventoryQuantity: "0",
-          isAvailable: true,
+          priceAmount: "0",
+          compareAtPriceAmount: "",
         },
       ],
     }));
   }
 
-  function removeVariant(variantId: string) {
+  function removeVariant(localId: string) {
     setFormState((currentState) => ({
       ...currentState,
       variants:
         currentState.variants.length === 1
           ? currentState.variants
-          : currentState.variants.filter((variant) => variant.id !== variantId),
+          : currentState.variants.filter((variant) => variant.localId !== localId),
     }));
   }
 
-  function handleSave(nextVisibility?: DashboardProductRecord["visibility"]) {
-    const nextFormState = {
-      ...formState,
-      visibility: nextVisibility ?? formState.visibility,
-    };
+  async function handleSave(nextVisibility?: DashboardProductRecord["visibility"]) {
+    const resolvedVisibility = nextVisibility ?? formState.visibility;
 
-    const nextProduct = buildProductRecord(nextFormState);
+    const validVariants = formState.variants.filter(
+      (v) => v.sku && v.size && v.color && Number(v.priceAmount) > 0,
+    );
 
-    if (product) {
-      updateProductRecord(nextProduct);
-      setStatusMessage("Product changes saved to the mocked catalog.");
-    } else {
-      createProductRecord(nextProduct);
-      setStatusMessage("New product created in the mocked catalog.");
+    try {
+      if (product) {
+        await updateProductRecord(product.id, {
+          slug: formState.slug,
+          title: formState.title,
+          subtitle: formState.subtitle,
+          gender: formState.audience,
+          category: formState.category,
+          default_region: formState.defaultRegion,
+          region_availability: formState.regionAvailability,
+          visibility: resolvedVisibility,
+          narrative: {
+            campaign_note: formState.campaignNote,
+            fit_guidance: formState.fitGuidance,
+            material_story: formState.materialStory,
+            sustainability_note: formState.sustainabilityNote,
+            delivery_note: formState.deliveryNote,
+          },
+          variants: validVariants.map((v) => {
+            const compareAt = Number(v.compareAtPriceAmount);
+            if (v.apiId) {
+              return {
+                id: v.apiId,
+                size: v.size,
+                color: v.color,
+                inventory_quantity: Number(v.inventoryQuantity) || 0,
+                price_amount: Number(v.priceAmount),
+                price_currency: "NGN",
+                ...(compareAt > 0
+                  ? { compare_at_price_amount: compareAt, compare_at_price_currency: "NGN" }
+                  : { compare_at_price_amount: null }),
+              };
+            }
+            return {
+              sku: v.sku,
+              size: v.size,
+              color: v.color,
+              inventory_quantity: Number(v.inventoryQuantity) || 0,
+              price_amount: Number(v.priceAmount),
+              price_currency: "NGN",
+              ...(compareAt > 0
+                ? { compare_at_price_amount: compareAt, compare_at_price_currency: "NGN" }
+                : {}),
+            };
+          }),
+        });
+        setStatusMessage("Product changes saved.");
+      } else {
+        await createProductRecord({
+          slug: formState.slug,
+          title: formState.title,
+          subtitle: formState.subtitle,
+          gender: formState.audience,
+          category: formState.category,
+          default_region: formState.defaultRegion,
+          region_availability: formState.regionAvailability,
+          visibility: resolvedVisibility,
+          media: formState.primaryMediaUrl
+            ? [
+                {
+                  alt: formState.primaryMediaAlt || `${formState.title} image`,
+                  kind: "image",
+                  url: formState.primaryMediaUrl,
+                  is_primary: true,
+                },
+              ]
+            : undefined,
+          narrative: {
+            campaign_note: formState.campaignNote,
+            fit_guidance: formState.fitGuidance,
+            material_story: formState.materialStory,
+            sustainability_note: formState.sustainabilityNote,
+            delivery_note: formState.deliveryNote,
+          },
+          variants: validVariants.map((v) => {
+            const compareAt = Number(v.compareAtPriceAmount);
+            return {
+              sku: v.sku,
+              size: v.size,
+              color: v.color,
+              inventory_quantity: Number(v.inventoryQuantity) || 0,
+              price_amount: Number(v.priceAmount),
+              price_currency: "NGN",
+              ...(compareAt > 0
+                ? { compare_at_price_amount: compareAt, compare_at_price_currency: "NGN" }
+                : {}),
+            };
+          }),
+        });
+        setStatusMessage("New product created.");
+      }
+      router.push("/products");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Save failed. Please try again.";
+      setStatusMessage(message);
     }
-
-    router.push("/products");
   }
 
   return (
@@ -361,35 +430,46 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
               </select>
             </label>
             <label style={{ display: "grid", gap: 8 }}>
-              <span>Price (NGN)</span>
-              <input
-                aria-label="Product price"
-                inputMode="numeric"
-                onChange={(event) => updateField("priceAmount", event.target.value)}
+              <span>Default region</span>
+              <select
+                aria-label="Product default region"
+                onChange={(event) =>
+                  updateField("defaultRegion", event.target.value as ProductRegion)
+                }
                 style={inputStyle}
-                value={formState.priceAmount}
-              />
+                value={formState.defaultRegion}
+              >
+                {REGION_OPTIONS.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
             </label>
-            <label style={{ display: "grid", gap: 8 }}>
-              <span>Compare at price (NGN)</span>
-              <input
-                aria-label="Compare at price"
-                inputMode="numeric"
-                onChange={(event) => updateField("compareAtPriceAmount", event.target.value)}
-                style={inputStyle}
-                value={formState.compareAtPriceAmount}
-              />
-            </label>
-            <label style={{ display: "grid", gap: 8 }}>
-              <span>Stock</span>
-              <input
-                aria-label="Product stock"
-                inputMode="numeric"
-                onChange={(event) => updateField("inventoryQuantity", event.target.value)}
-                style={inputStyle}
-                value={formState.inventoryQuantity}
-              />
-            </label>
+            <fieldset
+              style={{
+                border: "1px solid var(--color-border)",
+                borderRadius: 16,
+                padding: "12px 14px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <legend style={{ padding: "0 6px" }}>Region availability</legend>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {REGION_OPTIONS.map((region) => (
+                  <label key={region} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      aria-label={`Region ${region}`}
+                      checked={formState.regionAvailability.includes(region)}
+                      onChange={(event) => toggleRegionAvailability(region, event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>{region}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             <label style={{ display: "grid", gap: 8 }}>
               <span>Primary media URL</span>
               <input
@@ -412,13 +492,77 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
         </SectionCard>
 
         <SectionCard
+          title="PDP narrative"
+          description="These narrative fields render in storefront product story blocks."
+        >
+          <div
+            style={{
+              display: "grid",
+              gap: 14,
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            }}
+          >
+            <label style={{ display: "grid", gap: 8, gridColumn: "1 / -1" }}>
+              <span>Campaign note</span>
+              <textarea
+                aria-label="Product campaign note"
+                onChange={(event) => updateField("campaignNote", event.target.value)}
+                rows={3}
+                style={textareaStyle}
+                value={formState.campaignNote}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Fit guidance</span>
+              <textarea
+                aria-label="Product fit guidance"
+                onChange={(event) => updateField("fitGuidance", event.target.value)}
+                rows={3}
+                style={textareaStyle}
+                value={formState.fitGuidance}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Material story</span>
+              <textarea
+                aria-label="Product material story"
+                onChange={(event) => updateField("materialStory", event.target.value)}
+                rows={3}
+                style={textareaStyle}
+                value={formState.materialStory}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Sustainability note</span>
+              <textarea
+                aria-label="Product sustainability note"
+                onChange={(event) => updateField("sustainabilityNote", event.target.value)}
+                rows={3}
+                style={textareaStyle}
+                value={formState.sustainabilityNote}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Delivery note</span>
+              <textarea
+                aria-label="Product delivery note"
+                onChange={(event) => updateField("deliveryNote", event.target.value)}
+                rows={3}
+                style={textareaStyle}
+                value={formState.deliveryNote}
+              />
+            </label>
+          </div>
+        </SectionCard>
+
+        <SectionCard
           title="Variants"
           description="Capture the size, color, SKU, and stock options the storefront needs for selection and availability."
         >
           <div style={{ display: "grid", gap: 12 }}>
             {formState.variants.map((variant, index) => (
               <div
-                key={variant.id}
+                key={variant.localId}
                 style={{
                   display: "grid",
                   gap: 12,
@@ -429,10 +573,15 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                  <strong>Variant {index + 1}</strong>
+                  <strong>
+                    Variant {index + 1}
+                    {variant.apiId ? null : (
+                      <span style={{ marginLeft: 8, fontSize: 11, opacity: 0.55 }}>new</span>
+                    )}
+                  </strong>
                   <button
                     disabled={formState.variants.length === 1}
-                    onClick={() => removeVariant(variant.id)}
+                    onClick={() => removeVariant(variant.localId)}
                     style={secondaryButtonStyle}
                     type="button"
                   >
@@ -450,8 +599,10 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                     <span>SKU</span>
                     <input
                       aria-label={`Variant ${index + 1} SKU`}
-                      onChange={(event) => updateVariantField(variant.id, "sku", event.target.value)}
-                      style={inputStyle}
+                      disabled={!!variant.apiId}
+                      onChange={(event) => updateVariantField(variant.localId, "sku", event.target.value)}
+                      style={{ ...inputStyle, ...(variant.apiId ? { opacity: 0.55 } : {}) }}
+                      title={variant.apiId ? "SKU cannot be changed after creation" : undefined}
                       value={variant.sku}
                     />
                   </label>
@@ -459,7 +610,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                     <span>Size</span>
                     <input
                       aria-label={`Variant ${index + 1} size`}
-                      onChange={(event) => updateVariantField(variant.id, "size", event.target.value)}
+                      onChange={(event) => updateVariantField(variant.localId, "size", event.target.value)}
                       style={inputStyle}
                       value={variant.size}
                     />
@@ -468,7 +619,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                     <span>Color</span>
                     <input
                       aria-label={`Variant ${index + 1} color`}
-                      onChange={(event) => updateVariantField(variant.id, "color", event.target.value)}
+                      onChange={(event) => updateVariantField(variant.localId, "color", event.target.value)}
                       style={inputStyle}
                       value={variant.color}
                     />
@@ -479,10 +630,35 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                       aria-label={`Variant ${index + 1} stock`}
                       inputMode="numeric"
                       onChange={(event) =>
-                        updateVariantField(variant.id, "inventoryQuantity", event.target.value)
+                        updateVariantField(variant.localId, "inventoryQuantity", event.target.value)
                       }
                       style={inputStyle}
                       value={variant.inventoryQuantity}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Price (NGN)</span>
+                    <input
+                      aria-label={`Variant ${index + 1} price`}
+                      inputMode="numeric"
+                      onChange={(event) =>
+                        updateVariantField(variant.localId, "priceAmount", event.target.value)
+                      }
+                      style={inputStyle}
+                      value={variant.priceAmount}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Compare at (NGN)</span>
+                    <input
+                      aria-label={`Variant ${index + 1} compare at price`}
+                      inputMode="numeric"
+                      onChange={(event) =>
+                        updateVariantField(variant.localId, "compareAtPriceAmount", event.target.value)
+                      }
+                      placeholder="Leave blank if no sale"
+                      style={inputStyle}
+                      value={variant.compareAtPriceAmount}
                     />
                   </label>
                 </div>
@@ -533,6 +709,15 @@ const inputStyle = {
   borderRadius: 16,
   padding: "14px 16px",
   background: "var(--color-surface)",
+} as const;
+
+const textareaStyle = {
+  border: "1px solid var(--color-border)",
+  borderRadius: 16,
+  padding: "14px 16px",
+  background: "var(--color-surface)",
+  resize: "vertical" as const,
+  fontFamily: "inherit",
 } as const;
 
 const primaryButtonStyle = {

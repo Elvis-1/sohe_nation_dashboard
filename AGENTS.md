@@ -163,6 +163,13 @@ Current Phase 8 settings foundation:
 - settings records must stay aligned to the operational defaults the storefront and dashboard will eventually consume during API wiring
 - settings workflow coverage should continue to protect grouped rendering, editable placeholder behavior, save flow, and persistence
 
+Current Phase 8.5 parity foundation:
+
+- the dashboard/storefront parity checkpoint is now a required handoff step before API implementation begins
+- parity review findings and remaining gaps should be logged in `dashboard/PARITY_CHECKPOINT.md`
+- cross-surface parity checks that are feasible in fixture mode should remain protected by automated verification
+- API work should treat the documented parity gaps as explicit design items rather than silent assumptions
+
 ## Rendering Rules
 
 - Use Next.js App Router.

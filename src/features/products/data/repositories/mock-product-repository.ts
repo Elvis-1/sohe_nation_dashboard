@@ -11,11 +11,11 @@ export function listProducts() {
 }
 
 export function listLowStockProducts(threshold = 5) {
-  return mockProducts.filter((product) => product.inventoryQuantity <= threshold);
+  return getStoredProductsSnapshot().filter((product) => product.inventoryQuantity <= threshold);
 }
 
 export function getProductById(productId: string) {
-  return listProducts().find((product) => product.id === productId) ?? null;
+  return getStoredProductsSnapshot().find((product) => product.id === productId) ?? null;
 }
 
 function cloneProducts() {

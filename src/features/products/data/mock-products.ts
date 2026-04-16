@@ -8,6 +8,8 @@ export const mockProducts: DashboardProductRecord[] = [
     subtitle: "Technical outerwear for evening movement.",
     category: "outerwear",
     audience: "men",
+    defaultRegion: "NG",
+    regionAvailability: ["NG", "US"],
     visibility: "published",
     price: {
       amount: 214000,
@@ -34,6 +36,16 @@ export const mockProducts: DashboardProductRecord[] = [
         color: "Black",
         inventoryQuantity: 2,
         isAvailable: true,
+        price: {
+          amount: 214000,
+          currency: "NGN",
+          formatted: "NGN 214,000",
+        },
+        compareAtPrice: {
+          amount: 240000,
+          currency: "NGN",
+          formatted: "NGN 240,000",
+        },
       },
       {
         id: "variant_lunar_black_l",
@@ -42,6 +54,16 @@ export const mockProducts: DashboardProductRecord[] = [
         color: "Black",
         inventoryQuantity: 2,
         isAvailable: true,
+        price: {
+          amount: 214000,
+          currency: "NGN",
+          formatted: "NGN 214,000",
+        },
+        compareAtPrice: {
+          amount: 240000,
+          currency: "NGN",
+          formatted: "NGN 240,000",
+        },
       },
     ],
   },
@@ -52,6 +74,8 @@ export const mockProducts: DashboardProductRecord[] = [
     subtitle: "Soft structure for travel and recovery days.",
     category: "tracksuit",
     audience: "women",
+    defaultRegion: "NG",
+    regionAvailability: ["NG"],
     visibility: "draft",
     price: {
       amount: 184000,
@@ -73,6 +97,11 @@ export const mockProducts: DashboardProductRecord[] = [
         color: "Oat",
         inventoryQuantity: 2,
         isAvailable: true,
+        price: {
+          amount: 184000,
+          currency: "NGN",
+          formatted: "NGN 184,000",
+        },
       },
       {
         id: "variant_rally_oat_m",
@@ -81,6 +110,11 @@ export const mockProducts: DashboardProductRecord[] = [
         color: "Oat",
         inventoryQuantity: 3,
         isAvailable: true,
+        price: {
+          amount: 184000,
+          currency: "NGN",
+          formatted: "NGN 184,000",
+        },
       },
     ],
   },
@@ -91,6 +125,8 @@ export const mockProducts: DashboardProductRecord[] = [
     subtitle: "Headwear accent for the current drop.",
     category: "headwear",
     audience: "unisex",
+    defaultRegion: "NG",
+    regionAvailability: ["NG", "GB"],
     visibility: "published",
     price: {
       amount: 48000,
@@ -112,6 +148,11 @@ export const mockProducts: DashboardProductRecord[] = [
         color: "Sand",
         inventoryQuantity: 3,
         isAvailable: true,
+        price: {
+          amount: 48000,
+          currency: "NGN",
+          formatted: "NGN 48,000",
+        },
       },
     ],
   },
