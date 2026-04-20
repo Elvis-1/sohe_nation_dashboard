@@ -1,8 +1,32 @@
+"use client";
+
+import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import { getOverviewSnapshot } from "@/src/features/overview/data/repositories/mock-overview-repository";
+import {
+  subscribeToStoredOrders,
+  getStoredOrdersSnapshot,
+  getServerOrdersSnapshot,
+} from "@/src/features/orders/data/repositories/order-repository";
+import {
+  subscribeToProducts,
+  getProductsSnapshot,
+  getServerProductsSnapshot,
+} from "@/src/features/products/data/repositories/product-repository";
+import {
+  subscribeToStoredReturns,
+  getStoredReturnsSnapshot,
+  getServerReturnsSnapshot,
+} from "@/src/features/returns/data/repositories/return-repository";
+import { quickActions } from "@/src/features/overview/data/mock-overview";
+
+const LOW_STOCK_THRESHOLD = 5;
+
+function formatNgn(amount: number): string {
+  return `NGN ${Math.round(amount).toLocaleString("en-NG")}`;
+}
 
 const darkPillStyle = {
   display: "inline-flex",
@@ -28,22 +52,106 @@ const lightPillStyle = {
 } as const;
 
 export function OverviewPageShell() {
-  const {
-    lowStockProducts,
-    overviewMetrics,
-    overviewModules,
-    quickActions,
-    recentOrders,
-    returnQueue,
-  } = getOverviewSnapshot();
+  const allOrders = useSyncExternalStore(
+    subscribeToStoredOrders,
+    getStoredOrdersSnapshot,
+    getServerOrdersSnapshot,
+  );
+  const allProducts = useSyncExternalStore(
+    subscribeToProducts,
+    getProductsSnapshot,
+    getServerProductsSnapshot,
+  );
+  const allReturns = useSyncExternalStore(
+    subscribeToStoredReturns,
+    getStoredReturnsSnapshot,
+    getServerReturnsSnapshot,
+  );
+
+  const recentOrders = useMemo(() => allOrders.slice(0, 3), [allOrders]);
+  const lowStockProducts = useMemo(
+    () => allProducts.filter((p) => p.inventoryQuantity <= LOW_STOCK_THRESHOLD),
+    [allProducts],
+  );
+  const returnQueue = useMemo(
+    () => allReturns.filter((r) => r.status === "new" || r.status === "in_review"),
+    [allReturns],
+  );
+
+  const publishedProductCount = useMemo(
+    () => allProducts.filter((p) => p.visibility === "published").length,
+    [allProducts],
+  );
+  const ordersInMotion = useMemo(
+    () => allOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").length,
+    [allOrders],
+  );
+  const totalRevenue = useMemo(
+    () => allOrders.reduce((sum, o) => sum + o.total.amount, 0),
+    [allOrders],
+  );
+
+  const liveMetrics = [
+    {
+      label: "Published products",
+      value: String(publishedProductCount),
+      note: `${allProducts.length} total in catalog`,
+      emphasis: "primary" as const,
+    },
+    {
+      label: "Revenue staged",
+      value: formatNgn(totalRevenue),
+      note: `Across ${allOrders.length} order${allOrders.length === 1 ? "" : "s"}`,
+      emphasis: "default" as const,
+    },
+    {
+      label: "Low stock",
+      value: `${lowStockProducts.length} SKU${lowStockProducts.length === 1 ? "" : "s"}`,
+      note: `Products at ${LOW_STOCK_THRESHOLD} units or fewer`,
+      emphasis: lowStockProducts.length > 0 ? ("warning" as const) : ("default" as const),
+    },
+    {
+      label: "Returns pending",
+      value: String(returnQueue.length),
+      note: "New and in-review requests",
+      emphasis: returnQueue.length > 0 ? ("default" as const) : ("default" as const),
+    },
+  ];
+
+  const liveModules = [
+    {
+      title: "Products",
+      description: "Catalog control for prices, stock, variants, and visibility.",
+      href: "/products",
+      stat: `${publishedProductCount} published · ${allProducts.length} total`,
+    },
+    {
+      title: "Orders",
+      description: "Payment, fulfillment, and internal movement across every purchase.",
+      href: "/orders",
+      stat: `${ordersInMotion} order${ordersInMotion === 1 ? "" : "s"} in motion`,
+    },
+    {
+      title: "Content",
+      description: "Homepage, stories, and merchandising spotlight management.",
+      href: "/content",
+      stat: "Not yet wired to API",
+    },
+    {
+      title: "Returns",
+      description: "Customer return queue, review outcomes, and operational follow-through.",
+      href: "/returns",
+      stat: `${returnQueue.length} awaiting review`,
+    },
+  ];
 
   const hasOverviewData =
-    overviewMetrics.length > 0 ||
+    liveMetrics.length > 0 ||
     quickActions.length > 0 ||
     recentOrders.length > 0 ||
     lowStockProducts.length > 0 ||
     returnQueue.length > 0 ||
-    overviewModules.length > 0;
+    liveModules.length > 0;
 
   if (!hasOverviewData) {
     return (
@@ -51,12 +159,12 @@ export function OverviewPageShell() {
         <PageHeader
           eyebrow="Overview"
           title="Daily control across the line."
-          description="The command surface is ready, but no fixture data has been staged yet."
+          description="The command surface is ready, but no data has been staged yet."
         />
         <EmptyStatePanel
           eyebrow="Overview"
           title="No operational signals are live yet."
-          description="Once products, orders, returns, and content fixtures are available, this overview will summarize the store state and route staff into the next operational action."
+          description="Once products, orders, and returns are available, this overview will summarize the store state and route staff into the next operational action."
           actionHref="/products"
           actionLabel="Open products"
         />
@@ -90,7 +198,7 @@ export function OverviewPageShell() {
           marginBottom: 24,
         }}
       >
-        {overviewMetrics.map((metric) => {
+        {liveMetrics.map((metric) => {
           const background =
             metric.emphasis === "primary"
               ? "rgba(179, 123, 31, 0.12)"
@@ -162,13 +270,13 @@ export function OverviewPageShell() {
       >
         <SectionCard
           title="Recent orders"
-          description="The latest movement coming from the fixture-mode checkout and account history flow."
+          description="The three most recent orders from the live backend."
         >
           {recentOrders.length === 0 ? (
             <EmptyStatePanel
               eyebrow="Orders"
-              title="No recent orders are staged."
-              description="Recent purchases will appear here once order fixtures are available."
+              title="No orders yet."
+              description="Recent orders will appear here once they are created."
               actionHref="/orders"
               actionLabel="Open orders"
             />
@@ -213,13 +321,13 @@ export function OverviewPageShell() {
         <div style={{ display: "grid", gap: 16 }}>
           <SectionCard
             title="Low stock watch"
-            description="The next product records most likely to need a stock update or merchandising change."
+            description={`Products with ${LOW_STOCK_THRESHOLD} or fewer units across all variants.`}
           >
             {lowStockProducts.length === 0 ? (
               <EmptyStatePanel
                 eyebrow="Inventory"
                 title="No low-stock products need attention."
-                description="This panel will call out inventory pressure once product fixtures hit the low-stock threshold."
+                description="Products hitting the low-stock threshold will appear here."
                 actionHref="/products"
                 actionLabel="Open products"
               />
@@ -254,31 +362,34 @@ export function OverviewPageShell() {
 
           <SectionCard
             title="Returns pending"
-            description="A compact queue view so staff can see what needs review before opening the returns desk."
+            description="Return requests with status New or In Review awaiting staff action."
           >
             {returnQueue.length === 0 ? (
               <EmptyStatePanel
                 eyebrow="Returns"
                 title="No returns are awaiting review."
-                description="Return requests will appear here once customers submit them through the account flow."
+                description="Return requests will appear here once customers submit them."
                 actionHref="/returns"
                 actionLabel="Open returns"
               />
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {returnQueue.map((item) => (
-                  <div
+                  <Link
                     key={item.id}
+                    href={`/returns/${item.id}`}
                     style={{
                       display: "grid",
                       gap: 6,
                       border: "1px solid var(--color-border)",
                       borderRadius: 18,
                       padding: "14px 16px",
+                      textDecoration: "none",
+                      color: "inherit",
                     }}
                   >
                     <strong>
-                      {item.id} · {item.customerName}
+                      {item.customerName} · {item.orderId}
                     </strong>
                     <span
                       style={{
@@ -292,7 +403,7 @@ export function OverviewPageShell() {
                     <p style={{ color: "var(--color-text-muted)", lineHeight: 1.5 }}>
                       {item.reason}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -308,7 +419,7 @@ export function OverviewPageShell() {
           marginTop: 24,
         }}
       >
-        {overviewModules.map((module) => (
+        {liveModules.map((module) => (
           <SectionCard key={module.title} title={module.title} description={module.description}>
             <p
               style={{

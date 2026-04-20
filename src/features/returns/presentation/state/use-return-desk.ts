@@ -2,11 +2,15 @@
 
 import { useSyncExternalStore } from "react";
 import {
+  getServerReturnsSnapshot,
   getStoredReturnsSnapshot,
-  listReturns,
   subscribeToStoredReturns,
-} from "@/src/features/returns/data/repositories/mock-return-repository";
+} from "@/src/features/returns/data/repositories/return-repository";
 
 export function useReturnDesk() {
-  return useSyncExternalStore(subscribeToStoredReturns, getStoredReturnsSnapshot, listReturns);
+  return useSyncExternalStore(
+    subscribeToStoredReturns,
+    getStoredReturnsSnapshot,
+    getServerReturnsSnapshot,
+  );
 }

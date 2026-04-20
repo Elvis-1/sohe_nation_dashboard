@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { useToast } from "@/src/core/ui/toast";
+import { ApiError } from "@/src/core/api/http-client";
 import type { DashboardReturnRecord } from "@/src/core/types/dashboard";
-import {
-  updateReturnRecord,
-} from "@/src/features/returns/data/repositories/mock-return-repository";
+import { updateReturnRecord } from "@/src/features/returns/data/repositories/return-repository";
 import { useReturnDesk } from "@/src/features/returns/presentation/state/use-return-desk";
 
 type ReturnDetailPageShellProps = {
@@ -21,10 +21,9 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
     () => returns.find((item) => item.id === returnId) ?? null,
     [returnId, returns],
   );
+  const toast = useToast();
   const [status, setStatus] = useState<DashboardReturnRecord["status"] | "">(returnRecord?.status ?? "");
-  const [customerNote, setCustomerNote] = useState(returnRecord?.customerNote ?? "");
   const [internalDecision, setInternalDecision] = useState(returnRecord?.internalDecision ?? "");
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   if (!returnRecord) {
     return (
@@ -37,19 +36,25 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!returnRecord) {
       return;
     }
 
-    updateReturnRecord({
-      ...returnRecord,
-      status: (status || returnRecord.status) as DashboardReturnRecord["status"],
-      customerNote,
-      internalDecision,
-    });
-
-    setSaveMessage("Return updates saved to the mocked queue.");
+    try {
+      await updateReturnRecord({
+        ...returnRecord,
+        status: (status || returnRecord.status) as DashboardReturnRecord["status"],
+        internalDecision,
+      });
+      toast.success("Return updates saved.");
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "invalid_return_transition") {
+        toast.error(`Can't move to "${status}" from "${returnRecord.status}". Check the allowed transition order: New → In Review → Approved or Rejected → Completed.`);
+        return;
+      }
+      toast.error(error instanceof ApiError ? error.message : "Unable to save. Check your connection and try again.");
+    }
   }
 
   return (
@@ -118,18 +123,15 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
 
         <SectionCard
           title="Customer note"
-          description="The request note coming from the customer-side returns flow."
+          description="The request note submitted by the customer. Read-only."
         >
-          <label style={{ display: "grid", gap: 8 }}>
-            <span>Customer note</span>
-            <textarea
-              aria-label="Customer note"
-              onChange={(event) => setCustomerNote(event.target.value)}
-              rows={4}
-              style={textareaStyle}
-              value={customerNote}
-            />
-          </label>
+          {returnRecord.customerNote ? (
+            <p style={{ margin: 0, lineHeight: 1.6 }}>{returnRecord.customerNote}</p>
+          ) : (
+            <p style={{ margin: 0, color: "var(--color-text-muted)", fontStyle: "italic" }}>
+              No note provided.
+            </p>
+          )}
         </SectionCard>
 
         <SectionCard
@@ -173,11 +175,6 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
             </Link>
           </div>
 
-          {saveMessage ? (
-            <p style={{ marginTop: 14, color: "var(--color-success)", lineHeight: 1.5 }}>
-              {saveMessage}
-            </p>
-          ) : null}
         </SectionCard>
       </div>
     </div>
