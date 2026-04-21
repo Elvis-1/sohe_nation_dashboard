@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/backend";
+const DASHBOARD_SESSION_STORAGE_KEY = "sohe-dashboard-session";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
@@ -21,12 +22,28 @@ export class ApiError extends Error {
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
+  const authHeaders: Record<string, string> = {};
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage.getItem(DASHBOARD_SESSION_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { token?: string };
+        if (parsed.token) {
+          authHeaders.Authorization = `Bearer ${parsed.token}`;
+        }
+      }
+    } catch {
+      // Ignore malformed stored auth and proceed without a token header.
+    }
+  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,

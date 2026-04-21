@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { useToast } from "@/src/core/ui/toast";
 import type { DashboardContentArea, DashboardContentRecord } from "@/src/core/types/dashboard";
 import {
   updateContentRecord,
-} from "@/src/features/content/data/repositories/mock-content-repository";
-import { useContentDesk } from "@/src/features/content/presentation/state/use-content-desk";
+} from "@/src/features/content/data/repositories/content-repository";
+import {
+  useContentDesk,
+  useContentDeskError,
+} from "@/src/features/content/presentation/state/use-content-desk";
 import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
+
+const STOREFRONT_URL =
+  process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
 
 type ContentEditorPageShellProps = {
   routeKey: "homepage" | "stories";
@@ -26,10 +33,20 @@ type ContentFormState = {
   callToActionLabel: string;
   callToActionHref: string;
   summary: string;
+  slug: string;
+  secondaryCallToActionLabel: string;
+  secondaryCallToActionHref: string;
+  chapterLabel: string;
+  campaignStatement: string;
   linkedProductIds: string[];
+  mediaKind: "image" | "video";
   mediaUrl: string;
+  mediaPosterUrl: string;
   mediaAlt: string;
   previewBullets: string[];
+  campaignStatsText: string;
+  modulesText: string;
+  hotspotsText: string;
 };
 
 const routeConfig: Record<
@@ -49,8 +66,38 @@ const routeConfig: Record<
   stories: {
     title: "Stories and navigation editor.",
     description:
-      "Manage editorial story framing, lookbook support copy, and navigation promo messaging in one fixture-backed flow.",
+      "Manage editorial story framing, lookbook support copy, and navigation promo messaging in one API-backed flow.",
     areas: ["stories", "navigation_promos"],
+  },
+};
+
+const areaSurfaceMap: Record<
+  DashboardContentArea,
+  {
+    storefrontSurface: string;
+    storefrontRoute: string;
+    publishingOutcome: string;
+  }
+> = {
+  homepage: {
+    storefrontSurface: "Marketing homepage hero",
+    storefrontRoute: "/",
+    publishingOutcome: "Publishing this record makes the storefront homepage hero live.",
+  },
+  featured_drop: {
+    storefrontSurface: "Homepage featured product rail",
+    storefrontRoute: "/#featured-drop",
+    publishingOutcome: "Publishing this record updates the featured drop rail directly under the homepage hero.",
+  },
+  stories: {
+    storefrontSurface: "Stories index and story detail page",
+    storefrontRoute: "/stories and /stories/[slug]",
+    publishingOutcome: "Publishing this record exposes the story in the listing and enables its detail route.",
+  },
+  navigation_promos: {
+    storefrontSurface: "Homepage story band promo",
+    storefrontRoute: "/#story-band",
+    publishingOutcome: "Publishing this record powers the story band CTA and promo modules on the homepage.",
   },
 };
 
@@ -103,19 +150,66 @@ function buildFormState(entry: DashboardContentRecord): ContentFormState {
     callToActionLabel: entry.callToActionLabel,
     callToActionHref: entry.callToActionHref,
     summary: entry.summary,
+    slug: entry.slug ?? "",
+    secondaryCallToActionLabel: entry.secondaryCallToActionLabel ?? "",
+    secondaryCallToActionHref: entry.secondaryCallToActionHref ?? "",
+    chapterLabel: entry.chapterLabel ?? "",
+    campaignStatement: entry.campaignStatement ?? "",
     linkedProductIds: entry.linkedProductIds,
+    mediaKind: entry.mediaReferences[0]?.kind ?? "image",
     mediaUrl: entry.mediaReferences[0]?.url ?? "",
+    mediaPosterUrl: entry.mediaReferences[0]?.posterUrl ?? "",
     mediaAlt: entry.mediaReferences[0]?.alt ?? "",
     previewBullets: entry.previewBullets,
+    campaignStatsText: (entry.campaignStats ?? [])
+      .map((item) => `${item.label}|${item.value}`)
+      .join("\n"),
+    modulesText: (entry.modules ?? [])
+      .map((module) => `${module.title}|${module.body}`)
+      .join("\n"),
+    hotspotsText: (entry.hotspots ?? [])
+      .map(
+        (hotspot) =>
+          `${hotspot.id}|${hotspot.label}|${hotspot.productSlug}|${hotspot.top}|${hotspot.left}|${hotspot.note}`,
+      )
+      .join("\n"),
   };
+}
+
+function parseDelimitedLines(value: string, expectedParts: number) {
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.split("|").map((part) => part.trim()))
+    .filter((parts) => parts.length >= expectedParts);
 }
 
 function buildContentRecord(
   entry: DashboardContentRecord,
   formState: ContentFormState,
 ): DashboardContentRecord {
+  const campaignStats = parseDelimitedLines(formState.campaignStatsText, 2).map(
+    ([label, value]) => ({ label, value }),
+  );
+  const modules = parseDelimitedLines(formState.modulesText, 2).map(([title, body]) => ({
+    title,
+    body,
+  }));
+  const hotspots = parseDelimitedLines(formState.hotspotsText, 6).map(
+    ([id, label, productSlug, top, left, note]) => ({
+      id,
+      label,
+      productSlug,
+      top,
+      left,
+      note,
+    }),
+  );
+
   return {
     ...entry,
+    slug: formState.slug || undefined,
     title: formState.title,
     visibility: formState.visibility,
     eyebrow: formState.eyebrow,
@@ -123,6 +217,10 @@ function buildContentRecord(
     body: formState.body,
     callToActionLabel: formState.callToActionLabel,
     callToActionHref: formState.callToActionHref,
+    secondaryCallToActionLabel: formState.secondaryCallToActionLabel,
+    secondaryCallToActionHref: formState.secondaryCallToActionHref,
+    chapterLabel: formState.chapterLabel,
+    campaignStatement: formState.campaignStatement,
     summary: formState.summary,
     linkedProductIds: formState.linkedProductIds,
     mediaReferences: formState.mediaUrl
@@ -130,17 +228,25 @@ function buildContentRecord(
           {
             id: `${entry.id}_media_primary`,
             alt: formState.mediaAlt || `${formState.title} media`,
-            kind: "image",
+            kind: formState.mediaKind,
             url: formState.mediaUrl,
+            ...(formState.mediaKind === "video" && formState.mediaPosterUrl
+              ? { posterUrl: formState.mediaPosterUrl }
+              : {}),
           },
         ]
       : [],
     previewBullets: formState.previewBullets,
+    campaignStats,
+    modules,
+    hotspots,
   };
 }
 
 export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps) {
+  const toast = useToast();
   const contentEntries = useContentDesk();
+  const contentError = useContentDeskError();
   const products = useProductCatalog();
   const config = routeConfig[routeKey];
   const editorEntries = useMemo(
@@ -150,14 +256,40 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
   const [formStateById, setFormStateById] = useState<Record<string, ContentFormState>>(() =>
     Object.fromEntries(editorEntries.map((entry) => [entry.id, buildFormState(entry)])),
   );
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (editorEntries.length === 0) {
+      return;
+    }
+
+    setFormStateById((currentState) => {
+      const nextState = { ...currentState };
+      for (const entry of editorEntries) {
+        if (!nextState[entry.id]) {
+          nextState[entry.id] = buildFormState(entry);
+        }
+      }
+      return nextState;
+    });
+  }, [editorEntries]);
+
+  if (contentError) {
+    return (
+      <AppStateMessage
+        eyebrow="Content"
+        title="This content editor could not load."
+        description={`The dashboard could not load content records from the API for this editor. ${contentError.message}`}
+        action={<Link href="/content">Back to content hub</Link>}
+      />
+    );
+  }
 
   if (editorEntries.length === 0) {
     return (
       <AppStateMessage
         eyebrow="Content"
         title="This content editor has no staged records"
-        description="The current fixture set does not include the content areas this route expects."
+        description="The API is not currently returning the content areas this route expects."
         action={<Link href="/content">Back to content hub</Link>}
       />
     );
@@ -200,23 +332,50 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
     });
   }
 
-  function handleSave(nextVisibility?: DashboardContentRecord["visibility"]) {
-    editorEntries.forEach((entry) => {
-      const formState = formStateById[entry.id];
-      const nextRecord = buildContentRecord(entry, {
-        ...formState,
-        visibility: nextVisibility ?? formState.visibility,
-      });
+  async function handleSave(nextVisibility?: DashboardContentRecord["visibility"]) {
+    await Promise.all(
+      editorEntries.map((entry) => {
+        const formState = formStateById[entry.id] ?? buildFormState(entry);
+        const nextRecord = buildContentRecord(entry, {
+          ...formState,
+          visibility: nextVisibility ?? formState.visibility,
+        });
 
-      updateContentRecord(nextRecord);
+        return updateContentRecord(nextRecord);
+      }),
+    );
+
+    toast.success(
+      nextVisibility === "ready"
+        ? "Content entries marked ready for publish."
+        : nextVisibility === "published"
+          ? "Content entries published live to the storefront."
+        : nextVisibility === "draft"
+          ? "Content entries saved as draft."
+          : "Content entries saved.",
+    );
+  }
+
+  async function handleSaveEntry(
+    entry: DashboardContentRecord,
+    nextVisibility?: DashboardContentRecord["visibility"],
+  ) {
+    const formState = formStateById[entry.id] ?? buildFormState(entry);
+    const nextRecord = buildContentRecord(entry, {
+      ...formState,
+      visibility: nextVisibility ?? formState.visibility,
     });
 
-    setSaveMessage(
+    await updateContentRecord(nextRecord);
+
+    toast.success(
       nextVisibility === "ready"
-        ? "Content entries marked ready for publish in the mocked content desk."
-        : nextVisibility === "draft"
-          ? "Content entries saved as draft in the mocked content desk."
-          : "Content entries saved to the mocked content desk.",
+        ? `${areaSurfaceMap[entry.area].storefrontSurface} marked ready for publish.`
+        : nextVisibility === "published"
+          ? `${areaSurfaceMap[entry.area].storefrontSurface} published live to the storefront.`
+          : nextVisibility === "draft"
+            ? `${areaSurfaceMap[entry.area].storefrontSurface} saved as draft.`
+            : `${areaSurfaceMap[entry.area].storefrontSurface} saved.`,
     );
   }
 
@@ -237,15 +396,43 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
 
       <div style={{ display: "grid", gap: 16 }}>
         {editorEntries.map((entry) => {
-          const formState = formStateById[entry.id];
+          const formState = formStateById[entry.id] ?? buildFormState(entry);
+          const surface = areaSurfaceMap[entry.area];
 
           return (
             <SectionCard
               key={entry.id}
-              title={entry.title}
-              description={`Area: ${entry.area.replaceAll("_", " ")}`}
+              title={surface.storefrontSurface}
+              description={`Route ${surface.storefrontRoute} · record title "${entry.title}"`}
             >
               <div id={entry.area.replaceAll("_", "-")} style={{ display: "grid", gap: 18 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 8,
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 16,
+                    padding: "14px 16px",
+                    background: "rgba(255, 253, 248, 0.82)",
+                  }}
+                >
+                  <strong>{surface.storefrontSurface}</strong>
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    Storefront route:{" "}
+                    <a
+                      href={`${STOREFRONT_URL}${surface.storefrontRoute}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "var(--color-text)", textDecoration: "underline" }}
+                    >
+                      {surface.storefrontRoute} ↗
+                    </a>
+                  </span>
+                  <p style={{ color: "var(--color-text-muted)", lineHeight: 1.5, margin: 0 }}>
+                    {surface.publishingOutcome}
+                  </p>
+                </div>
+
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {(["draft", "ready", "published"] as const).map((status) => (
                     <button
@@ -287,7 +474,17 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     />
                   </label>
                   <label style={{ display: "grid", gap: 8 }}>
-                    <span>Eyebrow</span>
+                    <span>Slug <span style={hintStyle}>URL path — e.g. built-like-an-army becomes /stories/built-like-an-army</span></span>
+                    <input
+                      aria-label={`${entry.area} slug`}
+                      onChange={(event) => updateField(entry.id, "slug", event.target.value)}
+                      placeholder={entry.area === "stories" ? "built-like-an-army" : ""}
+                      style={inputStyle}
+                      value={formState.slug}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Eyebrow <span style={hintStyle}>Small label shown above the headline</span></span>
                     <input
                       aria-label={`${entry.area} eyebrow`}
                       onChange={(event) => updateField(entry.id, "eyebrow", event.target.value)}
@@ -305,7 +502,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     />
                   </label>
                   <label style={{ display: "grid", gap: 8 }}>
-                    <span>CTA label</span>
+                    <span>Button label <span style={hintStyle}>Text shown on the primary call-to-action button</span></span>
                     <input
                       aria-label={`${entry.area} CTA label`}
                       onChange={(event) =>
@@ -316,7 +513,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     />
                   </label>
                   <label style={{ display: "grid", gap: 8 }}>
-                    <span>CTA href</span>
+                    <span>Button link <span style={hintStyle}>URL the primary button points to, e.g. /catalog or /stories</span></span>
                     <input
                       aria-label={`${entry.area} CTA href`}
                       onChange={(event) =>
@@ -324,6 +521,28 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                       }
                       style={inputStyle}
                       value={formState.callToActionHref}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Secondary button label <span style={hintStyle}>Optional — leave blank if only one button is needed</span></span>
+                    <input
+                      aria-label={`${entry.area} secondary CTA label`}
+                      onChange={(event) =>
+                        updateField(entry.id, "secondaryCallToActionLabel", event.target.value)
+                      }
+                      style={inputStyle}
+                      value={formState.secondaryCallToActionLabel}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Secondary button link <span style={hintStyle}>URL for the secondary button</span></span>
+                    <input
+                      aria-label={`${entry.area} secondary CTA href`}
+                      onChange={(event) =>
+                        updateField(entry.id, "secondaryCallToActionHref", event.target.value)
+                      }
+                      style={inputStyle}
+                      value={formState.secondaryCallToActionHref}
                     />
                   </label>
                   <label style={{ display: "grid", gap: 8 }}>
@@ -348,6 +567,17 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   />
                 </label>
 
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Campaign statement</span>
+                  <textarea
+                    aria-label={`${entry.area} campaign statement`}
+                    onChange={(event) => updateField(entry.id, "campaignStatement", event.target.value)}
+                    rows={3}
+                    style={textareaStyle}
+                    value={formState.campaignStatement}
+                  />
+                </label>
+
                 <div
                   style={{
                     display: "grid",
@@ -356,7 +586,30 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   }}
                 >
                   <label style={{ display: "grid", gap: 8 }}>
-                    <span>Primary media URL</span>
+                    <span>Chapter label <span style={hintStyle}>Section marker shown in the story detail layout, e.g. Chapter 01</span></span>
+                    <input
+                      aria-label={`${entry.area} chapter label`}
+                      onChange={(event) => updateField(entry.id, "chapterLabel", event.target.value)}
+                      style={inputStyle}
+                      value={formState.chapterLabel}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Media type <span style={hintStyle}>Choose Image for photos, Video for a looping or full video</span></span>
+                    <select
+                      aria-label={`${entry.area} media kind`}
+                      onChange={(event) =>
+                        updateField(entry.id, "mediaKind", event.target.value as "image" | "video")
+                      }
+                      style={inputStyle}
+                      value={formState.mediaKind}
+                    >
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Media URL <span style={hintStyle}>Full URL to the image or video file</span></span>
                     <input
                       aria-label={`${entry.area} media URL`}
                       onChange={(event) => updateField(entry.id, "mediaUrl", event.target.value)}
@@ -365,7 +618,19 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     />
                   </label>
                   <label style={{ display: "grid", gap: 8 }}>
-                    <span>Primary media alt</span>
+                    <span>Video thumbnail URL <span style={hintStyle}>Still image shown before the video plays — only needed for Video type</span></span>
+                    <input
+                      aria-label={`${entry.area} media poster URL`}
+                      onChange={(event) =>
+                        updateField(entry.id, "mediaPosterUrl", event.target.value)
+                      }
+                      placeholder={formState.mediaKind === "video" ? "https://..." : ""}
+                      style={inputStyle}
+                      value={formState.mediaPosterUrl}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <span>Media description <span style={hintStyle}>Briefly describe the image or video for accessibility and search</span></span>
                     <input
                       aria-label={`${entry.area} media alt`}
                       onChange={(event) => updateField(entry.id, "mediaAlt", event.target.value)}
@@ -393,6 +658,42 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     />
                   </label>
                 </div>
+
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Campaign stats <span style={hintStyle}>One stat per line — format: Label|Value (e.g. Looks|03)</span></span>
+                  <textarea
+                    aria-label={`${entry.area} campaign stats`}
+                    onChange={(event) => updateField(entry.id, "campaignStatsText", event.target.value)}
+                    placeholder={"Looks|03\nFrames|09"}
+                    rows={3}
+                    style={textareaStyle}
+                    value={formState.campaignStatsText}
+                  />
+                </label>
+
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Content modules <span style={hintStyle}>One module per line — format: Title|Body copy (e.g. Frame One|Story body copy)</span></span>
+                  <textarea
+                    aria-label={`${entry.area} modules`}
+                    onChange={(event) => updateField(entry.id, "modulesText", event.target.value)}
+                    placeholder={"Frame One|Story body copy\nLayer Order|Supporting body copy"}
+                    rows={4}
+                    style={textareaStyle}
+                    value={formState.modulesText}
+                  />
+                </label>
+
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Product hotspots <span style={hintStyle}>One hotspot per line — format: id|label|product-slug|top%|left%|note (e.g. hotspot-1|Lead Look|lunar-utility-jacket|58%|44%|Lead look)</span></span>
+                  <textarea
+                    aria-label={`${entry.area} hotspots`}
+                    onChange={(event) => updateField(entry.id, "hotspotsText", event.target.value)}
+                    placeholder={"hotspot-1|Lead Look|lunar-utility-jacket|58%|44%|Lead look note"}
+                    rows={4}
+                    style={textareaStyle}
+                    value={formState.hotspotsText}
+                  />
+                </label>
 
                 <div style={{ display: "grid", gap: 10 }}>
                   <strong>Linked products</strong>
@@ -468,33 +769,63 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     </span>
                   </div>
                 </SectionCard>
+
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => void handleSaveEntry(entry, "draft")}
+                    style={subtleButtonStyle}
+                    type="button"
+                  >
+                    Save this section as draft
+                  </button>
+                  <button
+                    onClick={() => void handleSaveEntry(entry, "ready")}
+                    style={subtleButtonStyle}
+                    type="button"
+                  >
+                    Mark this section ready
+                  </button>
+                  <button
+                    onClick={() => void handleSaveEntry(entry, "published")}
+                    style={darkButtonStyle}
+                    type="button"
+                  >
+                    Publish this section live
+                  </button>
+                </div>
               </div>
             </SectionCard>
           );
         })}
 
         <SectionCard
-          title="Publish control"
-          description="Save the current content structure as draft, or mark it ready for publish once the copy, products, and media references look right."
+          title="Bulk publish control"
+          description="Apply a status change to every section on this editor page at once when you intentionally want the grouped homepage or stories surfaces to move together."
         >
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button onClick={() => handleSave("draft")} style={subtleButtonStyle} type="button">
-              Save as draft
+            <button onClick={() => void handleSave("draft")} style={subtleButtonStyle} type="button">
+              Save all as draft
             </button>
-            <button onClick={() => handleSave("ready")} style={darkButtonStyle} type="button">
-              Mark ready for publish
+            <button onClick={() => void handleSave("ready")} style={darkButtonStyle} type="button">
+              Mark all ready
+            </button>
+            <button onClick={() => void handleSave("published")} style={darkButtonStyle} type="button">
+              Publish all live
             </button>
           </div>
-          {saveMessage ? (
-            <p style={{ marginTop: 14, color: "var(--color-success)", lineHeight: 1.5 }}>
-              {saveMessage}
-            </p>
-          ) : null}
         </SectionCard>
       </div>
     </div>
   );
 }
+
+const hintStyle = {
+  fontWeight: 400,
+  fontSize: 12,
+  color: "var(--color-text-muted)",
+  display: "block",
+  marginTop: 2,
+} as const;
 
 const inputStyle = {
   border: "1px solid var(--color-border)",

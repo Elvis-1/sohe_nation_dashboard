@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import {
@@ -15,35 +15,24 @@ export function DashboardAccessGate({
 }>) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useDashboardAuth();
-  const [hasMounted, setHasMounted] = useState(false);
+  const { isAuthenticated, isReady } = useDashboardAuth();
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setHasMounted(true);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted) {
+    if (!isReady) {
       return;
     }
 
     if (!isAuthenticated && pathname !== "/signin") {
       router.replace(hasExpiredDashboardSession() ? "/session-expired" : "/signin");
     }
-  }, [hasMounted, isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isReady, pathname, router]);
 
-  if (!hasMounted) {
+  if (!isReady) {
     return (
       <AppStateMessage
         eyebrow="Dashboard auth"
         title="Checking staff access"
-        description="Restoring the fixture-mode session before the control desk opens."
+        description="Restoring the backend-backed staff session before the control desk opens."
       />
     );
   }

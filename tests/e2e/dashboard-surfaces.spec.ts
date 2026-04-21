@@ -277,6 +277,7 @@ test.describe("dashboard implemented surfaces", () => {
     page,
   }) => {
     await page.goto("/orders/order_soh_2034");
+    await expect(page.getByText("12 Admiralty Way, Lekki Phase 1, Lagos")).toBeVisible();
 
     await page.getByLabel("Fulfillment status").selectOption("fulfilled");
     await page
@@ -295,9 +296,16 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByLabel("Internal note")).toHaveValue(
       "Courier pickup booked for the afternoon dispatch window.",
     );
+    await expect(page.getByText("12 Admiralty Way, Lekki Phase 1, Lagos")).toBeVisible();
 
     await page.goto("/orders");
     await expect(page.locator("article").filter({ hasText: "SOH-2034" })).toBeVisible();
+    await page
+      .locator("article")
+      .filter({ hasText: "SOH-2034" })
+      .getByRole("link", { name: "Open order" })
+      .click();
+    await expect(page.getByText("12 Admiralty Way, Lekki Phase 1, Lagos")).toBeVisible();
   });
 
   test("missing order routes resolve to the order-state fallback instead of a broken detail screen", async ({

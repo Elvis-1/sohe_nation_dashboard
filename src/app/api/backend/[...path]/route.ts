@@ -3,21 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 const INTERNAL_API_BASE_URL =
   process.env.DASHBOARD_API_INTERNAL_BASE_URL ?? "http://localhost:8000/api/v1";
 
-const DEV_DEFAULT_BASIC_USER = "admin";
-const DEV_DEFAULT_BASIC_PASS = "admin123";
-
-function resolveBasicAuthHeader() {
-  const username =
-    process.env.DASHBOARD_API_BASIC_AUTH_USER ?? DEV_DEFAULT_BASIC_USER;
-  const password =
-    process.env.DASHBOARD_API_BASIC_AUTH_PASSWORD ?? DEV_DEFAULT_BASIC_PASS;
-
-  if (!username || !password) return null;
-
-  const token = Buffer.from(`${username}:${password}`).toString("base64");
-  return `Basic ${token}`;
-}
-
 async function proxyRequest(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
@@ -39,14 +24,14 @@ async function proxyRequest(
   const targetUrl = new URL(`${INTERNAL_API_BASE_URL}/${path.join("/")}/`);
   targetUrl.search = request.nextUrl.search;
 
-  const authHeader = resolveBasicAuthHeader();
+  const requestAuthorization = request.headers.get("authorization");
   const requestContentType = request.headers.get("content-type");
 
   const upstreamResponse = await fetch(targetUrl, {
     method: request.method,
     headers: {
       ...(requestContentType ? { "Content-Type": requestContentType } : {}),
-      ...(authHeader ? { Authorization: authHeader } : {}),
+      ...(requestAuthorization ? { Authorization: requestAuthorization } : {}),
     },
     body:
       request.method === "GET" || request.method === "HEAD"
@@ -54,6 +39,12 @@ async function proxyRequest(
         : await request.text(),
     cache: "no-store",
   });
+
+  if ([204, 205, 304].includes(upstreamResponse.status)) {
+    return new NextResponse(null, {
+      status: upstreamResponse.status,
+    });
+  }
 
   const responseText = await upstreamResponse.text();
 

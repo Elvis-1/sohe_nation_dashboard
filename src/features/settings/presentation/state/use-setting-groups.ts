@@ -2,15 +2,24 @@
 
 import { useSyncExternalStore } from "react";
 import {
+  getServerSettingGroupsSnapshot,
+  getSettingsErrorSnapshot,
   getStoredSettingGroupsSnapshot,
-  listSettingGroups,
   subscribeToStoredSettings,
-} from "@/src/features/settings/data/repositories/mock-setting-repository";
+} from "@/src/features/settings/data/repositories/setting-repository";
 
 export function useSettingGroups() {
   return useSyncExternalStore(
     subscribeToStoredSettings,
     getStoredSettingGroupsSnapshot,
-    listSettingGroups,
+    getServerSettingGroupsSnapshot,
+  );
+}
+
+export function useSettingGroupsError() {
+  return useSyncExternalStore(
+    subscribeToStoredSettings,
+    getSettingsErrorSnapshot,
+    () => null,
   );
 }

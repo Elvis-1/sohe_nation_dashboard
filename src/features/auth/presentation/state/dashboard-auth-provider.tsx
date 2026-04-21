@@ -1,28 +1,38 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
-import {
-  createDashboardDemoSession,
-  isValidDashboardDemoCredential,
-  type DashboardSessionRecord,
-} from "@/src/features/auth/data/mock-staff-auth-repository";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const SESSION_STORAGE_KEY = "sohe-dashboard-session";
-const SESSION_CHANGE_EVENT = "sohe-dashboard-session-change";
 const SESSION_EXPIRED_FLAG_KEY = "sohe-dashboard-session-expired";
 
-type DashboardSession = DashboardSessionRecord;
+type DashboardSession = {
+  token: string;
+  email: string;
+  name: string;
+  role: string;
+  isOwner: boolean;
+  expiresAt: number;
+};
+
+type AuthPayload = {
+  token: string;
+  expires_at: string;
+  user: {
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_staff: boolean;
+    is_superuser: boolean;
+  };
+};
 
 type DashboardAuthContextValue = {
+  isReady: boolean;
   isAuthenticated: boolean;
   session: DashboardSession | null;
   signIn: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  signOut: () => void;
+  acceptInvite: (token: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  signOut: () => Promise<void>;
 };
 
 const DashboardAuthContext = createContext<DashboardAuthContextValue | null>(null);
@@ -33,20 +43,17 @@ function readStoredSession(): DashboardSession | null {
   }
 
   const storedValue = window.localStorage.getItem(SESSION_STORAGE_KEY);
-
   if (!storedValue) {
     return null;
   }
 
   try {
     const parsedValue = JSON.parse(storedValue) as DashboardSession;
-
     if (parsedValue.expiresAt <= Date.now()) {
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
       window.localStorage.setItem(SESSION_EXPIRED_FLAG_KEY, "true");
       return null;
     }
-
     return parsedValue;
   } catch {
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
@@ -54,54 +61,17 @@ function readStoredSession(): DashboardSession | null {
   }
 }
 
-let cachedSessionRaw: string | null | undefined;
-let cachedSessionValue: DashboardSession | null | undefined;
+function toDashboardSession(payload: AuthPayload): DashboardSession {
+  const fullName = `${payload.user.first_name} ${payload.user.last_name}`.trim();
 
-function getCachedSessionSnapshot() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const rawValue = window.localStorage.getItem(SESSION_STORAGE_KEY);
-
-  if (rawValue === cachedSessionRaw && cachedSessionValue !== undefined) {
-    return cachedSessionValue;
-  }
-
-  cachedSessionRaw = rawValue;
-  cachedSessionValue = readStoredSession();
-
-  return cachedSessionValue;
-}
-
-function subscribeToSession(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === SESSION_STORAGE_KEY) {
-      onStoreChange();
-    }
+  return {
+    token: payload.token,
+    email: payload.user.email,
+    name: fullName || "Operations Desk",
+    role: payload.user.is_superuser ? "Owner" : payload.user.is_staff ? "Staff Access" : "Restricted",
+    isOwner: payload.user.is_superuser ?? false,
+    expiresAt: new Date(payload.expires_at).getTime(),
   };
-
-  const handleSessionChange = () => {
-    onStoreChange();
-  };
-
-  window.addEventListener("storage", handleStorage);
-  window.addEventListener(SESSION_CHANGE_EVENT, handleSessionChange);
-
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-    window.removeEventListener(SESSION_CHANGE_EVENT, handleSessionChange);
-  };
-}
-
-function dispatchSessionChange() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-  }
 }
 
 export function DashboardAuthProvider({
@@ -109,43 +79,151 @@ export function DashboardAuthProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = useSyncExternalStore(
-    subscribeToSession,
-    getCachedSessionSnapshot,
-    () => null,
-  );
+  const [session, setSession] = useState<DashboardSession | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function restoreSession() {
+      const stored = readStoredSession();
+      if (!stored) {
+        if (isActive) {
+          setIsReady(true);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/backend/auth/staff/session/", {
+          headers: {
+            Authorization: `Bearer ${stored.token}`,
+          },
+        });
+
+        if (!response.ok) {
+          window.localStorage.removeItem(SESSION_STORAGE_KEY);
+          if (isActive) {
+            setSession(null);
+            setIsReady(true);
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as AuthPayload;
+        const nextSession = toDashboardSession(payload);
+        window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
+
+        if (isActive) {
+          setSession(nextSession);
+          setIsReady(true);
+        }
+      } catch {
+        if (isActive) {
+          setSession(stored);
+          setIsReady(true);
+        }
+      }
+    }
+
+    void restoreSession();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   async function signIn(email: string, password: string) {
-    if (!isValidDashboardDemoCredential(email, password)) {
+    const response = await fetch("/api/backend/auth/staff/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ identifier: email, password }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | AuthPayload
+      | { error?: { message?: string } }
+      | null;
+
+    if (!response.ok || !payload || "error" in payload) {
       return {
         ok: false,
-        error: "Use the fixture credentials to enter the dashboard.",
+        error:
+          payload && "error" in payload
+            ? payload.error?.message ?? "Unable to enter the dashboard right now."
+            : "Unable to enter the dashboard right now.",
       };
     }
 
-    const nextSession: DashboardSession = createDashboardDemoSession(email);
-
+    const nextSession = toDashboardSession(payload as AuthPayload);
     window.localStorage.removeItem(SESSION_EXPIRED_FLAG_KEY);
     window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
-    dispatchSessionChange();
+    setSession(nextSession);
+    setIsReady(true);
 
     return { ok: true };
   }
 
-  function signOut() {
+  async function acceptInvite(token: string, password: string) {
+    const response = await fetch("/api/backend/auth/staff/invite/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, password }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as
+      | AuthPayload
+      | { error?: { message?: string } }
+      | null;
+
+    if (!response.ok || !payload || "error" in payload) {
+      return {
+        ok: false,
+        error:
+          payload && "error" in payload
+            ? payload.error?.message ?? "Unable to accept this invite right now."
+            : "Unable to accept this invite right now.",
+      };
+    }
+
+    const nextSession = toDashboardSession(payload as AuthPayload);
+    window.localStorage.removeItem(SESSION_EXPIRED_FLAG_KEY);
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(nextSession));
+    setSession(nextSession);
+    setIsReady(true);
+
+    return { ok: true };
+  }
+
+  async function signOut() {
+    if (session?.token) {
+      await fetch("/api/backend/auth/staff/session/", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      }).catch(() => undefined);
+    }
+
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
     window.localStorage.removeItem(SESSION_EXPIRED_FLAG_KEY);
-    dispatchSessionChange();
+    setSession(null);
   }
 
   const value = useMemo<DashboardAuthContextValue>(
     () => ({
+      isReady,
       isAuthenticated: Boolean(session),
       session,
       signIn,
+      acceptInvite,
       signOut,
     }),
-    [session],
+    [isReady, session],
   );
 
   return (

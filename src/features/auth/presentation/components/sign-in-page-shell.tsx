@@ -3,17 +3,16 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DASHBOARD_DEMO_CREDENTIALS } from "@/src/features/auth/data/mock-staff-auth-repository";
 import { AuthPageFrame } from "@/src/features/auth/presentation/components/auth-page-frame";
 import { useDashboardAuth } from "@/src/features/auth/presentation/state/dashboard-auth-provider";
 
 export function SignInPageShell() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { isAuthenticated, signIn } = useDashboardAuth();
+  const { isAuthenticated, isReady, signIn } = useDashboardAuth();
   const [hasMounted, setHasMounted] = useState(false);
-  const [email, setEmail] = useState<string>(DASHBOARD_DEMO_CREDENTIALS.email);
-  const [password, setPassword] = useState<string>(DASHBOARD_DEMO_CREDENTIALS.password);
+  const [email, setEmail] = useState<string>("admin");
+  const [password, setPassword] = useState<string>("admin123");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,7 +51,7 @@ export function SignInPageShell() {
     <AuthPageFrame
       eyebrow="Staff Access"
       title="Run the line from one desk."
-      description="Products, orders, editorial drops, customer returns, and daily operating signals all move through this fixture-first control room."
+      description="Products, orders, editorial drops, customer returns, and daily operating signals all move through the protected operations desk."
     >
       <div style={{ marginBottom: 24 }}>
         <p
@@ -64,17 +63,16 @@ export function SignInPageShell() {
             textTransform: "uppercase",
           }}
         >
-          Mocked auth
+          Backend auth
         </p>
         <h2 style={{ marginTop: 8, fontSize: 28 }}>Enter the dashboard</h2>
         <p style={{ marginTop: 10, color: "var(--color-text-muted)", lineHeight: 1.6 }}>
-          This phase uses a fixture-mode sign-in handoff. The protected shell and route map
-          are in place for later auth wiring.
+          Sign in against the backend staff auth layer to open the protected operations desk.
         </p>
       </div>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 16 }}>
         <label style={{ display: "grid", gap: 8 }}>
-          <span>Email</span>
+          <span>Email or username</span>
           <input
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -110,13 +108,12 @@ export function SignInPageShell() {
           }}
         >
           <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
-            Demo access:
+            Dev access:
             <br />
-            <code>{DASHBOARD_DEMO_CREDENTIALS.email}</code> /{" "}
-            <code>{DASHBOARD_DEMO_CREDENTIALS.password}</code>
+            <code>admin</code> / <code>admin123</code>
           </span>
           <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
-            {hasMounted ? "Access gate ready" : "Restoring session"}
+            {hasMounted && isReady ? "Access gate ready" : "Restoring session"}
           </span>
         </div>
         {errorMessage ? (
@@ -130,7 +127,7 @@ export function SignInPageShell() {
           </p>
         ) : null}
         <button
-          disabled={isPending || !hasMounted}
+          disabled={isPending || !hasMounted || !isReady}
           type="submit"
           style={{
             marginTop: 8,
@@ -142,8 +139,8 @@ export function SignInPageShell() {
             background: "var(--color-surface-inverse)",
             color: "var(--color-text-inverse)",
             fontWeight: 600,
-            cursor: isPending || !hasMounted ? "wait" : "pointer",
-            opacity: isPending || !hasMounted ? 0.75 : 1,
+            cursor: isPending || !hasMounted || !isReady ? "wait" : "pointer",
+            opacity: isPending || !hasMounted || !isReady ? 0.75 : 1,
           }}
         >
           {isPending ? "Opening dashboard" : "Continue to overview"}

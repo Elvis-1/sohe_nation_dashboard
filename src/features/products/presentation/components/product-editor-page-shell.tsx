@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { useToast } from "@/src/core/ui/toast";
 import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/dashboard";
 import {
   createProductRecord,
@@ -117,13 +118,13 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
 
 export function ProductEditorPageShell({ productId }: ProductEditorPageShellProps) {
   const router = useRouter();
+  const toast = useToast();
   const products = useProductCatalog();
   const product = useMemo(
     () => (productId ? products.find((item) => item.id === productId) ?? null : null),
     [productId, products],
   );
   const [formState, setFormState] = useState<ProductFormState>(() => createFormState(product ?? undefined));
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   if (productId && !product) {
     return (
@@ -246,7 +247,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             };
           }),
         });
-        setStatusMessage("Product changes saved.");
+        toast.success("Product changes saved.");
       } else {
         await createProductRecord({
           slug: formState.slug,
@@ -289,12 +290,12 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             };
           }),
         });
-        setStatusMessage("New product created.");
+        toast.success("New product created.");
       }
       router.push("/products");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Save failed. Please try again.";
-      setStatusMessage(message);
+      toast.error(message);
     }
   }
 
@@ -693,11 +694,6 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
               Cancel
             </Link>
           </div>
-          {statusMessage ? (
-            <p style={{ marginTop: 14, color: "var(--color-success)", lineHeight: 1.5 }}>
-              {statusMessage}
-            </p>
-          ) : null}
         </SectionCard>
       </div>
     </div>

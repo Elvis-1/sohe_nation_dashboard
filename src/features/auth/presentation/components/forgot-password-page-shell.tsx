@@ -11,9 +11,9 @@ export function ForgotPasswordPageShell() {
     >
       <div style={{ display: "grid", gap: 16 }}>
         <p style={{ color: "var(--color-text-muted)", lineHeight: 1.7 }}>
-          For the current fixture phase, password recovery is intentionally non-functional.
-          Staff should use the demo credentials to continue dashboard work until backend auth
-          is introduced.
+          Staff invite acceptance now happens through the secure email link sent from the team desk.
+          A full self-service forgot-password reset flow is still pending, so existing staff should
+          contact the owner if they can no longer access the dashboard.
         </p>
         <div
           style={{

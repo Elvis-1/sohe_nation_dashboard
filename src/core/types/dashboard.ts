@@ -11,6 +11,7 @@ export type DashboardMediaReference = {
   alt: string;
   kind: "image" | "video";
   url: string;
+  posterUrl?: string;
 };
 
 export type ProductVisibility = "draft" | "published" | "scheduled";
@@ -107,6 +108,7 @@ export type ContentVisibility = "draft" | "ready" | "published";
 export type DashboardContentRecord = {
   id: string;
   area: DashboardContentArea;
+  slug?: string;
   title: string;
   visibility: ContentVisibility;
   eyebrow: string;
@@ -114,9 +116,29 @@ export type DashboardContentRecord = {
   body: string;
   callToActionLabel: string;
   callToActionHref: string;
+  secondaryCallToActionLabel?: string;
+  secondaryCallToActionHref?: string;
+  chapterLabel?: string;
+  campaignStatement?: string;
   linkedProductIds: string[];
   mediaReferences: DashboardMediaReference[];
   previewBullets: string[];
+  campaignStats?: Array<{
+    label: string;
+    value: string;
+  }>;
+  modules?: Array<{
+    title: string;
+    body: string;
+  }>;
+  hotspots?: Array<{
+    id: string;
+    label: string;
+    productSlug: string;
+    top: string;
+    left: string;
+    note: string;
+  }>;
   summary: string;
 };
 
@@ -159,6 +181,65 @@ export type DashboardSettingGroup = {
   title: string;
   description: string;
   fields: DashboardSettingField[];
+};
+
+export type StaffRole = "owner" | "admin" | "editor" | "operations" | "support";
+
+export type DashboardStaffMember = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: StaffRole;
+  isActive: boolean;
+  isOwner: boolean;
+  createdAt: string;
+  auditLog?: Array<{
+    action: string;
+    performedByEmail: string;
+    metadata: Record<string, string>;
+    createdAt: string;
+  }>;
+};
+
+export type NotificationDeliveryStatus = "pending" | "sent" | "failed";
+
+export type DashboardNotificationLog = {
+  id: string;
+  retryOfId?: string;
+  eventType: string;
+  recipientEmail: string;
+  subject: string;
+  backendName: string;
+  status: NotificationDeliveryStatus;
+  attemptNumber: number;
+  sentAt?: string | null;
+  lastAttemptedAt?: string | null;
+  providerResponse: string;
+  errorMessage: string;
+  canRetry: boolean;
+  createdAt: string;
+};
+
+export type DashboardNotificationProviderStatus = {
+  backendName: string;
+  deliveryMode: "live" | "local";
+  isLiveBackend: boolean;
+  isConfigured: boolean;
+  host: string;
+  port: number;
+  hostUserMasked: string;
+  useTls: boolean;
+  defaultFromEmail: string;
+  notes: string;
+};
+
+export type DashboardNotificationProviderTestResult = {
+  recipientEmail: string;
+  sentCount: number;
+  backendName: string;
+  deliveryMode: "live" | "local";
+  defaultFromEmail: string;
 };
 
 export type OverviewMetric = {

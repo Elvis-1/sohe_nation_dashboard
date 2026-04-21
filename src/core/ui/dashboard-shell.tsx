@@ -101,7 +101,7 @@ export function DashboardShell({
           type="button"
         >
           <strong style={{ display: "block", marginBottom: 4 }}>Sign out</strong>
-          <span className="dashboard-signout-copy">Exit the mocked dashboard session.</span>
+          <span className="dashboard-signout-copy">Exit the current dashboard session.</span>
         </button>
       </aside>
       <main className="dashboard-main">
@@ -119,7 +119,7 @@ export function DashboardShell({
                 <span className="dashboard-pill-copy">{activeItem?.label ?? "Control Desk"}</span>
               </button>
               <div className="dashboard-status-pill">
-                <span className="dashboard-pill-copy">Fixture mode active</span>
+                <span className="dashboard-pill-copy">Session active</span>
                 <strong>{session?.role ?? "Staff Access"}</strong>
               </div>
               <div className="dashboard-status-pill dashboard-status-pill--warm">

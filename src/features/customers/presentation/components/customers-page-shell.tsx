@@ -5,43 +5,33 @@ import { useMemo, useState } from "react";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import { listCustomers } from "@/src/features/customers/data/repositories/mock-customer-repository";
+import {
+  refreshCustomers,
+  useCustomerList,
+  useCustomerListError,
+  useCustomerListLoading,
+} from "@/src/features/customers/presentation/state/use-customer-list";
 
-const subtleLinkStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "var(--radius-pill)",
-  padding: "14px 18px",
-  border: "1px solid var(--color-border)",
-  background: "rgba(255, 253, 248, 0.82)",
-  color: "var(--color-text)",
-  fontWeight: 600,
-} as const;
-
-const primaryLinkStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "var(--radius-pill)",
-  padding: "14px 18px",
-  background: "var(--color-surface-inverse)",
-  color: "var(--color-text-inverse)",
-  fontWeight: 600,
-} as const;
+const REGIONS = [
+  { value: "", label: "All regions" },
+  { value: "NG", label: "Nigeria (NG)" },
+  { value: "US", label: "United States (US)" },
+  { value: "GB", label: "United Kingdom (GB)" },
+  { value: "EU", label: "European Union (EU)" },
+];
 
 export function CustomersPageShell() {
-  const customers = listCustomers();
+  const customers = useCustomerList();
+  const loadError = useCustomerListError();
+  const isLoading = useCustomerListLoading();
   const [query, setQuery] = useState("");
+  const [region, setRegion] = useState("");
 
   const filteredCustomers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-
     return customers.filter((customer) => {
-      if (normalizedQuery.length === 0) {
-        return true;
-      }
-
+      if (region && customer.defaultRegion !== region) return false;
+      if (!normalizedQuery) return true;
       return (
         customer.id.toLowerCase().includes(normalizedQuery) ||
         customer.email.toLowerCase().includes(normalizedQuery) ||
@@ -49,7 +39,7 @@ export function CustomersPageShell() {
         customer.lastName.toLowerCase().includes(normalizedQuery)
       );
     });
-  }, [customers, query]);
+  }, [customers, query, region]);
 
   return (
     <div>
@@ -67,22 +57,47 @@ export function CustomersPageShell() {
         title="Customer list"
         description="Look up a customer by name, email, or customer ID before opening the full record."
       >
-        <label style={{ display: "grid", gap: 8, marginBottom: 18 }}>
-          <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>Search customers</span>
-          <input
-            aria-label="Search customers"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name, email, or customer ID"
-            style={inputStyle}
-            value={query}
-          />
-        </label>
+        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr auto", marginBottom: 18 }}>
+          <label style={{ display: "grid", gap: 8 }}>
+            <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>Search customers</span>
+            <input
+              aria-label="Search customers"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by name, email, or customer ID"
+              style={inputStyle}
+              value={query}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 8 }}>
+            <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>Region</span>
+            <select
+              aria-label="Filter by region"
+              onChange={(event) => setRegion(event.target.value)}
+              style={{ ...inputStyle, minWidth: 180 }}
+              value={region}
+            >
+              {REGIONS.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-        {customers.length === 0 ? (
+        {loadError ? (
           <EmptyStatePanel
             eyebrow="Customers"
-            title="No customer records are linked yet."
-            description="Account fixtures will populate this surface once customer, order, and return relationships are staged."
+            title="Customer records could not be loaded."
+            description={`The dashboard could not reach customer data: ${loadError}`}
+            actionLabel="Retry loading customers"
+            actionHref="/customers"
+          />
+        ) : isLoading ? (
+          <p style={{ color: "var(--color-text-muted)" }}>Loading customer records...</p>
+        ) : customers.length === 0 ? (
+          <EmptyStatePanel
+            eyebrow="Customers"
+            title="No customer records yet."
+            description="Customer records are created when a customer account is registered, signs in, or saves an address. If this looks wrong, retry loading."
             actionHref="/"
             actionLabel="Return to overview"
           />
@@ -90,7 +105,7 @@ export function CustomersPageShell() {
           <EmptyStatePanel
             eyebrow="Customers"
             title="No customer records match the current search."
-            description="Adjust the current customer lookup to review more of the fixture directory."
+            description="Adjust the search to find the customer you are looking for."
             actionHref="/customers"
             actionLabel="Reset customer search"
           />
@@ -167,6 +182,17 @@ export function CustomersPageShell() {
             ))}
           </div>
         )}
+        {loadError ? (
+          <div style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={refreshCustomers}
+              style={retryButtonStyle}
+            >
+              Retry now
+            </button>
+          </div>
+        ) : null}
       </SectionCard>
     </div>
   );
@@ -177,4 +203,40 @@ const inputStyle = {
   borderRadius: 16,
   padding: "14px 16px",
   background: "var(--color-surface)",
+} as const;
+
+const subtleLinkStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "var(--radius-pill)",
+  padding: "14px 18px",
+  border: "1px solid var(--color-border)",
+  background: "rgba(255, 253, 248, 0.82)",
+  color: "var(--color-text)",
+  fontWeight: 600,
+} as const;
+
+const primaryLinkStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "var(--radius-pill)",
+  padding: "14px 18px",
+  background: "var(--color-surface-inverse)",
+  color: "var(--color-text-inverse)",
+  fontWeight: 600,
+} as const;
+
+const retryButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid var(--color-border)",
+  borderRadius: "var(--radius-pill)",
+  padding: "12px 16px",
+  background: "rgba(255, 253, 248, 0.82)",
+  color: "var(--color-text)",
+  fontWeight: 600,
+  cursor: "pointer",
 } as const;

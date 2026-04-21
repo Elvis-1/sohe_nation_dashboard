@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { useToast } from "@/src/core/ui/toast";
 import type { DashboardSettingGroup } from "@/src/core/types/dashboard";
-import { updateSettingGroups } from "@/src/features/settings/data/repositories/mock-setting-repository";
-import { useSettingGroups } from "@/src/features/settings/presentation/state/use-setting-groups";
+import { updateSettingGroups } from "@/src/features/settings/data/repositories/setting-repository";
+import {
+  useSettingGroups,
+  useSettingGroupsError,
+} from "@/src/features/settings/presentation/state/use-setting-groups";
 
 const subtleLinkStyle = {
   display: "inline-flex",
@@ -35,9 +40,10 @@ const primaryButtonStyle = {
 } as const;
 
 export function SettingsPageShell() {
+  const toast = useToast();
   const settingGroups = useSettingGroups();
+  const settingGroupsError = useSettingGroupsError();
   const [draftGroups, setDraftGroups] = useState<DashboardSettingGroup[]>(settingGroups);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setDraftGroups(settingGroups);
@@ -58,9 +64,24 @@ export function SettingsPageShell() {
     );
   }
 
-  function handleSave() {
-    updateSettingGroups(draftGroups);
-    setSaveMessage("Settings changes saved to the mocked control desk.");
+  async function handleSave() {
+    try {
+      await updateSettingGroups(draftGroups);
+      toast.success("Settings changes saved.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "The settings API update failed.");
+    }
+  }
+
+  if (settingGroupsError) {
+    return (
+      <AppStateMessage
+        eyebrow="Settings"
+        title="The settings desk could not load."
+        description={`The dashboard could not read grouped settings from the API. ${settingGroupsError.message}`}
+        action={<Link href="/">Return to overview</Link>}
+      />
+    );
   }
 
   if (settingGroups.length === 0) {
@@ -68,8 +89,8 @@ export function SettingsPageShell() {
       <div>
         <PageHeader
           eyebrow="Settings"
-          title="Operational defaults before live wiring."
-          description="The settings area stays intentionally lean in the MVP phase: enough structure for payments, shipping, store profile, and staff access placeholders without overbuilding config systems."
+          title="Operational defaults with live API backing."
+          description="The settings area stays intentionally lean in the MVP phase: enough structure for payments, shipping, store profile, and staff access placeholders once the API bootstrap runs."
         />
         <EmptyStatePanel
           eyebrow="Settings"
@@ -86,8 +107,8 @@ export function SettingsPageShell() {
     <div>
       <PageHeader
         eyebrow="Settings"
-        title="Operational defaults before live wiring."
-        description="Review grouped settings, update fixture-backed placeholders, and save the defaults the dashboard will carry into later API work."
+        title="Operational defaults with live API backing."
+        description="Review grouped settings, update API-backed defaults, and save the operational values the dashboard will carry into later integration work."
         actions={
           <Link href="/" style={subtleLinkStyle}>
             Return to overview
@@ -133,12 +154,6 @@ export function SettingsPageShell() {
             Save settings
           </button>
         </div>
-
-        {saveMessage ? (
-          <p style={{ marginTop: 14, color: "var(--color-success)", lineHeight: 1.5 }}>
-            {saveMessage}
-          </p>
-        ) : null}
       </SectionCard>
     </div>
   );

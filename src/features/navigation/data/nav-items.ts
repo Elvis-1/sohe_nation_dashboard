@@ -34,4 +34,14 @@ export const navItems = [
     label: "Settings",
     description: "Store defaults for payments, shipping, and staff access.",
   },
+  {
+    href: "/notifications",
+    label: "Notifications",
+    description: "Inspect email delivery attempts, failures, and retry activity.",
+  },
+  {
+    href: "/team",
+    label: "Team",
+    description: "Manage staff accounts, roles, and access control.",
+  },
 ];

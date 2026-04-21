@@ -5,6 +5,7 @@ import Link from "next/link";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { useContentDesk } from "@/src/features/content/presentation/state/use-content-desk";
 import {
   subscribeToStoredOrders,
   getStoredOrdersSnapshot,
@@ -20,7 +21,6 @@ import {
   getStoredReturnsSnapshot,
   getServerReturnsSnapshot,
 } from "@/src/features/returns/data/repositories/return-repository";
-import { quickActions } from "@/src/features/overview/data/mock-overview";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -67,6 +67,7 @@ export function OverviewPageShell() {
     getStoredReturnsSnapshot,
     getServerReturnsSnapshot,
   );
+  const allContent = useContentDesk();
 
   const recentOrders = useMemo(() => allOrders.slice(0, 3), [allOrders]);
   const lowStockProducts = useMemo(
@@ -89,6 +90,39 @@ export function OverviewPageShell() {
   const totalRevenue = useMemo(
     () => allOrders.reduce((sum, o) => sum + o.total.amount, 0),
     [allOrders],
+  );
+  const publishedContentCount = useMemo(
+    () => allContent.filter((entry) => entry.visibility === "published").length,
+    [allContent],
+  );
+  const quickActions = useMemo(
+    () => [
+      {
+        label: "Review returns queue",
+        description:
+          returnQueue.length > 0
+            ? `${returnQueue.length} customer request${returnQueue.length === 1 ? "" : "s"} need attention.`
+            : "No returns are pending right now, but the queue is ready for the next request.",
+        href: "/returns",
+      },
+      {
+        label: "Restock low inventory",
+        description:
+          lowStockProducts.length > 0
+            ? `${lowStockProducts.length} SKU${lowStockProducts.length === 1 ? "" : "s"} are at or below the stock threshold.`
+            : "Catalog inventory is currently above the low-stock threshold.",
+        href: "/products",
+      },
+      {
+        label: "Review live content",
+        description:
+          publishedContentCount > 0
+            ? `${publishedContentCount} content record${publishedContentCount === 1 ? "" : "s"} are published to storefront surfaces.`
+            : "No content records are published yet. Review draft and ready states in the content desk.",
+        href: "/content",
+      },
+    ],
+    [lowStockProducts.length, publishedContentCount, returnQueue.length],
   );
 
   const liveMetrics = [
@@ -135,7 +169,7 @@ export function OverviewPageShell() {
       title: "Content",
       description: "Homepage, stories, and merchandising spotlight management.",
       href: "/content",
-      stat: "Not yet wired to API",
+      stat: `${publishedContentCount} published · ${allContent.length} total`,
     },
     {
       title: "Returns",
@@ -255,7 +289,7 @@ export function OverviewPageShell() {
         {quickActions.map((action) => (
           <SectionCard key={action.label} title={action.label} description={action.description}>
             <Link href={action.href} style={lightPillStyle}>
-              Open module
+              Open desk
             </Link>
           </SectionCard>
         ))}

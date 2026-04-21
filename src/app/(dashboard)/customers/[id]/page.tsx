@@ -2,10 +2,7 @@ import { CustomerDetailPageShell } from "@/src/features/customers/presentation/c
 
 export default async function CustomerDetailPage({
   params,
-}: Readonly<{
-  params: Promise<{ id: string }>;
-}>) {
+}: Readonly<{ params: Promise<{ id: string }> }>) {
   const { id } = await params;
-
   return <CustomerDetailPageShell customerId={id} />;
 }
