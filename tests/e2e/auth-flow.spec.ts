@@ -1,13 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const demoEmail = "ops@sohesnation.com";
-const demoPassword = "dashboard-demo";
+const demoEmail = "admin";
+const demoPassword = "admin123";
 const sessionStorageKey = "sohe-dashboard-session";
 const expiredSessionFlagKey = "sohe-dashboard-session-expired";
 
 async function signIn(page: Page) {
   await page.goto("/signin");
-  await page.getByLabel("Email").fill(demoEmail);
+  await page.getByLabel("Email or username").fill(demoEmail);
   await page.getByLabel("Password").fill(demoPassword);
   await page.getByRole("button", { name: "Continue to overview" }).click();
   await expect(page).toHaveURL("/");
@@ -19,7 +19,7 @@ test.describe("dashboard phase 1 auth flow", () => {
 
     await expect(page.getByRole("heading", { name: "Enter the dashboard" })).toBeVisible();
 
-    await page.getByLabel("Email").fill(demoEmail);
+    await page.getByLabel("Email or username").fill(demoEmail);
     await page.getByLabel("Password").fill(demoPassword);
     await page.getByRole("button", { name: "Continue to overview" }).click();
 
@@ -32,12 +32,12 @@ test.describe("dashboard phase 1 auth flow", () => {
   }) => {
     await page.goto("/signin");
 
-    await page.getByLabel("Email").fill("wrong@example.com");
+    await page.getByLabel("Email or username").fill("wrong@example.com");
     await page.getByLabel("Password").fill("not-the-password");
     await page.getByRole("button", { name: "Continue to overview" }).click();
 
     await expect(page).toHaveURL("/signin");
-    await expect(page.getByText("Use the fixture credentials to enter the dashboard.")).toBeVisible();
+    await expect(page.getByText("Invalid credentials.")).toBeVisible();
   });
 
   test("signed-out staff are redirected away from protected routes", async ({ page }) => {
@@ -90,14 +90,28 @@ test.describe("dashboard phase 1 auth flow", () => {
     await expect(page.getByRole("heading", { name: "Enter the dashboard" })).toBeVisible();
   });
 
-  test("forgot-password placeholder remains accessible to signed-out staff", async ({ page }) => {
+  test("forgot-password sends a generic recovery message", async ({ page }) => {
+    await page.route("**/api/backend/auth/staff/password-reset/request/", async (route) => {
+      await route.fulfill({
+        status: 202,
+        contentType: "application/json",
+        body: JSON.stringify({
+          message: "If a staff account exists for this identifier, a secure reset link has been sent.",
+        }),
+      });
+    });
+
     await page.goto("/forgot-password");
+    await page.getByLabel("Email or username").fill("ops@sohesnation.com");
+    await page.getByRole("button", { name: "Send reset link" }).click();
 
     await expect(page).toHaveURL("/forgot-password");
     await expect(
-      page.getByRole("heading", { name: "Reset flow placeholder for dashboard access." }),
+      page.getByRole("heading", { name: "Request a secure dashboard reset link." }),
     ).toBeVisible();
-    await expect(page.getByText("password recovery is intentionally non-functional")).toBeVisible();
+    await expect(
+      page.getByText("If a staff account exists for this identifier, a secure reset link has been sent."),
+    ).toBeVisible();
   });
 
   test("session-expired screen lets staff re-enter through sign in", async ({ page }) => {

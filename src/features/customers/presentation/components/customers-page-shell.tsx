@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
@@ -26,6 +26,10 @@ export function CustomersPageShell() {
   const isLoading = useCustomerListLoading();
   const [query, setQuery] = useState("");
   const [region, setRegion] = useState("");
+
+  useEffect(() => {
+    refreshCustomers();
+  }, []);
 
   const filteredCustomers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
