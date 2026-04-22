@@ -535,37 +535,52 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 display: "grid",
                 gap: 14,
                 gridColumn: "1 / -1",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
                 border: "1px solid var(--color-border)",
                 borderRadius: 16,
                 padding: "12px 14px",
                 background: "rgba(255, 253, 248, 0.52)",
               }}
             >
-              <label style={{ display: "grid", gap: 8 }}>
-                <span>Upload primary media</span>
-                <input
-                  aria-label="Upload product media"
-                  accept="image/*,video/*"
-                  disabled={isUploadingMedia}
-                  onChange={handlePrimaryMediaUpload}
-                  style={inputStyle}
-                  type="file"
-                />
-                <small style={{ opacity: 0.7 }}>
-                  {isUploadingMedia ? "Uploading to cloud storage..." : "Upload file and we auto-fill the URL."}
-                </small>
-              </label>
-              <label style={{ display: "grid", gap: 8 }}>
-                <span>Primary media URL (auto-generated)</span>
-                <input
-                  aria-label="Primary media URL"
-                  readOnly
-                  style={{ ...inputStyle, background: "rgba(238, 235, 228, 0.45)", color: "rgba(36, 31, 22, 0.82)" }}
-                  value={formState.primaryMediaUrl}
-                />
-              </label>
-              <label style={{ display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 14,
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  alignItems: "start",
+                }}
+              >
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Upload primary media</span>
+                  <input
+                    aria-label="Upload product media"
+                    accept="image/*,video/*"
+                    disabled={isUploadingMedia}
+                    onChange={handlePrimaryMediaUpload}
+                    style={fileInputStyle}
+                    type="file"
+                  />
+                  <small style={{ opacity: 0.7 }}>
+                    {isUploadingMedia ? "Uploading to cloud storage..." : "Upload file and we auto-fill the URL."}
+                  </small>
+                </label>
+                <label style={{ display: "grid", gap: 8 }}>
+                  <span>Primary media URL (auto-generated)</span>
+                  <input
+                    aria-label="Primary media URL"
+                    disabled
+                    readOnly
+                    style={{
+                      ...inputStyle,
+                      opacity: 1,
+                      background: "rgba(238, 235, 228, 0.65)",
+                      color: "rgba(36, 31, 22, 0.82)",
+                      cursor: "not-allowed",
+                    }}
+                    value={formState.primaryMediaUrl}
+                  />
+                </label>
+              </div>
+              <label style={{ display: "grid", gap: 8, gridColumn: "1 / -1" }}>
                 <span>Primary media alt</span>
                 <input
                   aria-label="Primary media alt"
@@ -791,6 +806,14 @@ const inputStyle = {
   borderRadius: 16,
   padding: "14px 16px",
   background: "var(--color-surface)",
+} as const;
+
+const fileInputStyle = {
+  border: "1px solid var(--color-border)",
+  borderRadius: 16,
+  padding: "10px 12px",
+  background: "var(--color-surface)",
+  minHeight: 52,
 } as const;
 
 const textareaStyle = {
