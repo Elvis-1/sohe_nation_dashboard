@@ -94,7 +94,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     audience: "unisex",
     defaultRegion: "NG",
     regionAvailability: ["NG"],
-    visibility: "draft",
+    visibility: "published",
     primaryMediaUrl: "",
     primaryMediaAlt: "",
     campaignNote: "",
