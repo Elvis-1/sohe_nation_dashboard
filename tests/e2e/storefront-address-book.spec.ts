@@ -143,6 +143,22 @@ test.describe("storefront address capture and address book", () => {
         }),
       });
     });
+    await page.route(`${API_BASE}/checkout/sessions/`, async (route) => {
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "chk_mock_1",
+          order_id: "00000000-0000-0000-0000-000000000001",
+          provider: "paypal",
+          status: "pending_redirect",
+          region: "NG",
+          currency: "NGN",
+          approvalUrl: "",
+          providerStatus: "pending",
+        }),
+      });
+    });
 
     await page.goto("/checkout");
     await page.getByPlaceholder("Recipient name").fill("Customer Person");

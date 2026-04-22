@@ -17,7 +17,7 @@ import {
 import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
 
 const STOREFRONT_URL =
-  process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "http://localhost:3000";
+  process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "https://sohenation.com";
 
 type ContentEditorPageShellProps = {
   routeKey: "homepage" | "stories";
