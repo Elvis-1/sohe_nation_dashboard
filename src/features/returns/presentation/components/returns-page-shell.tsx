@@ -75,7 +75,7 @@ export function ReturnsPageShell() {
             display: "grid",
             gap: 12,
             marginBottom: 18,
-            gridTemplateColumns: "1.4fr 0.8fr",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           }}
         >
           <label style={{ display: "grid", gap: 8 }}>

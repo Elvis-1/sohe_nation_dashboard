@@ -155,7 +155,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
                 key={line.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1.2fr 0.8fr 0.5fr 0.7fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                   gap: 12,
                   border: "1px solid var(--color-border)",
                   borderRadius: 18,

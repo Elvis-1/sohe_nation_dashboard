@@ -61,7 +61,14 @@ export function CustomersPageShell() {
         title="Customer list"
         description="Look up a customer by name, email, or customer ID before opening the full record."
       >
-        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr auto", marginBottom: 18 }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 12,
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            marginBottom: 18,
+          }}
+        >
           <label style={{ display: "grid", gap: 8 }}>
             <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>Search customers</span>
             <input
@@ -77,7 +84,7 @@ export function CustomersPageShell() {
             <select
               aria-label="Filter by region"
               onChange={(event) => setRegion(event.target.value)}
-              style={{ ...inputStyle, minWidth: 180 }}
+              style={inputStyle}
               value={region}
             >
               {REGIONS.map((r) => (

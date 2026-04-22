@@ -220,7 +220,13 @@ export function TeamPageShell() {
                 <p style={{ margin: 0, fontSize: 13, color: "var(--color-text-muted)" }}>
                   The new staff member will receive a secure email link to create their password and enter the dashboard.
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                    gap: 12,
+                  }}
+                >
                   <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
                     First name
                     <input
@@ -267,7 +273,7 @@ export function TeamPageShell() {
                   </label>
                   <RolePermissionsLegend activeRole={inviteRole} />
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <button onClick={handleInvite} style={primaryButton} disabled={submitting}>
                     {submitting ? "Adding…" : "Add member"}
                   </button>
