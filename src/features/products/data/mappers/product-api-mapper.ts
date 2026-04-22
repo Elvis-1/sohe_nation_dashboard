@@ -65,6 +65,7 @@ export type ApiProductRecord = {
   compare_at_price: ApiMoney | null;
   inventory_quantity: number;
   primary_media: ApiMedia | null;
+  shipping?: ApiMoney | null;
   narrative?: ApiNarrative;
   variants: ApiVariant[];
   badge?: string;
@@ -154,6 +155,7 @@ export function mapApiProductToRecord(api: ApiProductRecord): DashboardProductRe
     compareAtPrice: api.compare_at_price ? mapMoney(api.compare_at_price) : undefined,
     inventoryQuantity: api.inventory_quantity,
     primaryMedia: api.primary_media ? mapMedia(api.primary_media) : fallbackMedia,
+    shipping: api.shipping ? mapMoney(api.shipping) : fallbackMoney,
     narrative: mapNarrative(api.narrative ?? null),
     variants: api.variants.map(mapVariant),
   };

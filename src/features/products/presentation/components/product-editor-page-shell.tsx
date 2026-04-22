@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
@@ -12,6 +12,7 @@ import {
   createProductRecord,
   updateProductRecord,
 } from "@/src/features/products/data/repositories/product-repository";
+import { uploadDashboardCatalogMedia } from "@/src/features/products/data/api/product-api-client";
 import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
 
 type ProductEditorPageShellProps = {
@@ -38,6 +39,8 @@ type ProductFormState = {
   audience: DashboardProductRecord["audience"];
   defaultRegion: ProductRegion;
   regionAvailability: ProductRegion[];
+  shippingAmount: string;
+  shippingCurrency: "NGN" | "USD" | "GBP" | "EUR";
   visibility: DashboardProductRecord["visibility"];
   primaryMediaUrl: string;
   primaryMediaAlt: string;
@@ -62,6 +65,8 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       audience: product.audience,
       defaultRegion: product.defaultRegion,
       regionAvailability: product.regionAvailability,
+      shippingAmount: String(product.shipping?.amount ?? 0),
+      shippingCurrency: product.shipping?.currency ?? "NGN",
       visibility: product.visibility,
       primaryMediaUrl: product.primaryMedia.url,
       primaryMediaAlt: product.primaryMedia.alt,
@@ -94,6 +99,8 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     audience: "unisex",
     defaultRegion: "NG",
     regionAvailability: ["NG"],
+    shippingAmount: "0",
+    shippingCurrency: "NGN",
     visibility: "published",
     primaryMediaUrl: "",
     primaryMediaAlt: "",
@@ -125,6 +132,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
     [productId, products],
   );
   const [formState, setFormState] = useState<ProductFormState>(() => createFormState(product ?? undefined));
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   if (productId && !product) {
     return (
@@ -211,6 +219,8 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           category: formState.category,
           default_region: formState.defaultRegion,
           region_availability: formState.regionAvailability,
+          shipping_amount: Number(formState.shippingAmount) || 0,
+          shipping_currency: formState.shippingCurrency,
           visibility: resolvedVisibility,
           narrative: {
             campaign_note: formState.campaignNote,
@@ -257,6 +267,8 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           category: formState.category,
           default_region: formState.defaultRegion,
           region_availability: formState.regionAvailability,
+          shipping_amount: Number(formState.shippingAmount) || 0,
+          shipping_currency: formState.shippingCurrency,
           visibility: resolvedVisibility,
           media: formState.primaryMediaUrl
             ? [
@@ -296,6 +308,27 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
     } catch (err) {
       const message = err instanceof Error ? err.message : "Save failed. Please try again.";
       toast.error(message);
+    }
+  }
+
+  async function handlePrimaryMediaUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      const uploaded = await uploadDashboardCatalogMedia(file);
+      updateField("primaryMediaUrl", uploaded.url);
+      if (!formState.primaryMediaAlt.trim()) {
+        updateField("primaryMediaAlt", formState.title ? `${formState.title} image` : uploaded.original_filename);
+      }
+      toast.success("Media uploaded and linked.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Media upload failed.";
+      toast.error(message);
+    } finally {
+      setIsUploadingMedia(false);
+      event.target.value = "";
     }
   }
 
@@ -447,6 +480,32 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 ))}
               </select>
             </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Shipping amount</span>
+              <input
+                aria-label="Product shipping amount"
+                inputMode="decimal"
+                onChange={(event) => updateField("shippingAmount", event.target.value)}
+                style={inputStyle}
+                value={formState.shippingAmount}
+              />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Shipping currency</span>
+              <select
+                aria-label="Product shipping currency"
+                onChange={(event) =>
+                  updateField("shippingCurrency", event.target.value as ProductFormState["shippingCurrency"])
+                }
+                style={inputStyle}
+                value={formState.shippingCurrency}
+              >
+                <option value="NGN">NGN</option>
+                <option value="USD">USD</option>
+                <option value="GBP">GBP</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </label>
             <fieldset
               style={{
                 border: "1px solid var(--color-border)",
@@ -479,6 +538,20 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 style={inputStyle}
                 value={formState.primaryMediaUrl}
               />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>Upload primary media</span>
+              <input
+                aria-label="Upload product media"
+                accept="image/*,video/*"
+                disabled={isUploadingMedia}
+                onChange={handlePrimaryMediaUpload}
+                style={inputStyle}
+                type="file"
+              />
+              <small style={{ opacity: 0.7 }}>
+                {isUploadingMedia ? "Uploading to cloud storage..." : "Upload file and we auto-fill the URL."}
+              </small>
             </label>
             <label style={{ display: "grid", gap: 8 }}>
               <span>Primary media alt</span>

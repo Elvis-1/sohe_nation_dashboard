@@ -70,6 +70,8 @@ type CreateProductPayload = {
   visibility?: DashboardProductRecord["visibility"];
   default_region?: string;
   region_availability?: string[];
+  shipping_amount?: number;
+  shipping_currency?: string;
   media?: Array<{
     alt: string;
     kind: "image" | "video";
@@ -144,6 +146,8 @@ type UpdateProductPayload = Partial<{
   visibility: DashboardProductRecord["visibility"];
   default_region: string;
   region_availability: string[];
+  shipping_amount: number;
+  shipping_currency: string;
   narrative: {
     campaign_note?: string;
     fit_guidance?: string;
@@ -163,4 +167,27 @@ export async function updateDashboardProduct(
     body: payload,
   });
   return mapApiProductToRecord(data);
+}
+
+type UploadCatalogMediaResponse = {
+  url: string;
+  kind: "image" | "video";
+  original_filename: string;
+  public_id: string;
+  width?: number;
+  height?: number;
+  bytes?: number;
+  format?: string;
+};
+
+export async function uploadDashboardCatalogMedia(
+  file: File,
+): Promise<UploadCatalogMediaResponse> {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  return apiRequest<UploadCatalogMediaResponse>("/dashboard/catalog/media/upload", {
+    method: "POST",
+    body: formData,
+  });
 }

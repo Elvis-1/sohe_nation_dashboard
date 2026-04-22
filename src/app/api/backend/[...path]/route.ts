@@ -26,17 +26,20 @@ async function proxyRequest(
 
   const requestAuthorization = request.headers.get("authorization");
   const requestContentType = request.headers.get("content-type");
+  const requestAccept = request.headers.get("accept");
+  const requestBody =
+    request.method === "GET" || request.method === "HEAD"
+      ? undefined
+      : Buffer.from(await request.arrayBuffer());
 
   const upstreamResponse = await fetch(targetUrl, {
     method: request.method,
     headers: {
       ...(requestContentType ? { "Content-Type": requestContentType } : {}),
+      ...(requestAccept ? { Accept: requestAccept } : {}),
       ...(requestAuthorization ? { Authorization: requestAuthorization } : {}),
     },
-    body:
-      request.method === "GET" || request.method === "HEAD"
-        ? undefined
-        : await request.text(),
+    body: requestBody,
     cache: "no-store",
   });
 

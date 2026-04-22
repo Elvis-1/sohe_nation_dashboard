@@ -23,6 +23,7 @@ export class ApiError extends Error {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
   const authHeaders: Record<string, string> = {};
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
   if (typeof window !== "undefined") {
     try {
@@ -42,14 +43,21 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     method,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
       ...authHeaders,
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body:
+      body === undefined
+        ? undefined
+        : isFormData
+          ? body
+          : JSON.stringify(body),
   });
-
-  const json = await response.json().catch(() => null);
+  const contentType = response.headers.get("content-type") ?? "";
+  const json = contentType.includes("application/json")
+    ? await response.json().catch(() => null)
+    : null;
 
   if (!response.ok) {
     const errorPayload = json?.error ?? {};
@@ -60,5 +68,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     );
   }
 
-  return json as T;
+  if (json !== null) {
+    return json as T;
+  }
+
+  return (await response.text()) as T;
 }

@@ -51,6 +51,7 @@ export type DashboardProductRecord = {
   compareAtPrice?: Money;
   inventoryQuantity: number;
   primaryMedia: DashboardMediaReference;
+  shipping?: Money;
   narrative?: {
     campaignNote: string;
     fitGuidance: string;
