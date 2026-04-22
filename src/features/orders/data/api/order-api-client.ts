@@ -63,3 +63,8 @@ export async function updateDashboardOrder(
   return mapApiOrderToRecord(data);
 }
 
+export async function archiveDashboardOrder(orderId: string): Promise<void> {
+  await apiRequest<void>(`${BASE}/${orderId}`, {
+    method: "DELETE",
+  });
+}

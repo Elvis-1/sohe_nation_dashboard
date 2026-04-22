@@ -169,6 +169,12 @@ export async function updateDashboardProduct(
   return mapApiProductToRecord(data);
 }
 
+export async function archiveDashboardProduct(productId: string): Promise<void> {
+  await apiRequest<void>(`${BASE}/${productId}`, {
+    method: "DELETE",
+  });
+}
+
 type UploadCatalogMediaResponse = {
   url: string;
   kind: "image" | "video";

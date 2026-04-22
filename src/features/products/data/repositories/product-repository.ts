@@ -12,6 +12,7 @@ import {
   fetchDashboardProduct,
   createDashboardProduct,
   updateDashboardProduct,
+  archiveDashboardProduct,
 } from "@/src/features/products/data/api/product-api-client";
 
 // ---------------------------------------------------------------------------
@@ -132,4 +133,9 @@ export async function updateProductRecord(
   const product = await updateDashboardProduct(productId, payload);
   invalidate();
   return product;
+}
+
+export async function archiveProductRecord(productId: string): Promise<void> {
+  await archiveDashboardProduct(productId);
+  invalidate();
 }

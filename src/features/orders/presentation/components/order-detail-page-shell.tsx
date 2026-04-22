@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
@@ -9,6 +10,7 @@ import { useToast } from "@/src/core/ui/toast";
 import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
 import { ApiError } from "@/src/core/api/http-client";
 import {
+  archiveOrderRecord,
   updateOrderRecord,
 } from "@/src/features/orders/data/repositories/order-repository";
 import { useOrderDesk } from "@/src/features/orders/presentation/state/use-order-desk";
@@ -18,6 +20,7 @@ type OrderDetailPageShellProps = {
 };
 
 export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
+  const router = useRouter();
   const orders = useOrderDesk();
   const order = useMemo(
     () => orders.find((item) => item.id === orderId) ?? null,
@@ -27,6 +30,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
   const [status, setStatus] = useState<DashboardOrderRecord["status"] | "">(order?.status ?? "");
   const [fulfillmentNote, setFulfillmentNote] = useState(order?.fulfillmentNote ?? "");
   const [internalNote, setInternalNote] = useState(order?.internalNote ?? "");
+  const canArchive = order?.status === "cancelled" || order?.status === "delivered";
 
   if (!order) {
     return (
@@ -59,6 +63,21 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
         return;
       }
       toast.error(error instanceof ApiError ? error.message : "Unable to save order updates right now.");
+    }
+  }
+
+  async function handleArchive() {
+    if (!order) {
+      return;
+    }
+
+    try {
+      await archiveOrderRecord(order.id);
+      toast.success("Order archived.");
+      router.push("/orders");
+    } catch (error) {
+      toast.error(error instanceof ApiError ? error.message : "Unable to archive order.");
+      return;
     }
   }
 
@@ -208,6 +227,15 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
             <button onClick={handleSave} style={primaryButtonStyle} type="button">
               Save order updates
             </button>
+            <button
+              onClick={handleArchive}
+              style={dangerButtonStyle}
+              type="button"
+              disabled={!canArchive}
+              title={!canArchive ? "Only delivered or cancelled orders can be archived." : undefined}
+            >
+              Archive order
+            </button>
             <Link href={`/customers/${order.customerId}`} style={secondaryLinkStyle}>
               Open customer
             </Link>
@@ -257,4 +285,17 @@ const secondaryLinkStyle = {
   background: "rgba(255, 253, 248, 0.82)",
   color: "var(--color-text)",
   fontWeight: 600,
+} as const;
+
+const dangerButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid #a64f43",
+  borderRadius: "var(--radius-pill)",
+  padding: "14px 18px",
+  background: "rgba(110, 58, 50, 0.16)",
+  color: "#8f2f24",
+  fontWeight: 600,
+  cursor: "pointer",
 } as const;

@@ -10,6 +10,7 @@ import { useToast } from "@/src/core/ui/toast";
 import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/dashboard";
 import {
   createProductRecord,
+  archiveProductRecord,
   updateProductRecord,
 } from "@/src/features/products/data/repositories/product-repository";
 import { uploadDashboardCatalogMedia } from "@/src/features/products/data/api/product-api-client";
@@ -307,6 +308,18 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
       router.push("/products");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Save failed. Please try again.";
+      toast.error(message);
+    }
+  }
+
+  async function handleArchiveProduct() {
+    if (!product) return;
+    try {
+      await archiveProductRecord(product.id);
+      toast.success("Product archived and removed from active catalog.");
+      router.push("/products");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Archive failed.";
       toast.error(message);
     }
   }
@@ -794,6 +807,15 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             <Link href="/products" style={secondaryLinkStyle}>
               Cancel
             </Link>
+            {product ? (
+              <button
+                onClick={handleArchiveProduct}
+                style={dangerButtonStyle}
+                type="button"
+              >
+                Archive product
+              </button>
+            ) : null}
           </div>
         </SectionCard>
       </div>
@@ -861,4 +883,17 @@ const secondaryLinkStyle = {
   background: "rgba(255, 253, 248, 0.82)",
   color: "var(--color-text)",
   fontWeight: 600,
+} as const;
+
+const dangerButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid #a64f43",
+  borderRadius: "var(--radius-pill)",
+  padding: "14px 18px",
+  background: "rgba(110, 58, 50, 0.16)",
+  color: "#8f2f24",
+  fontWeight: 600,
+  cursor: "pointer",
 } as const;

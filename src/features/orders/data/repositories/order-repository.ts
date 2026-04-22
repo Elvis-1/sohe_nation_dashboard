@@ -1,5 +1,6 @@
 import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
 import {
+  archiveDashboardOrder,
   fetchDashboardOrder,
   fetchDashboardOrders,
   updateDashboardOrder,
@@ -95,4 +96,12 @@ export async function updateOrderRecord(
   }
   dispatchChange();
   return updated;
+}
+
+export async function archiveOrderRecord(orderId: string): Promise<void> {
+  await archiveDashboardOrder(orderId);
+  if (cachedOrders !== null) {
+    cachedOrders = cachedOrders.filter((o) => o.id !== orderId);
+  }
+  dispatchChange();
 }
