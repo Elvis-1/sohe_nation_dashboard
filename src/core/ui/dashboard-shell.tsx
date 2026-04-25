@@ -366,6 +366,7 @@ export function DashboardShell({
         }
 
         .dashboard-menu-button {
+          display: none;
           border: 1px solid var(--color-border);
           background: rgba(255, 253, 248, 0.82);
           cursor: pointer;
@@ -444,6 +445,10 @@ export function DashboardShell({
         @media (max-width: 920px) {
           .dashboard-shell {
             grid-template-columns: 1fr;
+          }
+
+          .dashboard-menu-button {
+            display: inline-flex;
           }
 
           .dashboard-backdrop {
