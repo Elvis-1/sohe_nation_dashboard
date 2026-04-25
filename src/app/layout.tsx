@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { DashboardProviders } from "@/src/core/ui/dashboard-providers";
+import { StyledJsxRegistry } from "./styled-jsx-registry";
 
 export const metadata: Metadata = {
   title: "Sohe's Nation Dashboard",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <DashboardProviders>{children}</DashboardProviders>
+        <StyledJsxRegistry>
+          <DashboardProviders>{children}</DashboardProviders>
+        </StyledJsxRegistry>
       </body>
     </html>
   );
