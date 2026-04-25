@@ -101,6 +101,17 @@ const areaSurfaceMap: Record<
   },
 };
 
+const areaEditNotes: Record<DashboardContentArea, string> = {
+  homepage:
+    "Hero copy is fixed in the storefront for now. This panel only manages the hero media asset and publish state.",
+  featured_drop:
+    "This panel only manages the featured product lineup and publish state for the homepage rail.",
+  stories:
+    "Story content is fully editable here, including copy, media, linked products, and narrative structure.",
+  navigation_promos:
+    "Navigation promos remain locked in this slice. You can review the record and change publish state, but not edit the content fields here.",
+};
+
 const lightPillStyle = {
   display: "inline-flex",
   alignItems: "center",
@@ -244,7 +255,6 @@ function buildContentRecord(
 }
 
 export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps) {
-  const isHomepageEditor = routeKey === "homepage";
   const toast = useToast();
   const contentEntries = useContentDesk();
   const contentError = useContentDeskError();
@@ -393,6 +403,10 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
         {editorEntries.map((entry) => {
           const formState = formStateById[entry.id] ?? buildFormState(entry);
           const surface = areaSurfaceMap[entry.area];
+          const isHomepageHeroEntry = entry.area === "homepage";
+          const isFeaturedDropEntry = entry.area === "featured_drop";
+          const isStoryEntry = entry.area === "stories";
+          const isNavigationPromoEntry = entry.area === "navigation_promos";
 
           return (
             <SectionCard
@@ -426,6 +440,9 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   <p style={{ color: "var(--color-text-muted)", lineHeight: 1.5, margin: 0 }}>
                     {surface.publishingOutcome}
                   </p>
+                  <p style={{ color: "var(--color-text-muted)", lineHeight: 1.5, margin: 0 }}>
+                    {areaEditNotes[entry.area]}
+                  </p>
                 </div>
 
                 <div className="dashboard-action-row">
@@ -453,7 +470,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                 </div>
 
                 {/* Text fields — stories editor only. Homepage text is hardcoded in the storefront. */}
-                {!isHomepageEditor && (
+                {isStoryEntry && (
                   <>
                     <div
                       style={{
@@ -644,7 +661,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                 )}
 
                 {/* Hero video — homepage area only */}
-                {isHomepageEditor && entry.area === "homepage" && (
+                {isHomepageHeroEntry && (
                   <div
                     style={{
                       display: "grid",
@@ -700,9 +717,9 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                 )}
 
                 {/* Linked products — shown for all areas in stories editor, and for featured_drop in homepage editor */}
-                {(!isHomepageEditor || entry.area === "featured_drop") && (
+                {(isFeaturedDropEntry || isStoryEntry) && (
                 <div style={{ display: "grid", gap: 10 }}>
-                  <strong>Linked products</strong>
+                  <strong>{isFeaturedDropEntry ? "Featured products" : "Linked products"}</strong>
                   <div
                     style={{
                       display: "grid",
@@ -740,6 +757,25 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                 </div>
                 )}
 
+                {isNavigationPromoEntry && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 10,
+                      border: "1px dashed var(--color-border)",
+                      borderRadius: 16,
+                      padding: "16px 18px",
+                      background: "rgba(255, 253, 248, 0.6)",
+                    }}
+                  >
+                    <strong>Read-only in Slice 4</strong>
+                    <p style={{ margin: 0, color: "var(--color-text-muted)", lineHeight: 1.6 }}>
+                      Navigation promo copy stays locked in this editor. Use the visibility controls
+                      here to stage or publish the record, but leave the content fields unchanged.
+                    </p>
+                  </div>
+                )}
+
                 <SectionCard
                   title="Preview"
                   description="A compact summary of what this entry will push to the storefront."
@@ -748,17 +784,17 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     <span style={{ color: "var(--color-text-muted)" }}>
                       Status: <strong>{formState.visibility}</strong>
                     </span>
-                    {isHomepageEditor && entry.area === "homepage" && (
+                    {isHomepageHeroEntry && (
                       <span style={{ color: "var(--color-text-muted)" }}>
                         Media: {formState.mediaKind} · {formState.mediaUrl || "no URL set"}
                       </span>
                     )}
-                    {(!isHomepageEditor || entry.area === "featured_drop") && (
+                    {(isFeaturedDropEntry || isStoryEntry) && (
                       <span style={{ color: "var(--color-text-muted)" }}>
                         Linked products: {formState.linkedProductIds.length}
                       </span>
                     )}
-                    {!isHomepageEditor && (
+                    {isStoryEntry && (
                       <>
                         <div>
                           <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Headline</p>
