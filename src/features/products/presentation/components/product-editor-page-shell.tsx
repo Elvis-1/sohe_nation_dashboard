@@ -134,6 +134,10 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
   );
   const [formState, setFormState] = useState<ProductFormState>(() => createFormState(product ?? undefined));
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [pendingAction, setPendingAction] = useState<
+    "draft" | "published" | "archive" | null
+  >(null);
+  const isSaving = pendingAction !== null;
 
   if (productId && !product) {
     return (
@@ -211,6 +215,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
     );
 
     try {
+      setPendingAction(resolvedVisibility === "published" ? "published" : "draft");
       if (product) {
         await updateProductRecord(product.id, {
           slug: formState.slug,
@@ -309,18 +314,23 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
     } catch (err) {
       const message = err instanceof Error ? err.message : "Save failed. Please try again.";
       toast.error(message);
+    } finally {
+      setPendingAction(null);
     }
   }
 
   async function handleArchiveProduct() {
     if (!product) return;
     try {
+      setPendingAction("archive");
       await archiveProductRecord(product.id);
       toast.success("Product archived and removed from active catalog.");
       router.push("/products");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Archive failed.";
       toast.error(message);
+    } finally {
+      setPendingAction(null);
     }
   }
 
@@ -789,22 +799,60 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           title="Save actions"
           description="Save the record as a draft, publish it to the catalog, or return to the product desk."
         >
+          <p
+            aria-live="polite"
+            style={{
+              margin: "0 0 14px",
+              color: "var(--color-text-muted)",
+              lineHeight: 1.6,
+            }}
+          >
+            {pendingAction === "draft"
+              ? product
+                ? "Saving your draft changes..."
+                : "Creating your draft product..."
+              : pendingAction === "published"
+                ? product
+                  ? "Publishing product changes..."
+                  : "Creating and publishing your product..."
+                : pendingAction === "archive"
+                  ? "Archiving product..."
+                  : "Choose an action to save or publish this product."}
+          </p>
           <div className="dashboard-action-row">
             <button
               onClick={() => handleSave("draft")}
               style={secondaryButtonStyle}
               type="button"
+              disabled={isSaving}
             >
-              Save as draft
+              {pendingAction === "draft"
+                ? product
+                  ? "Saving draft..."
+                  : "Creating draft..."
+                : "Save as draft"}
             </button>
             <button
               onClick={() => handleSave("published")}
               style={primaryButtonStyle}
               type="button"
+              disabled={isSaving}
             >
-              Save and publish
+              {pendingAction === "published"
+                ? product
+                  ? "Publishing..."
+                  : "Creating and publishing..."
+                : "Save and publish"}
             </button>
-            <Link href="/products" style={secondaryLinkStyle}>
+            <Link
+              href="/products"
+              style={{
+                ...secondaryLinkStyle,
+                pointerEvents: isSaving ? "none" : "auto",
+                opacity: isSaving ? 0.6 : 1,
+              }}
+              aria-disabled={isSaving}
+            >
               Cancel
             </Link>
             {product ? (
@@ -812,8 +860,9 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 onClick={handleArchiveProduct}
                 style={dangerButtonStyle}
                 type="button"
+                disabled={isSaving}
               >
-                Archive product
+                {pendingAction === "archive" ? "Archiving..." : "Archive product"}
               </button>
             ) : null}
           </div>
@@ -858,6 +907,7 @@ const primaryButtonStyle = {
   color: "var(--color-text-inverse)",
   fontWeight: 600,
   cursor: "pointer",
+  minWidth: 170,
 } as const;
 
 const secondaryButtonStyle = {
@@ -871,6 +921,7 @@ const secondaryButtonStyle = {
   color: "var(--color-text)",
   fontWeight: 600,
   cursor: "pointer",
+  minWidth: 170,
 } as const;
 
 const secondaryLinkStyle = {
@@ -883,6 +934,7 @@ const secondaryLinkStyle = {
   background: "rgba(255, 253, 248, 0.82)",
   color: "var(--color-text)",
   fontWeight: 600,
+  minWidth: 170,
 } as const;
 
 const dangerButtonStyle = {
@@ -896,4 +948,5 @@ const dangerButtonStyle = {
   color: "#8f2f24",
   fontWeight: 600,
   cursor: "pointer",
+  minWidth: 170,
 } as const;
