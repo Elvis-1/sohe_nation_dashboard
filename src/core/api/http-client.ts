@@ -20,6 +20,28 @@ export class ApiError extends Error {
   }
 }
 
+function flattenErrorDetail(detail: unknown): string | null {
+  if (typeof detail === "string") {
+    return detail;
+  }
+  if (Array.isArray(detail)) {
+    const parts = detail
+      .map((item) => flattenErrorDetail(item))
+      .filter((item): item is string => Boolean(item));
+    return parts.length ? parts.join(" ") : null;
+  }
+  if (detail && typeof detail === "object") {
+    const parts = Object.entries(detail as Record<string, unknown>)
+      .map(([key, value]) => {
+        const nested = flattenErrorDetail(value);
+        return nested ? `${key}: ${nested}` : null;
+      })
+      .filter((item): item is string => Boolean(item));
+    return parts.length ? parts.join(" ") : null;
+  }
+  return null;
+}
+
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
   const authHeaders: Record<string, string> = {};
@@ -61,10 +83,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (!response.ok) {
     const errorPayload = json?.error ?? {};
+    const detailMessage = flattenErrorDetail(errorPayload.detail);
     throw new ApiError(
       response.status,
       errorPayload.code ?? `http_${response.status}`,
-      errorPayload.message ?? response.statusText,
+      detailMessage ?? errorPayload.message ?? response.statusText,
     );
   }
 

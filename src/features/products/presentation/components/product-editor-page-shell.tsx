@@ -57,6 +57,10 @@ const REGION_OPTIONS: ProductRegion[] = ["NG", "US", "GB", "EU"];
 
 function createFormState(product?: DashboardProductRecord): ProductFormState {
   if (product) {
+    const normalizedRegions = product.regionAvailability.includes(product.defaultRegion)
+      ? product.regionAvailability
+      : [product.defaultRegion, ...product.regionAvailability];
+
     return {
       id: product.id,
       title: product.title,
@@ -65,7 +69,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       category: product.category,
       audience: product.audience,
       defaultRegion: product.defaultRegion,
-      regionAvailability: product.regionAvailability,
+      regionAvailability: [...new Set(normalizedRegions)],
       shippingAmount: String(product.shipping?.amount ?? 0),
       shippingCurrency: product.shipping?.currency ?? "NGN",
       visibility: product.visibility,
@@ -153,7 +157,14 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
   function updateField<Key extends keyof ProductFormState>(field: Key, value: ProductFormState[Key]) {
     setFormState((currentState) => ({
       ...currentState,
-      [field]: value,
+      ...(field === "defaultRegion"
+        ? {
+            defaultRegion: value as ProductRegion,
+            regionAvailability: currentState.regionAvailability.includes(value as ProductRegion)
+              ? currentState.regionAvailability
+              : [value as ProductRegion, ...currentState.regionAvailability],
+          }
+        : { [field]: value }),
     }));
   }
 
@@ -168,6 +179,9 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
 
   function toggleRegionAvailability(region: ProductRegion, isChecked: boolean) {
     setFormState((currentState) => {
+      if (!isChecked && region === currentState.defaultRegion) {
+        return currentState;
+      }
       const nextRegions = isChecked
         ? [...new Set([...currentState.regionAvailability, region])]
         : currentState.regionAvailability.filter((currentRegion) => currentRegion !== region);
@@ -209,6 +223,9 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
 
   async function handleSave(nextVisibility?: DashboardProductRecord["visibility"]) {
     const resolvedVisibility = nextVisibility ?? formState.visibility;
+    const normalizedRegions = formState.regionAvailability.includes(formState.defaultRegion)
+      ? formState.regionAvailability
+      : [formState.defaultRegion, ...formState.regionAvailability];
 
     const validVariants = formState.variants.filter(
       (v) => v.sku && v.size && v.color && Number(v.priceAmount) > 0,
@@ -224,7 +241,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           gender: formState.audience,
           category: formState.category,
           default_region: formState.defaultRegion,
-          region_availability: formState.regionAvailability,
+          region_availability: [...new Set(normalizedRegions)],
           shipping_amount: Number(formState.shippingAmount) || 0,
           shipping_currency: formState.shippingCurrency,
           visibility: resolvedVisibility,
@@ -272,7 +289,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           gender: formState.audience,
           category: formState.category,
           default_region: formState.defaultRegion,
-          region_availability: formState.regionAvailability,
+          region_availability: [...new Set(normalizedRegions)],
           shipping_amount: Number(formState.shippingAmount) || 0,
           shipping_currency: formState.shippingCurrency,
           visibility: resolvedVisibility,
