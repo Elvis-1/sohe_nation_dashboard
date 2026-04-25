@@ -78,7 +78,7 @@ export function DashboardShell({
             </strong>
           </div>
           <span className="dashboard-session-meta">
-            {session?.email ?? "ops@sohesnation.com"} · {session?.role ?? "Fixture mode"}
+            {session?.email ?? "Authenticated staff session"} · {session?.role ?? "Operations staff"}
           </span>
         </div>
         <nav className="dashboard-nav">
@@ -158,8 +158,8 @@ export function DashboardShell({
               Orders desk
             </Link>
             <div className="dashboard-ops-card">
-              <span className="dashboard-pill-copy">Session window</span>
-              <strong>45 min mock access</strong>
+              <span className="dashboard-pill-copy">Session status</span>
+              <strong>Protected access</strong>
             </div>
           </div>
         </header>

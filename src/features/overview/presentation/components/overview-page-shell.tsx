@@ -114,11 +114,11 @@ export function OverviewPageShell() {
         href: "/products",
       },
       {
-        label: "Review live content",
+        label: "Review homepage desk",
         description:
           publishedContentCount > 0
-            ? `${publishedContentCount} content record${publishedContentCount === 1 ? "" : "s"} are published to storefront surfaces.`
-            : "No content records are published yet. Review draft and ready states in the content desk.",
+            ? `${publishedContentCount} homepage surface${publishedContentCount === 1 ? "" : "s"} are published to storefront landing surfaces.`
+            : "No homepage surfaces are published yet. Review draft and ready states in the homepage desk.",
         href: "/content",
       },
     ],
@@ -166,8 +166,8 @@ export function OverviewPageShell() {
       stat: `${ordersInMotion} order${ordersInMotion === 1 ? "" : "s"} in motion`,
     },
     {
-      title: "Content",
-      description: "Homepage, stories, and merchandising spotlight management.",
+      title: "Homepage Desk",
+      description: "Homepage hero media and featured-product rail management.",
       href: "/content",
       stat: `${publishedContentCount} published · ${allContent.length} total`,
     },

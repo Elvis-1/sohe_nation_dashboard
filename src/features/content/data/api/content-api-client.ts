@@ -97,3 +97,26 @@ export async function updateDashboardContentRecord(
   });
   return mapApiContentToRecord(data);
 }
+
+type UploadContentMediaResponse = {
+  url: string;
+  kind: "image" | "video";
+  original_filename: string;
+  public_id: string;
+  width?: number;
+  height?: number;
+  bytes?: number;
+  format?: string;
+};
+
+export async function uploadDashboardContentMedia(
+  file: File,
+): Promise<UploadContentMediaResponse> {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  return apiRequest<UploadContentMediaResponse>("/dashboard/content/media/upload", {
+    method: "POST",
+    body: formData,
+  });
+}

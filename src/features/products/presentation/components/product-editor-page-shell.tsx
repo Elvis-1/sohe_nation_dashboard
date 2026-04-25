@@ -140,7 +140,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
       <AppStateMessage
         eyebrow="Products"
         title="This product record is missing"
-        description="The product you tried to open is not available in the current fixture catalog."
+        description="The product you tried to open is not available in the current catalog."
         action={<Link href="/products">Back to products</Link>}
       />
     );
@@ -408,7 +408,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
 
         <SectionCard
           title="Product fields"
-          description="These fields cover the key storefront merchandising and PDP assumptions already in fixture mode."
+          description="These fields cover the key storefront merchandising and PDP details the catalog needs."
         >
           <div
             style={{
@@ -787,7 +787,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
 
         <SectionCard
           title="Save actions"
-          description="Save the record as a draft, publish it to the mocked catalog, or return to the product desk."
+          description="Save the record as a draft, publish it to the catalog, or return to the product desk."
         >
           <div className="dashboard-action-row">
             <button

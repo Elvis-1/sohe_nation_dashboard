@@ -111,7 +111,7 @@ export function ReturnsPageShell() {
           <EmptyStatePanel
             eyebrow="Returns"
             title="No return requests are waiting."
-            description="Once the account returns flow sends fixture requests through the dashboard, they will appear here for staff review."
+            description="As customers submit return requests, they will appear here for staff review."
             actionHref="/"
             actionLabel="Return to overview"
           />

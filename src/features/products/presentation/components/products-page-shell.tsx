@@ -75,7 +75,7 @@ export function ProductsPageShell() {
 
       <SectionCard
         title="Catalog desk"
-        description="Filter the current fixture-backed catalog, then open a product record to edit title, price, stock, variants, and publish state."
+        description="Filter the catalog, then open a product record to edit title, price, stock, variants, and publish state."
       >
         <div
           style={{
@@ -146,7 +146,7 @@ export function ProductsPageShell() {
           <EmptyStatePanel
             eyebrow="Products"
             title="The catalog desk is empty right now."
-            description="Create the first fixture-backed product record to start merchandising and PDP management."
+            description="Create the first product record to start merchandising and PDP management."
             actionHref="/products/new"
             actionLabel="Create product"
           />

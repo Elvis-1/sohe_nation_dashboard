@@ -30,7 +30,7 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
       <AppStateMessage
         eyebrow="Returns"
         title="This return record is missing"
-        description="The return you tried to open is not available in the current fixture queue."
+        description="The return you tried to open is not available in the current queue."
         action={<Link href="/returns">Back to returns</Link>}
       />
     );
@@ -136,7 +136,7 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
 
         <SectionCard
           title="Decision control"
-          description="Move the return through the mocked lifecycle and record the internal decision for staff follow-through."
+          description="Move the return through its lifecycle and record the internal decision for staff follow-through."
         >
           <div style={{ display: "grid", gap: 14 }}>
             <label style={{ display: "grid", gap: 8 }}>
