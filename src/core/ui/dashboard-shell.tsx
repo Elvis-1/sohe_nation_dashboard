@@ -37,6 +37,15 @@ export function DashboardShell({
     };
   }, [isNavOpen]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 921px)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsNavOpen(false);
+    };
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
+  }, []);
+
   return (
     <div className="dashboard-shell">
       <button
