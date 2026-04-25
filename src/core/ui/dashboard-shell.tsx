@@ -180,23 +180,25 @@ export function DashboardShell({
         }
 
         .dashboard-sidebar {
+          position: sticky;
+          top: 0;
           display: flex;
           flex-direction: column;
-          min-height: 100vh;
-          max-height: 100vh;
+          height: 100svh;
+          overflow-y: auto;
           border-right: 1px solid var(--color-border);
-          padding: 28px 20px;
+          padding: 20px 18px;
           background:
             linear-gradient(180deg, rgba(255, 253, 248, 0.82), rgba(246, 238, 223, 0.94)),
             radial-gradient(circle at top, rgba(179, 123, 31, 0.1), transparent 44%);
           backdrop-filter: blur(18px);
-          overflow: hidden;
         }
 
         .dashboard-brand-block {
-          margin-bottom: 28px;
+          margin-bottom: 14px;
           display: grid;
-          gap: 14px;
+          gap: 8px;
+          flex-shrink: 0;
         }
 
         .dashboard-brand-eyebrow {
@@ -208,32 +210,33 @@ export function DashboardShell({
         }
 
         .dashboard-brand-title {
-          margin-top: 8px;
+          margin-top: 4px;
           font-family: var(--font-heading);
-          font-size: 44px;
+          font-size: 34px;
           letter-spacing: 0.04em;
           line-height: 0.92;
         }
 
         .dashboard-brand-description {
           color: var(--color-text-muted);
-          line-height: 1.6;
-          font-size: 14px;
+          line-height: 1.5;
+          font-size: 13px;
         }
 
         .dashboard-session-card {
-          margin-bottom: 22px;
+          margin-bottom: 12px;
           border: 1px solid var(--color-border);
-          border-radius: 24px;
-          padding: 16px 18px;
+          border-radius: 20px;
+          padding: 12px 16px;
           background: linear-gradient(180deg, rgba(234, 215, 177, 0.46), rgba(255, 253, 248, 0.72));
           display: grid;
-          gap: 10px;
+          gap: 6px;
+          flex-shrink: 0;
         }
 
         .dashboard-session-label {
           color: var(--color-text-muted);
-          font-size: 12px;
+          font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.18em;
           font-family: var(--font-mono);
@@ -241,34 +244,32 @@ export function DashboardShell({
 
         .dashboard-session-name {
           display: block;
-          font-size: 20px;
+          font-size: 17px;
         }
 
         .dashboard-session-meta {
           color: var(--color-text-muted);
-          font-size: 14px;
-          line-height: 1.5;
+          font-size: 13px;
+          line-height: 1.4;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .dashboard-nav {
           display: grid;
-          gap: 10px;
+          gap: 6px;
           flex: 1;
-          min-height: 0;
-          overflow-y: auto;
-          padding-right: 6px;
-          margin-right: -6px;
-          overscroll-behavior: contain;
         }
 
         .dashboard-nav-link {
           display: grid;
           grid-template-columns: auto 1fr;
-          gap: 14px;
-          align-items: start;
+          gap: 12px;
+          align-items: center;
           border: 1px solid var(--color-border);
-          border-radius: 20px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 9px 14px;
           background: var(--color-surface);
           color: var(--color-text);
           transition:
@@ -292,11 +293,10 @@ export function DashboardShell({
 
         .dashboard-nav-index {
           color: var(--color-accent);
-          font-size: 12px;
+          font-size: 11px;
           font-family: var(--font-mono);
           letter-spacing: 0.16em;
           text-transform: uppercase;
-          padding-top: 4px;
         }
 
         .dashboard-nav-link[data-active="true"] .dashboard-nav-index {
@@ -305,14 +305,18 @@ export function DashboardShell({
 
         .dashboard-nav-title {
           display: block;
-          margin-bottom: 4px;
+          font-size: 14px;
+          margin-bottom: 2px;
         }
 
         .dashboard-nav-description {
           display: block;
           color: var(--color-text-muted);
-          font-size: 14px;
-          line-height: 1.5;
+          font-size: 12px;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .dashboard-nav-link[data-active="true"] .dashboard-nav-description {
@@ -320,12 +324,12 @@ export function DashboardShell({
         }
 
         .dashboard-signout {
-          margin-top: 16px;
+          margin-top: 10px;
           flex-shrink: 0;
           width: 100%;
           border: 1px solid var(--color-border);
-          border-radius: 20px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 10px 14px;
           background: transparent;
           text-align: left;
           cursor: pointer;
@@ -333,7 +337,7 @@ export function DashboardShell({
 
         .dashboard-signout-copy {
           color: var(--color-text-muted);
-          font-size: 14px;
+          font-size: 13px;
         }
 
         .dashboard-main {
@@ -489,8 +493,8 @@ export function DashboardShell({
             transform: translateX(-102%);
             transition: transform 180ms ease;
             box-shadow: var(--shadow-soft);
-            min-height: 100svh;
-            max-height: 100svh;
+            height: 100svh;
+            overflow-y: auto;
           }
 
           .dashboard-sidebar[data-open="true"] {
