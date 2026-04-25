@@ -244,6 +244,7 @@ function buildContentRecord(
 }
 
 export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps) {
+  const isHomepageEditor = routeKey === "homepage";
   const toast = useToast();
   const contentEntries = useContentDesk();
   const contentError = useContentDeskError();
@@ -451,244 +452,255 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   ))}
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gap: 14,
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  }}
-                >
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Content title</span>
-                    <input
-                      aria-label={`${entry.area} title`}
-                      onChange={(event) => updateField(entry.id, "title", event.target.value)}
-                      style={inputStyle}
-                      value={formState.title}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Slug <span style={hintStyle}>URL path — e.g. built-like-an-army becomes /stories/built-like-an-army</span></span>
-                    <input
-                      aria-label={`${entry.area} slug`}
-                      onChange={(event) => updateField(entry.id, "slug", event.target.value)}
-                      placeholder={entry.area === "stories" ? "built-like-an-army" : ""}
-                      style={inputStyle}
-                      value={formState.slug}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Eyebrow <span style={hintStyle}>Small label shown above the headline</span></span>
-                    <input
-                      aria-label={`${entry.area} eyebrow`}
-                      onChange={(event) => updateField(entry.id, "eyebrow", event.target.value)}
-                      style={inputStyle}
-                      value={formState.eyebrow}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Headline</span>
-                    <input
-                      aria-label={`${entry.area} headline`}
-                      onChange={(event) => updateField(entry.id, "headline", event.target.value)}
-                      style={inputStyle}
-                      value={formState.headline}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Button label <span style={hintStyle}>Text shown on the primary call-to-action button</span></span>
-                    <input
-                      aria-label={`${entry.area} CTA label`}
-                      onChange={(event) =>
-                        updateField(entry.id, "callToActionLabel", event.target.value)
-                      }
-                      style={inputStyle}
-                      value={formState.callToActionLabel}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Button link <span style={hintStyle}>URL the primary button points to, e.g. /catalog or /stories</span></span>
-                    <input
-                      aria-label={`${entry.area} CTA href`}
-                      onChange={(event) =>
-                        updateField(entry.id, "callToActionHref", event.target.value)
-                      }
-                      style={inputStyle}
-                      value={formState.callToActionHref}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Secondary button label <span style={hintStyle}>Optional — leave blank if only one button is needed</span></span>
-                    <input
-                      aria-label={`${entry.area} secondary CTA label`}
-                      onChange={(event) =>
-                        updateField(entry.id, "secondaryCallToActionLabel", event.target.value)
-                      }
-                      style={inputStyle}
-                      value={formState.secondaryCallToActionLabel}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Secondary button link <span style={hintStyle}>URL for the secondary button</span></span>
-                    <input
-                      aria-label={`${entry.area} secondary CTA href`}
-                      onChange={(event) =>
-                        updateField(entry.id, "secondaryCallToActionHref", event.target.value)
-                      }
-                      style={inputStyle}
-                      value={formState.secondaryCallToActionHref}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Summary</span>
-                    <input
-                      aria-label={`${entry.area} summary`}
-                      onChange={(event) => updateField(entry.id, "summary", event.target.value)}
-                      style={inputStyle}
-                      value={formState.summary}
-                    />
-                  </label>
-                </div>
-
-                <label style={{ display: "grid", gap: 8 }}>
-                  <span>Body copy</span>
-                  <textarea
-                    aria-label={`${entry.area} body`}
-                    onChange={(event) => updateField(entry.id, "body", event.target.value)}
-                    rows={4}
-                    style={textareaStyle}
-                    value={formState.body}
-                  />
-                </label>
-
-                <label style={{ display: "grid", gap: 8 }}>
-                  <span>Campaign statement</span>
-                  <textarea
-                    aria-label={`${entry.area} campaign statement`}
-                    onChange={(event) => updateField(entry.id, "campaignStatement", event.target.value)}
-                    rows={3}
-                    style={textareaStyle}
-                    value={formState.campaignStatement}
-                  />
-                </label>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gap: 14,
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  }}
-                >
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Chapter label <span style={hintStyle}>Section marker shown in the story detail layout, e.g. Chapter 01</span></span>
-                    <input
-                      aria-label={`${entry.area} chapter label`}
-                      onChange={(event) => updateField(entry.id, "chapterLabel", event.target.value)}
-                      style={inputStyle}
-                      value={formState.chapterLabel}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Media type <span style={hintStyle}>Choose Image for photos, Video for a looping or full video</span></span>
-                    <select
-                      aria-label={`${entry.area} media kind`}
-                      onChange={(event) =>
-                        updateField(entry.id, "mediaKind", event.target.value as "image" | "video")
-                      }
-                      style={inputStyle}
-                      value={formState.mediaKind}
+                {/* Text fields — stories editor only. Homepage text is hardcoded in the storefront. */}
+                {!isHomepageEditor && (
+                  <>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 14,
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                      }}
                     >
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                    </select>
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Media URL <span style={hintStyle}>Full URL to the image or video file</span></span>
-                    <input
-                      aria-label={`${entry.area} media URL`}
-                      onChange={(event) => updateField(entry.id, "mediaUrl", event.target.value)}
-                      style={inputStyle}
-                      value={formState.mediaUrl}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Video thumbnail URL <span style={hintStyle}>Still image shown before the video plays — only needed for Video type</span></span>
-                    <input
-                      aria-label={`${entry.area} media poster URL`}
-                      onChange={(event) =>
-                        updateField(entry.id, "mediaPosterUrl", event.target.value)
-                      }
-                      placeholder={formState.mediaKind === "video" ? "https://..." : ""}
-                      style={inputStyle}
-                      value={formState.mediaPosterUrl}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Media description <span style={hintStyle}>Briefly describe the image or video for accessibility and search</span></span>
-                    <input
-                      aria-label={`${entry.area} media alt`}
-                      onChange={(event) => updateField(entry.id, "mediaAlt", event.target.value)}
-                      style={inputStyle}
-                      value={formState.mediaAlt}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 8 }}>
-                    <span>Preview bullets</span>
-                    <input
-                      aria-label={`${entry.area} preview bullets`}
-                      onChange={(event) =>
-                        updateField(
-                          entry.id,
-                          "previewBullets",
-                          event.target.value
-                            .split(",")
-                            .map((item) => item.trim())
-                            .filter(Boolean),
-                        )
-                      }
-                      placeholder="Hero headline, Lead CTA, Merchandising rail"
-                      style={inputStyle}
-                      value={formState.previewBullets.join(", ")}
-                    />
-                  </label>
-                </div>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Content title</span>
+                        <input
+                          aria-label={`${entry.area} title`}
+                          onChange={(event) => updateField(entry.id, "title", event.target.value)}
+                          style={inputStyle}
+                          value={formState.title}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Slug <span style={hintStyle}>URL path — e.g. built-like-an-army becomes /stories/built-like-an-army</span></span>
+                        <input
+                          aria-label={`${entry.area} slug`}
+                          onChange={(event) => updateField(entry.id, "slug", event.target.value)}
+                          placeholder={entry.area === "stories" ? "built-like-an-army" : ""}
+                          style={inputStyle}
+                          value={formState.slug}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Eyebrow <span style={hintStyle}>Small label shown above the headline</span></span>
+                        <input
+                          aria-label={`${entry.area} eyebrow`}
+                          onChange={(event) => updateField(entry.id, "eyebrow", event.target.value)}
+                          style={inputStyle}
+                          value={formState.eyebrow}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Headline</span>
+                        <input
+                          aria-label={`${entry.area} headline`}
+                          onChange={(event) => updateField(entry.id, "headline", event.target.value)}
+                          style={inputStyle}
+                          value={formState.headline}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Button label <span style={hintStyle}>Text shown on the primary call-to-action button</span></span>
+                        <input
+                          aria-label={`${entry.area} CTA label`}
+                          onChange={(event) =>
+                            updateField(entry.id, "callToActionLabel", event.target.value)
+                          }
+                          style={inputStyle}
+                          value={formState.callToActionLabel}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Button link <span style={hintStyle}>URL the primary button points to</span></span>
+                        <input
+                          aria-label={`${entry.area} CTA href`}
+                          onChange={(event) =>
+                            updateField(entry.id, "callToActionHref", event.target.value)
+                          }
+                          style={inputStyle}
+                          value={formState.callToActionHref}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Secondary button label <span style={hintStyle}>Optional</span></span>
+                        <input
+                          aria-label={`${entry.area} secondary CTA label`}
+                          onChange={(event) =>
+                            updateField(entry.id, "secondaryCallToActionLabel", event.target.value)
+                          }
+                          style={inputStyle}
+                          value={formState.secondaryCallToActionLabel}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Secondary button link</span>
+                        <input
+                          aria-label={`${entry.area} secondary CTA href`}
+                          onChange={(event) =>
+                            updateField(entry.id, "secondaryCallToActionHref", event.target.value)
+                          }
+                          style={inputStyle}
+                          value={formState.secondaryCallToActionHref}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Summary</span>
+                        <input
+                          aria-label={`${entry.area} summary`}
+                          onChange={(event) => updateField(entry.id, "summary", event.target.value)}
+                          style={inputStyle}
+                          value={formState.summary}
+                        />
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Chapter label <span style={hintStyle}>Section marker in story detail, e.g. Chapter 01</span></span>
+                        <input
+                          aria-label={`${entry.area} chapter label`}
+                          onChange={(event) => updateField(entry.id, "chapterLabel", event.target.value)}
+                          style={inputStyle}
+                          value={formState.chapterLabel}
+                        />
+                      </label>
+                    </div>
 
-                <label style={{ display: "grid", gap: 8 }}>
-                  <span>Campaign stats <span style={hintStyle}>One stat per line — format: Label|Value (e.g. Looks|03)</span></span>
-                  <textarea
-                    aria-label={`${entry.area} campaign stats`}
-                    onChange={(event) => updateField(entry.id, "campaignStatsText", event.target.value)}
-                    placeholder={"Looks|03\nFrames|09"}
-                    rows={3}
-                    style={textareaStyle}
-                    value={formState.campaignStatsText}
-                  />
-                </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Body copy</span>
+                      <textarea
+                        aria-label={`${entry.area} body`}
+                        onChange={(event) => updateField(entry.id, "body", event.target.value)}
+                        rows={4}
+                        style={textareaStyle}
+                        value={formState.body}
+                      />
+                    </label>
 
-                <label style={{ display: "grid", gap: 8 }}>
-                  <span>Content modules <span style={hintStyle}>One module per line — format: Title|Body copy (e.g. Frame One|Story body copy)</span></span>
-                  <textarea
-                    aria-label={`${entry.area} modules`}
-                    onChange={(event) => updateField(entry.id, "modulesText", event.target.value)}
-                    placeholder={"Frame One|Story body copy\nLayer Order|Supporting body copy"}
-                    rows={4}
-                    style={textareaStyle}
-                    value={formState.modulesText}
-                  />
-                </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Campaign statement</span>
+                      <textarea
+                        aria-label={`${entry.area} campaign statement`}
+                        onChange={(event) => updateField(entry.id, "campaignStatement", event.target.value)}
+                        rows={3}
+                        style={textareaStyle}
+                        value={formState.campaignStatement}
+                      />
+                    </label>
 
-                <label style={{ display: "grid", gap: 8 }}>
-                  <span>Product hotspots <span style={hintStyle}>One hotspot per line — format: id|label|product-slug|top%|left%|note (e.g. hotspot-1|Lead Look|lunar-utility-jacket|58%|44%|Lead look)</span></span>
-                  <textarea
-                    aria-label={`${entry.area} hotspots`}
-                    onChange={(event) => updateField(entry.id, "hotspotsText", event.target.value)}
-                    placeholder={"hotspot-1|Lead Look|lunar-utility-jacket|58%|44%|Lead look note"}
-                    rows={4}
-                    style={textareaStyle}
-                    value={formState.hotspotsText}
-                  />
-                </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Campaign stats <span style={hintStyle}>One per line — format: Label|Value (e.g. Looks|03)</span></span>
+                      <textarea
+                        aria-label={`${entry.area} campaign stats`}
+                        onChange={(event) => updateField(entry.id, "campaignStatsText", event.target.value)}
+                        placeholder={"Looks|03\nFrames|09"}
+                        rows={3}
+                        style={textareaStyle}
+                        value={formState.campaignStatsText}
+                      />
+                    </label>
 
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Content modules <span style={hintStyle}>One per line — format: Title|Body copy</span></span>
+                      <textarea
+                        aria-label={`${entry.area} modules`}
+                        onChange={(event) => updateField(entry.id, "modulesText", event.target.value)}
+                        placeholder={"Frame One|Story body copy\nLayer Order|Supporting body copy"}
+                        rows={4}
+                        style={textareaStyle}
+                        value={formState.modulesText}
+                      />
+                    </label>
+
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Product hotspots <span style={hintStyle}>One per line — format: id|label|product-slug|top%|left%|note</span></span>
+                      <textarea
+                        aria-label={`${entry.area} hotspots`}
+                        onChange={(event) => updateField(entry.id, "hotspotsText", event.target.value)}
+                        placeholder={"hotspot-1|Lead Look|lunar-utility-jacket|58%|44%|Lead look note"}
+                        rows={4}
+                        style={textareaStyle}
+                        value={formState.hotspotsText}
+                      />
+                    </label>
+
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Preview bullets</span>
+                      <input
+                        aria-label={`${entry.area} preview bullets`}
+                        onChange={(event) =>
+                          updateField(
+                            entry.id,
+                            "previewBullets",
+                            event.target.value
+                              .split(",")
+                              .map((item) => item.trim())
+                              .filter(Boolean),
+                          )
+                        }
+                        placeholder="Hero headline, Lead CTA, Merchandising rail"
+                        style={inputStyle}
+                        value={formState.previewBullets.join(", ")}
+                      />
+                    </label>
+                  </>
+                )}
+
+                {/* Hero video — homepage area only */}
+                {isHomepageEditor && entry.area === "homepage" && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: 14,
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    }}
+                  >
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Media type <span style={hintStyle}>Choose Video for the looping hero clip</span></span>
+                      <select
+                        aria-label={`${entry.area} media kind`}
+                        onChange={(event) =>
+                          updateField(entry.id, "mediaKind", event.target.value as "image" | "video")
+                        }
+                        style={inputStyle}
+                        value={formState.mediaKind}
+                      >
+                        <option value="video">Video</option>
+                        <option value="image">Image</option>
+                      </select>
+                    </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Media URL <span style={hintStyle}>Full URL to the video or image file</span></span>
+                      <input
+                        aria-label={`${entry.area} media URL`}
+                        onChange={(event) => updateField(entry.id, "mediaUrl", event.target.value)}
+                        style={inputStyle}
+                        value={formState.mediaUrl}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Poster image URL <span style={hintStyle}>Still frame shown before the video plays</span></span>
+                      <input
+                        aria-label={`${entry.area} media poster URL`}
+                        onChange={(event) =>
+                          updateField(entry.id, "mediaPosterUrl", event.target.value)
+                        }
+                        placeholder="https://..."
+                        style={inputStyle}
+                        value={formState.mediaPosterUrl}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 8 }}>
+                      <span>Alt text <span style={hintStyle}>Accessibility description of the video</span></span>
+                      <input
+                        aria-label={`${entry.area} media alt`}
+                        onChange={(event) => updateField(entry.id, "mediaAlt", event.target.value)}
+                        style={inputStyle}
+                        value={formState.mediaAlt}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {/* Linked products — shown for all areas in stories editor, and for featured_drop in homepage editor */}
+                {(!isHomepageEditor || entry.area === "featured_drop") && (
                 <div style={{ display: "grid", gap: 10 }}>
                   <strong>Linked products</strong>
                   <div
@@ -726,41 +738,35 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                     ))}
                   </div>
                 </div>
+                )}
 
                 <SectionCard
-                  title="Preview structure"
-                  description="A compact staff preview of the storefront-facing shape before the content is staged."
+                  title="Preview"
+                  description="A compact summary of what this entry will push to the storefront."
                 >
                   <div style={{ display: "grid", gap: 12 }}>
-                    <div>
-                      <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Preview label</p>
-                      <strong>
-                        {formState.eyebrow} · {formState.visibility}
-                      </strong>
-                    </div>
-                    <div>
-                      <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Headline</p>
-                      <strong>{formState.headline}</strong>
-                    </div>
-                    <p style={{ color: "var(--color-text-muted)", lineHeight: 1.6 }}>{formState.body}</p>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {formState.previewBullets.map((bullet) => (
-                        <span
-                          key={`${entry.id}_${bullet}`}
-                          style={{
-                            border: "1px solid var(--color-border)",
-                            borderRadius: 14,
-                            padding: "10px 12px",
-                            background: "rgba(255, 253, 248, 0.82)",
-                          }}
-                        >
-                          {bullet}
-                        </span>
-                      ))}
-                    </div>
                     <span style={{ color: "var(--color-text-muted)" }}>
-                      Linked products: {formState.linkedProductIds.length} · CTA {formState.callToActionLabel}
+                      Status: <strong>{formState.visibility}</strong>
                     </span>
+                    {isHomepageEditor && entry.area === "homepage" && (
+                      <span style={{ color: "var(--color-text-muted)" }}>
+                        Media: {formState.mediaKind} · {formState.mediaUrl || "no URL set"}
+                      </span>
+                    )}
+                    {(!isHomepageEditor || entry.area === "featured_drop") && (
+                      <span style={{ color: "var(--color-text-muted)" }}>
+                        Linked products: {formState.linkedProductIds.length}
+                      </span>
+                    )}
+                    {!isHomepageEditor && (
+                      <>
+                        <div>
+                          <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Headline</p>
+                          <strong>{formState.headline}</strong>
+                        </div>
+                        <p style={{ color: "var(--color-text-muted)", lineHeight: 1.6 }}>{formState.body}</p>
+                      </>
+                    )}
                   </div>
                 </SectionCard>
 
