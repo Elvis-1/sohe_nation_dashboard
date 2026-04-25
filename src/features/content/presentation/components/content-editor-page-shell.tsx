@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
 import type { DashboardContentArea, DashboardContentRecord } from "@/src/core/types/dashboard";
+import { uploadDashboardContentMedia } from "@/src/features/content/data/api/content-api-client";
 import {
   updateContentRecord,
 } from "@/src/features/content/data/repositories/content-repository";
@@ -20,7 +21,7 @@ const STOREFRONT_URL =
   process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "https://sohenation.com";
 
 type ContentEditorPageShellProps = {
-  routeKey: "homepage" | "stories";
+  routeKey: "homepage_hero" | "featured_drop" | "stories";
 };
 
 type ContentFormState = {
@@ -57,11 +58,17 @@ const routeConfig: Record<
     areas: DashboardContentArea[];
   }
 > = {
-  homepage: {
-    title: "Homepage and featured drop editor.",
+  homepage_hero: {
+    title: "Homepage hero media.",
     description:
-      "Shape the homepage hero and the featured-drop merchandising rail that support storefront discovery.",
-    areas: ["homepage", "featured_drop"],
+      "Manage the homepage hero media asset and publish state without crossing into the featured-product rail.",
+    areas: ["homepage"],
+  },
+  featured_drop: {
+    title: "Homepage featured products.",
+    description:
+      "Manage the featured-product rail and publish state without crossing into the homepage hero media.",
+    areas: ["featured_drop"],
   },
   stories: {
     title: "Stories and navigation editor.",
@@ -259,6 +266,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
   const contentEntries = useContentDesk();
   const contentError = useContentDeskError();
   const products = useProductCatalog();
+  const [uploadingEntryId, setUploadingEntryId] = useState<string | null>(null);
   const config = routeConfig[routeKey];
   const editorEntries = useMemo(
     () => contentEntries.filter((entry) => config.areas.includes(entry.area)),
@@ -280,9 +288,9 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
   if (contentError) {
     return (
       <AppStateMessage
-        eyebrow="Content"
-        title="This content editor could not load."
-        description={`The dashboard could not load content records from the API for this editor. ${contentError.message}`}
+        eyebrow="Homepage Desk"
+        title="This homepage desk could not load."
+        description={`The dashboard could not load the homepage hero and featured-product records from the API for this editor. ${contentError.message}`}
         action={<Link href="/content">Back to content hub</Link>}
       />
     );
@@ -291,9 +299,9 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
   if (editorEntries.length === 0) {
     return (
       <AppStateMessage
-        eyebrow="Content"
-        title="This content editor has no staged records"
-        description="The API is not currently returning the content areas this route expects."
+        eyebrow="Homepage Desk"
+        title="This homepage desk has no staged records"
+        description="The API is not currently returning the homepage hero and featured-product records this route expects."
         action={<Link href="/content">Back to content hub</Link>}
       />
     );
@@ -335,6 +343,47 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
         },
       };
     });
+  }
+
+  async function handleHeroMediaUpload(
+    entry: DashboardContentRecord,
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingEntryId(entry.id);
+      const uploaded = await uploadDashboardContentMedia(file);
+      const currentFormState = formStateById[entry.id] ?? buildFormState(entry);
+      const nextFormState: ContentFormState = {
+        ...currentFormState,
+        mediaKind: uploaded.kind,
+        mediaUrl: uploaded.url,
+        mediaAlt:
+          currentFormState.mediaAlt.trim() ||
+          (entry.title ? `${entry.title} media` : uploaded.original_filename),
+      };
+      const nextRecord = buildContentRecord(entry, nextFormState);
+      const updatedRecord = await updateContentRecord(nextRecord);
+
+      setFormStateById((currentState) => ({
+        ...currentState,
+        [entry.id]: buildFormState(updatedRecord),
+      }));
+
+      toast.success(
+        updatedRecord.visibility === "published"
+          ? "Hero media uploaded and pushed live to the storefront."
+          : "Hero media uploaded and saved to the homepage record.",
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Hero media upload failed.";
+      toast.error(message);
+    } finally {
+      setUploadingEntryId(null);
+      event.target.value = "";
+    }
   }
 
   async function handleSave(nextVisibility?: DashboardContentRecord["visibility"]) {
@@ -387,13 +436,13 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
   return (
     <div>
       <PageHeader
-        eyebrow="Content"
+        eyebrow="Homepage Desk"
         title={config.title}
         description={config.description}
         actions={
           <>
             <Link href="/content" style={lightPillStyle}>
-              Back to content hub
+              Back to homepage desk
             </Link>
           </>
         }
@@ -662,13 +711,60 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
 
                 {/* Hero video — homepage area only */}
                 {isHomepageHeroEntry && (
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: 14,
-                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    }}
-                  >
+                  <div style={{ display: "grid", gap: 14 }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 14,
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        alignItems: "start",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 16,
+                        padding: "12px 14px",
+                        background: "rgba(255, 253, 248, 0.52)",
+                      }}
+                    >
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Upload hero media</span>
+                        <input
+                          aria-label={`${entry.area} upload hero media`}
+                          accept="image/*,video/*"
+                          disabled={uploadingEntryId === entry.id}
+                          onChange={(event) => void handleHeroMediaUpload(entry, event)}
+                          style={fileInputStyle}
+                          type="file"
+                        />
+                        <small style={{ opacity: 0.7 }}>
+                          {uploadingEntryId === entry.id
+                            ? "Uploading to cloud storage..."
+                            : "Upload file and we auto-fill the hero media URL."}
+                        </small>
+                      </label>
+                      <label style={{ display: "grid", gap: 8 }}>
+                        <span>Media URL (auto-generated)</span>
+                        <input
+                          aria-label={`${entry.area} media URL`}
+                          disabled
+                          readOnly
+                          style={{
+                            ...inputStyle,
+                            opacity: 1,
+                            background: "rgba(238, 235, 228, 0.65)",
+                            color: "rgba(36, 31, 22, 0.82)",
+                            cursor: "not-allowed",
+                          }}
+                          value={formState.mediaUrl}
+                        />
+                      </label>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 14,
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                      }}
+                    >
                     <label style={{ display: "grid", gap: 8 }}>
                       <span>Media type <span style={hintStyle}>Choose Video for the looping hero clip</span></span>
                       <select
@@ -682,15 +778,6 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                         <option value="video">Video</option>
                         <option value="image">Image</option>
                       </select>
-                    </label>
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <span>Media URL <span style={hintStyle}>Full URL to the video or image file</span></span>
-                      <input
-                        aria-label={`${entry.area} media URL`}
-                        onChange={(event) => updateField(entry.id, "mediaUrl", event.target.value)}
-                        style={inputStyle}
-                        value={formState.mediaUrl}
-                      />
                     </label>
                     <label style={{ display: "grid", gap: 8 }}>
                       <span>Poster image URL <span style={hintStyle}>Still frame shown before the video plays</span></span>
@@ -713,6 +800,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                         value={formState.mediaAlt}
                       />
                     </label>
+                    </div>
                   </div>
                 )}
 
@@ -876,4 +964,9 @@ const textareaStyle = {
   padding: "14px 16px",
   background: "var(--color-surface)",
   resize: "vertical" as const,
+} as const;
+
+const fileInputStyle = {
+  ...inputStyle,
+  padding: "12px 14px",
 } as const;

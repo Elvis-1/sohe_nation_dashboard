@@ -6,12 +6,11 @@ export function SessionExpiredPageShell() {
     <AuthPageFrame
       eyebrow="Session expired"
       title="The control desk timed out."
-      description="The mocked dashboard session has expired, so the workspace is paused until staff sign in again."
+      description="The dashboard session has expired, so the workspace is paused until staff sign in again."
     >
       <div style={{ display: "grid", gap: 16 }}>
         <p style={{ color: "var(--color-text-muted)", lineHeight: 1.7 }}>
-          This mirrors the handoff we will need once real staff auth is live: protected
-          dashboard routes should fail safely and route back through a clear re-entry screen.
+          Protected dashboard routes failed safely and routed you back through the secure sign-in flow.
         </p>
         <Link
           href="/signin"

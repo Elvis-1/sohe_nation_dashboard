@@ -37,7 +37,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
       <AppStateMessage
         eyebrow="Orders"
         title="This order record is missing"
-        description="The order you tried to open is not available in the current fixture desk."
+        description="The order you tried to open is not available in the current order desk."
         action={<Link href="/orders">Back to orders</Link>}
       />
     );
@@ -176,7 +176,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
 
         <SectionCard
           title="Fulfillment control"
-          description="Update the mocked lifecycle state and capture the next staff handoff note."
+          description="Update the order lifecycle state and capture the next staff handoff note."
         >
           <div style={{ display: "grid", gap: 14 }}>
             <label style={{ display: "grid", gap: 8 }}>

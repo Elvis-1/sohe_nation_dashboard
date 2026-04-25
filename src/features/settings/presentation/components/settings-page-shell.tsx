@@ -90,12 +90,12 @@ export function SettingsPageShell() {
         <PageHeader
           eyebrow="Settings"
           title="Operational defaults with live API backing."
-          description="The settings area stays intentionally lean in the MVP phase: enough structure for payments, shipping, store profile, and staff access placeholders once the API bootstrap runs."
+          description="The settings area keeps payments, shipping, store profile, and staff access defaults in one place."
         />
         <EmptyStatePanel
           eyebrow="Settings"
           title="No operational defaults are staged yet."
-          description="This panel will hold store profile, payments, shipping, and staff access defaults once the configuration placeholders are loaded."
+          description="Store profile, payments, shipping, notifications, and staff access defaults will appear here when they are available."
           actionHref="/"
           actionLabel="Return to overview"
         />
@@ -118,7 +118,7 @@ export function SettingsPageShell() {
 
       <SectionCard
         title="Settings groups"
-        description="Grouped placeholders for store profile, payments, shipping, notifications, and staff access defaults."
+        description="Grouped operational values for store profile, payments, shipping, notifications, and staff access."
       >
         <div style={{ display: "grid", gap: 16 }}>
           {draftGroups.map((group) => (
@@ -134,7 +134,6 @@ export function SettingsPageShell() {
                   <label key={field.id} style={{ display: "grid", gap: 8 }}>
                     <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
                       {field.label}
-                      {field.placeholder ? " · placeholder" : ""}
                     </span>
                     <input
                       aria-label={`${group.title} ${field.label}`}

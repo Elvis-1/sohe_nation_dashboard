@@ -1,5 +1,5 @@
 import { ContentEditorPageShell } from "@/src/features/content/presentation/components/content-editor-page-shell";
 
-export default function HomepageContentPage() {
-  return <ContentEditorPageShell routeKey="homepage_hero" />;
+export default function FeaturedProductsContentPage() {
+  return <ContentEditorPageShell routeKey="featured_drop" />;
 }

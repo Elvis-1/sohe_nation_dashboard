@@ -16,8 +16,8 @@ export const navItems = [
   },
   {
     href: "/content",
-    label: "Content",
-    description: "Homepage, stories, and merchandising spotlight control.",
+    label: "Homepage Desk",
+    description: "Homepage hero media and featured-product rail control.",
   },
   {
     href: "/returns",

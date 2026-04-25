@@ -318,15 +318,15 @@ test.describe("dashboard implemented surfaces", () => {
     await expect(page.getByRole("link", { name: "Back to orders" })).toBeVisible();
   });
 
-  test("content module renders the phase 5 content hub with area selection", async ({ page }) => {
+  test("content module renders only homepage hero and featured product controls", async ({ page }) => {
     await page.goto("/content");
 
-    await expect(page.getByRole("heading", { name: "Manage campaign and editorial surfaces." })).toBeVisible();
-    await expect(page.getByText("Content hub")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Manage homepage media and featured products." })).toBeVisible();
+    await expect(page.getByText("Homepage content hub")).toBeVisible();
     await expect(page.getByText("Homepage hero and lead merchandising rail")).toBeVisible();
     await expect(page.getByText("Featured drop", { exact: true })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open homepage editor" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Open stories editor" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open homepage media desk" })).toBeVisible();
+    await expect(page.getByText("Stories index and story detail pages")).toHaveCount(0);
   });
 
   test("homepage content editor limits editing to hero media and featured products", async ({
@@ -372,30 +372,13 @@ test.describe("dashboard implemented surfaces", () => {
     ).toBeVisible();
   });
 
-  test("stories editor supports lookbook and navigation promo updates from the content hub flow", async ({
-    page,
-  }) => {
-    await page.goto("/content");
+  test("stories route explains that story editing is not available in dashboard", async ({ page }) => {
+    await page.goto("/content/stories");
 
-    await page
-      .locator("article")
-      .filter({ hasText: "Navigation promo slots and footer messaging" })
-      .getByRole("link", { name: "Edit area" })
-      .click();
-
-    await expect(page).toHaveURL(/\/content\/stories/);
-    await expect(page.getByRole("heading", { name: "Stories and navigation editor." })).toBeVisible();
-
-    await page.getByLabel("stories CTA label").fill("Read The Updated Story");
-    await expect(page.getByLabel("navigation_promos headline")).toHaveCount(0);
-    await expect(page.getByText("Read-only in Slice 4")).toBeVisible();
-    await page.getByRole("button", { name: "Save as draft" }).click();
-
-    await expect(page.getByText("Content entries saved as draft.")).toBeVisible();
-
-    await page.reload();
-
-    await expect(page.getByLabel("stories CTA label")).toHaveValue("Read The Updated Story");
+    await expect(
+      page.getByRole("heading", { name: "Story editing is not available in the dashboard." }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to content hub" })).toBeVisible();
   });
 
   test("returns module renders the fixture-backed queue workflow", async ({ page }) => {

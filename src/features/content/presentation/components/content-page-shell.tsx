@@ -22,24 +22,14 @@ const darkPillStyle = {
   fontWeight: 600,
 } as const;
 
-const lightPillStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "var(--radius-pill)",
-  padding: "14px 18px",
-  border: "1px solid var(--color-border)",
-  background: "rgba(255, 253, 248, 0.82)",
-  color: "var(--color-text)",
-  fontWeight: 600,
-} as const;
-
 const areaRouteMap: Record<DashboardContentArea, string> = {
   homepage: "/content/homepage",
-  featured_drop: "/content/homepage#featured-drop",
+  featured_drop: "/content/featured-products",
   stories: "/content/stories",
   navigation_promos: "/content/stories#navigation-promos",
 };
+
+const DASHBOARD_EDITABLE_AREAS: DashboardContentArea[] = ["homepage", "featured_drop"];
 
 const areaLabelMap: Record<DashboardContentArea, string> = {
   homepage: "Homepage",
@@ -86,30 +76,33 @@ const areaMetaMap: Record<
 export function ContentPageShell() {
   const contentEntries = useContentDesk();
   const contentError = useContentDeskError();
+  const editableEntries = contentEntries.filter((entry) =>
+    DASHBOARD_EDITABLE_AREAS.includes(entry.area),
+  );
 
   if (contentError) {
     return (
       <AppStateMessage
-        eyebrow="Content"
-        title="The content desk could not load."
-        description={`The dashboard could not read content records from the API. ${contentError.message}`}
+        eyebrow="Homepage Desk"
+        title="The homepage media desk could not load."
+        description={`The dashboard could not read the homepage hero and featured-product records from the API. ${contentError.message}`}
         action={<Link href="/">Return to overview</Link>}
       />
     );
   }
 
-  if (contentEntries.length === 0) {
+  if (editableEntries.length === 0) {
     return (
       <div>
         <PageHeader
-          eyebrow="Content"
-          title="Manage campaign and editorial surfaces."
-          description="This module manages the canonical homepage, story, and merchandising content records that drive the storefront campaign surfaces."
+          eyebrow="Homepage Desk"
+          title="Manage homepage media and featured products."
+          description="This module manages the canonical homepage hero media and featured-drop product rail that drive the storefront landing page."
         />
         <EmptyStatePanel
-          eyebrow="Content"
-          title="No editorial surfaces are staged yet."
-          description="Homepage, story, and merchandising entries will appear here once content records are created in the API."
+          eyebrow="Homepage Desk"
+          title="No homepage content surfaces are staged yet."
+          description="Homepage hero and featured-drop records will appear here once content records are available from the API."
           actionHref="/"
           actionLabel="Return to overview"
         />
@@ -120,24 +113,21 @@ export function ContentPageShell() {
   return (
     <div>
       <PageHeader
-        eyebrow="Content"
-        title="Manage campaign and editorial surfaces."
-        description="Choose a content area, review the storefront-facing structure, and move canonical content records between draft, ready, and published states."
+        eyebrow="Homepage Desk"
+        title="Manage homepage media and featured products."
+        description="Update the storefront hero media and featured product rail, then move those canonical records between draft, ready, and published states."
         actions={
           <>
             <Link href="/content/homepage" style={darkPillStyle}>
-              Open homepage editor
-            </Link>
-            <Link href="/content/stories" style={lightPillStyle}>
-              Open stories editor
+              Open homepage desk
             </Link>
           </>
         }
       />
 
       <SectionCard
-        title="Content hub"
-        description="Choose the operational surface you want to update: homepage, featured drop, stories/lookbooks, or navigation promos."
+        title="Homepage media desk"
+        description="Choose the homepage surface you want to update: the hero media asset or the featured product rail."
       >
         <div
           style={{
@@ -146,7 +136,7 @@ export function ContentPageShell() {
             gap: 14,
           }}
         >
-          {contentEntries.map((entry) => (
+          {editableEntries.map((entry) => (
             (() => {
               const meta = areaMetaMap[entry.area];
 
@@ -235,7 +225,7 @@ export function ContentPageShell() {
 
                   <div className="dashboard-action-row">
                     <Link href={areaRouteMap[entry.area]} style={darkPillStyle}>
-                      Edit this storefront surface
+                      Open this homepage surface
                     </Link>
                   </div>
                 </article>

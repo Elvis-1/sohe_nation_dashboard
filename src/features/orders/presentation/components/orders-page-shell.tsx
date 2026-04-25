@@ -141,7 +141,7 @@ export function OrdersPageShell() {
           <EmptyStatePanel
             eyebrow="Orders"
             title="No orders are moving through the desk."
-            description="As checkout and account fixtures create order history, this queue will become the staff handoff surface."
+            description="As new purchases come in, this queue will become the staff handoff surface."
             actionHref="/"
             actionLabel="Return to overview"
           />

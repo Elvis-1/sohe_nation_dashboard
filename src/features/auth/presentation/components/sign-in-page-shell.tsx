@@ -11,8 +11,8 @@ export function SignInPageShell() {
   const [isPending, startTransition] = useTransition();
   const { isAuthenticated, isReady, signIn } = useDashboardAuth();
   const [hasMounted, setHasMounted] = useState(false);
-  const [email, setEmail] = useState<string>("admin");
-  const [password, setPassword] = useState<string>("admin123");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,11 +108,6 @@ export function SignInPageShell() {
           }}
         >
           <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
-            Dev access:
-            <br />
-            <code>admin</code> / <code>admin123</code>
-          </span>
-          <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
             {hasMounted && isReady ? "Access gate ready" : "Restoring session"}
           </span>
         </div>
@@ -143,7 +138,7 @@ export function SignInPageShell() {
             opacity: isPending || !hasMounted || !isReady ? 0.75 : 1,
           }}
         >
-          {isPending ? "Opening dashboard" : "Continue to overview"}
+          {isPending ? "Opening dashboard" : "Continue to dashboard"}
         </button>
         <Link
           href="/forgot-password"
