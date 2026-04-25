@@ -361,7 +361,6 @@ export function DashboardShell({
           flex-wrap: wrap;
         }
 
-        .dashboard-menu-button,
         .dashboard-status-pill,
         .dashboard-primary-link,
         .dashboard-secondary-link,
@@ -376,6 +375,11 @@ export function DashboardShell({
 
         .dashboard-menu-button {
           display: none;
+          align-items: center;
+          gap: 12px;
+          border-radius: var(--radius-pill);
+          padding: 12px 16px;
+          font-weight: 600;
           border: 1px solid var(--color-border);
           background: rgba(255, 253, 248, 0.82);
           cursor: pointer;
