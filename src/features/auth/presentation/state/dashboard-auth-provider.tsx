@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const SESSION_STORAGE_KEY = "sohe-dashboard-session";
 const SESSION_EXPIRED_FLAG_KEY = "sohe-dashboard-session-expired";
@@ -23,6 +23,15 @@ type AuthPayload = {
     last_name: string;
     is_staff: boolean;
     is_superuser: boolean;
+  };
+};
+
+type AuthErrorPayload = {
+  error?: {
+    message?: string;
+    code?: string;
+    target?: string;
+    status?: number;
   };
 };
 
@@ -71,6 +80,26 @@ function toDashboardSession(payload: AuthPayload): DashboardSession {
     role: payload.user.is_superuser ? "Owner" : payload.user.is_staff ? "Staff Access" : "Restricted",
     isOwner: payload.user.is_superuser ?? false,
     expiresAt: new Date(payload.expires_at).getTime(),
+  };
+}
+
+async function readAuthResponse(response: Response): Promise<AuthPayload | AuthErrorPayload | null> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    return response.json().catch(() => null);
+  }
+
+  const text = await response.text().catch(() => "");
+  if (!text) {
+    return null;
+  }
+
+  return {
+    error: {
+      message: text.slice(0, 240),
+      status: response.status,
+    },
   };
 }
 
@@ -134,18 +163,26 @@ export function DashboardAuthProvider({
   }, []);
 
   async function signIn(email: string, password: string) {
-    const response = await fetch("/api/backend/auth/staff/login/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ identifier: email, password }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/backend/auth/staff/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ identifier: email, password }),
+      });
+    } catch (error) {
+      return {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "The dashboard could not reach the local API.",
+      };
+    }
 
-    const payload = (await response.json().catch(() => null)) as
-      | AuthPayload
-      | { error?: { message?: string } }
-      | null;
+    const payload = await readAuthResponse(response);
 
     if (!response.ok || !payload || "error" in payload) {
       return {
@@ -167,18 +204,26 @@ export function DashboardAuthProvider({
   }
 
   async function acceptInvite(token: string, password: string) {
-    const response = await fetch("/api/backend/auth/staff/invite/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token, password }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/backend/auth/staff/invite/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, password }),
+      });
+    } catch (error) {
+      return {
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "The dashboard could not reach the local API.",
+      };
+    }
 
-    const payload = (await response.json().catch(() => null)) as
-      | AuthPayload
-      | { error?: { message?: string } }
-      | null;
+    const payload = await readAuthResponse(response);
 
     if (!response.ok || !payload || "error" in payload) {
       return {
@@ -214,17 +259,14 @@ export function DashboardAuthProvider({
     setSession(null);
   }
 
-  const value = useMemo<DashboardAuthContextValue>(
-    () => ({
-      isReady,
-      isAuthenticated: Boolean(session),
-      session,
-      signIn,
-      acceptInvite,
-      signOut,
-    }),
-    [isReady, session],
-  );
+  const value: DashboardAuthContextValue = {
+    isReady,
+    isAuthenticated: Boolean(session),
+    session,
+    signIn,
+    acceptInvite,
+    signOut,
+  };
 
   return (
     <DashboardAuthContext.Provider value={value}>{children}</DashboardAuthContext.Provider>

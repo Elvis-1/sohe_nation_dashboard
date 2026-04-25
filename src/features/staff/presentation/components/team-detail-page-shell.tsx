@@ -204,7 +204,7 @@ export function TeamDetailPageShell({ memberId }: Props) {
           title="Role and access"
           description="Change the staff member's role, deactivate access, or permanently delete an already deactivated account. Owner accounts are protected."
         >
-          <div style={{ display: "grid", gap: 14, maxWidth: 380 }}>
+          <div style={{ display: "grid", gap: 14, maxWidth: 520, width: "100%" }}>
             <div style={{ display: "grid", gap: 6 }}>
               <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
                 Role
@@ -222,7 +222,7 @@ export function TeamDetailPageShell({ memberId }: Props) {
               </label>
               <RolePermissionsLegend activeRole={selectedRole} />
             </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <div className="dashboard-action-row">
               <button
                 onClick={handleRoleChange}
                 style={primaryButton}
@@ -261,10 +261,8 @@ export function TeamDetailPageShell({ memberId }: Props) {
             {member.auditLog.map((entry, idx) => (
               <div
                 key={idx}
+                className="dashboard-split-row"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
                   gap: 8,
                   border: "1px solid var(--color-border)",
                   borderRadius: 14,
@@ -283,7 +281,7 @@ export function TeamDetailPageShell({ memberId }: Props) {
                       : ""}
                   </span>
                 </div>
-                <span style={{ color: "var(--color-text-muted)", whiteSpace: "nowrap" }}>
+                <span style={{ color: "var(--color-text-muted)" }}>
                   {new Date(entry.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -343,7 +341,7 @@ export function TeamDetailPageShell({ memberId }: Props) {
               </span>
             </div>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div className="dashboard-action-row dashboard-action-row--end">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 style={subtleButton}

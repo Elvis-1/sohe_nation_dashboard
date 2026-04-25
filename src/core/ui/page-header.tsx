@@ -12,17 +12,8 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <header
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 24,
-        alignItems: "end",
-        marginBottom: 28,
-        flexWrap: "wrap",
-      }}
-    >
-      <div>
+    <header className="page-header">
+      <div className="page-header__copy">
         <p
           style={{
             marginBottom: 10,
@@ -56,7 +47,47 @@ export function PageHeader({
           {description}
         </p>
       </div>
-      {actions ? <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>{actions}</div> : null}
+      {actions ? <div className="page-header__actions">{actions}</div> : null}
+      <style jsx>{`
+        .page-header {
+          display: flex;
+          justify-content: space-between;
+          gap: 24px;
+          align-items: end;
+          margin-bottom: 28px;
+          flex-wrap: wrap;
+        }
+
+        .page-header__copy {
+          min-width: 0;
+          flex: 1 1 440px;
+        }
+
+        .page-header__actions {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-start;
+          flex: 0 1 auto;
+        }
+
+        @media (max-width: 720px) {
+          .page-header {
+            gap: 18px;
+            margin-bottom: 22px;
+          }
+
+          .page-header__copy,
+          .page-header__actions {
+            flex-basis: 100%;
+          }
+
+          .page-header__actions {
+            display: grid;
+          }
+        }
+      `}</style>
     </header>
   );
 }

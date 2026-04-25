@@ -149,7 +149,7 @@ export function SettingsPageShell() {
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
+        <div className="dashboard-action-row" style={{ marginTop: 18 }}>
           <button onClick={handleSave} style={primaryButtonStyle} type="button">
             Save settings
           </button>

@@ -298,7 +298,7 @@ export function OverviewPageShell() {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "1.1fr 0.9fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
           gap: 16,
         }}
       >
@@ -321,7 +321,7 @@ export function OverviewPageShell() {
                   key={order.id}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr auto",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
                     gap: 12,
                     padding: "16px",
                     borderRadius: 18,
@@ -334,7 +334,7 @@ export function OverviewPageShell() {
                       {order.customerName} · {order.paymentProvider}
                     </p>
                   </div>
-                  <div style={{ textAlign: "right" }}>
+                  <div style={{ textAlign: "left" }}>
                     <strong>{order.total.formatted}</strong>
                     <p
                       style={{
@@ -371,13 +371,11 @@ export function OverviewPageShell() {
                   <div
                     key={product.id}
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 12,
                       border: "1px solid var(--color-border)",
                       borderRadius: 18,
                       padding: "14px 16px",
                     }}
+                    className="dashboard-split-row dashboard-split-row--center"
                   >
                     <div>
                       <strong>{product.title}</strong>

@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "env:sync": "node ../scripts/env-mode.mjs sync dashboard",
+    "dev": "npm run env:sync && next dev",
+    "build": "npm run env:sync && next build",
+    "start": "npm run env:sync && next start",
     "lint": "eslint",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",

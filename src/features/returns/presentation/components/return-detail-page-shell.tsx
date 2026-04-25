@@ -166,7 +166,7 @@ export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) 
             </label>
           </div>
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
+          <div className="dashboard-action-row" style={{ marginTop: 16 }}>
             <button onClick={handleSave} style={primaryButtonStyle} type="button">
               Save return updates
             </button>

@@ -10,14 +10,7 @@ export function SectionCard({
   children,
 }: SectionCardProps) {
   return (
-    <section
-      style={{
-        border: "1px solid var(--color-border)",
-        borderRadius: "24px",
-        padding: "22px",
-        background: "var(--color-surface)",
-      }}
-    >
+    <section className="section-card">
       <div style={{ marginBottom: 16 }}>
         <h2
           style={{
@@ -32,6 +25,28 @@ export function SectionCard({
         ) : null}
       </div>
       {children}
+      <style jsx>{`
+        .section-card {
+          border: 1px solid var(--color-border);
+          border-radius: 24px;
+          padding: 22px;
+          background: var(--color-surface);
+          min-width: 0;
+        }
+
+        @media (max-width: 720px) {
+          .section-card {
+            border-radius: 20px;
+            padding: 18px;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .section-card {
+            padding: 16px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

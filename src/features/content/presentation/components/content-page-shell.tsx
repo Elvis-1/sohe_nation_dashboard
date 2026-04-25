@@ -162,14 +162,7 @@ export function ContentPageShell() {
                     background: "rgba(255, 253, 248, 0.82)",
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      flexWrap: "wrap",
-                    }}
-                  >
+                  <div className="dashboard-split-row dashboard-split-row--center">
                     <div style={{ display: "grid", gap: 6 }}>
                       <strong>{meta.storefrontSurface}</strong>
                       <span style={{ color: "var(--color-text-muted)", fontSize: 13 }}>
@@ -240,7 +233,7 @@ export function ContentPageShell() {
                     </span>
                   </div>
 
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <div className="dashboard-action-row">
                     <Link href={areaRouteMap[entry.area]} style={darkPillStyle}>
                       Edit this storefront surface
                     </Link>

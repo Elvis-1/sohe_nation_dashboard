@@ -137,14 +137,7 @@ export function ReturnsPageShell() {
                   background: "rgba(255, 253, 248, 0.82)",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div className="dashboard-split-row dashboard-split-row--center">
                   <div style={{ display: "grid", gap: 6 }}>
                     <strong style={{ fontSize: 20 }}>{item.id}</strong>
                     <span style={{ color: "var(--color-text-muted)", lineHeight: 1.5 }}>
@@ -200,7 +193,7 @@ export function ReturnsPageShell() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div className="dashboard-action-row">
                   <Link href={`/returns/${item.id}`} style={primaryLinkStyle}>
                     Open return
                   </Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
@@ -253,25 +253,18 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
     () => contentEntries.filter((entry) => config.areas.includes(entry.area)),
     [config.areas, contentEntries],
   );
-  const [formStateById, setFormStateById] = useState<Record<string, ContentFormState>>(() =>
+  const [draftFormStateById, setFormStateById] = useState<Record<string, ContentFormState>>(() =>
     Object.fromEntries(editorEntries.map((entry) => [entry.id, buildFormState(entry)])),
   );
-
-  useEffect(() => {
-    if (editorEntries.length === 0) {
-      return;
-    }
-
-    setFormStateById((currentState) => {
-      const nextState = { ...currentState };
-      for (const entry of editorEntries) {
-        if (!nextState[entry.id]) {
-          nextState[entry.id] = buildFormState(entry);
-        }
+  const formStateById = useMemo(() => {
+    const nextState = { ...draftFormStateById };
+    for (const entry of editorEntries) {
+      if (!nextState[entry.id]) {
+        nextState[entry.id] = buildFormState(entry);
       }
-      return nextState;
-    });
-  }, [editorEntries]);
+    }
+    return nextState;
+  }, [draftFormStateById, editorEntries]);
 
   if (contentError) {
     return (
@@ -299,7 +292,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
     setFormStateById((currentState) => ({
       ...currentState,
       [entryId]: {
-        ...currentState[entryId],
+        ...(currentState[entryId] ?? formStateById[entryId]),
         [field]: value,
       },
     }));
@@ -309,7 +302,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
     setFormStateById((currentState) => ({
       ...currentState,
       [entryId]: {
-        ...currentState[entryId],
+        ...(currentState[entryId] ?? formStateById[entryId]),
         visibility,
       },
     }));
@@ -317,7 +310,8 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
 
   function toggleLinkedProduct(entryId: string, productId: string) {
     setFormStateById((currentState) => {
-      const currentProducts = currentState[entryId]?.linkedProductIds ?? [];
+      const entryState = currentState[entryId] ?? formStateById[entryId];
+      const currentProducts = entryState?.linkedProductIds ?? [];
       const nextLinkedProducts = currentProducts.includes(productId)
         ? currentProducts.filter((id) => id !== productId)
         : [...currentProducts, productId];
@@ -325,7 +319,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
       return {
         ...currentState,
         [entryId]: {
-          ...currentState[entryId],
+          ...entryState,
           linkedProductIds: nextLinkedProducts,
         },
       };
@@ -433,7 +427,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   </p>
                 </div>
 
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div className="dashboard-action-row">
                   {(["draft", "ready", "published"] as const).map((status) => (
                     <button
                       key={status}
@@ -708,7 +702,6 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                       <label
                         key={`${entry.id}_${product.id}`}
                         style={{
-                          display: "flex",
                           gap: 10,
                           alignItems: "start",
                           border: "1px solid var(--color-border)",
@@ -716,6 +709,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                           padding: "12px 14px",
                           background: "rgba(255, 253, 248, 0.82)",
                         }}
+                        className="dashboard-full-width"
                       >
                         <input
                           checked={formState.linkedProductIds.includes(product.id)}
@@ -770,7 +764,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
                   </div>
                 </SectionCard>
 
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div className="dashboard-action-row">
                   <button
                     onClick={() => void handleSaveEntry(entry, "draft")}
                     style={subtleButtonStyle}
@@ -802,7 +796,7 @@ export function ContentEditorPageShell({ routeKey }: ContentEditorPageShellProps
           title="Bulk publish control"
           description="Apply a status change to every section on this editor page at once when you intentionally want the grouped homepage or stories surfaces to move together."
         >
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="dashboard-action-row">
             <button onClick={() => void handleSave("draft")} style={subtleButtonStyle} type="button">
               Save all as draft
             </button>

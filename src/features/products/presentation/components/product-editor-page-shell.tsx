@@ -378,7 +378,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           title="Status control"
           description="Keep a product in draft while shaping it, or publish it once the storefront-facing fields are ready."
         >
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="dashboard-action-row">
             {(["draft", "published", "scheduled"] as const).map((status) => (
               <button
                 key={status}
@@ -529,7 +529,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
               }}
             >
               <legend style={{ padding: "0 6px" }}>Region availability</legend>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div className="dashboard-chip-row">
                 {REGION_OPTIONS.map((region) => (
                   <label key={region} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                     <input
@@ -558,7 +558,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                 style={{
                   display: "grid",
                   gap: 14,
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                   alignItems: "start",
                 }}
               >
@@ -687,7 +687,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
                   background: "rgba(255, 253, 248, 0.7)",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <div className="dashboard-split-row dashboard-split-row--center">
                   <strong>
                     Variant {index + 1}
                     {variant.apiId ? null : (
@@ -789,7 +789,7 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
           title="Save actions"
           description="Save the record as a draft, publish it to the mocked catalog, or return to the product desk."
         >
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="dashboard-action-row">
             <button
               onClick={() => handleSave("draft")}
               style={secondaryButtonStyle}

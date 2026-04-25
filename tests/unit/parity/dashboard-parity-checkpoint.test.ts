@@ -7,7 +7,6 @@ import { listCustomers } from "@/src/features/customers/data/repositories/mock-c
 import { getStoredOrdersSnapshot, updateOrderRecord } from "@/src/features/orders/data/repositories/order-repository";
 import {
   getProductById,
-  getStoredProductsSnapshot,
   updateProductRecord,
 } from "@/src/features/products/data/repositories/mock-product-repository";
 import {

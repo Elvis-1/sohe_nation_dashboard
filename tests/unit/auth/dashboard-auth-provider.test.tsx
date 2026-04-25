@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import {
   DashboardAuthProvider,
   hasExpiredDashboardSession,
@@ -38,9 +39,94 @@ function AuthHarness() {
   );
 }
 
+function ErrorHarness() {
+  const { signIn } = useDashboardAuth();
+  const [message, setMessage] = useState("none");
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={async () => {
+          const result = await signIn("wrong@example.com", "bad-password");
+          setMessage(result.error ?? "none");
+        }}
+      >
+        Capture sign in error
+      </button>
+      <div data-testid="sign-in-error">{message}</div>
+    </div>
+  );
+}
+
 describe("DashboardAuthProvider", () => {
+  beforeAll(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
   beforeEach(() => {
     window.localStorage.clear();
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = typeof input === "string" ? input : input.url;
+
+      if (url.endsWith("/api/backend/auth/staff/login/")) {
+        const rawBody = init?.body;
+        const body =
+          typeof rawBody === "string" ? (JSON.parse(rawBody) as { identifier?: string; password?: string }) : {};
+
+        if (
+          body.identifier !== "ops@sohesnation.com" ||
+          body.password !== "dashboard-demo"
+        ) {
+          return new Response(
+            JSON.stringify({
+              error: { message: "Invalid credentials." },
+            }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({
+            token: "staff-token",
+            expires_at: "2026-12-31T23:59:59Z",
+            user: {
+              email: "ops@sohesnation.com",
+              first_name: "Operations",
+              last_name: "Desk",
+              is_staff: true,
+              is_superuser: false,
+            },
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      if (url.endsWith("/api/backend/auth/staff/session/")) {
+        return new Response(null, { status: 401 });
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: { message: "Invalid credentials." },
+        }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    });
+  });
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
   });
 
   it("starts anonymous without a stored session", () => {
@@ -135,5 +221,41 @@ describe("DashboardAuthProvider", () => {
     expect(screen.getByTestId("auth-state")).toHaveTextContent("anonymous");
     expect(window.localStorage.getItem(sessionStorageKey)).toBeNull();
     expect(hasExpiredDashboardSession()).toBe(true);
+  });
+
+  it("returns backend-provided login errors instead of a generic fallback", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = typeof input === "string" ? input : input.url;
+
+      if (url.endsWith("/api/backend/auth/staff/session/")) {
+        return new Response(null, { status: 401 });
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: { message: "backend_unreachable: connect ECONNREFUSED 127.0.0.1:8000" },
+        }),
+        {
+          status: 502,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    });
+
+    render(
+      <DashboardAuthProvider>
+        <ErrorHarness />
+      </DashboardAuthProvider>,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Capture sign in error" }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("sign-in-error")).toHaveTextContent(
+        "backend_unreachable: connect ECONNREFUSED 127.0.0.1:8000",
+      );
+    });
   });
 });

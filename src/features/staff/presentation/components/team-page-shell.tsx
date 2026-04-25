@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
-import type { DashboardStaffMember, StaffRole } from "@/src/core/types/dashboard";
+import type { StaffRole } from "@/src/core/types/dashboard";
 import { inviteStaffMember } from "@/src/features/staff/data/repositories/staff-repository";
 import { useStaffList } from "@/src/features/staff/presentation/state/use-staff-list";
 import { useDashboardAuth } from "@/src/features/auth/presentation/state/dashboard-auth-provider";
@@ -165,12 +164,8 @@ export function TeamPageShell() {
           {members.map((member) => (
             <div
               key={member.id}
+              className="dashboard-split-row dashboard-split-row--center"
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 12,
                 border: "1px solid var(--color-border)",
                 borderRadius: 18,
                 padding: "14px 18px",
@@ -183,7 +178,7 @@ export function TeamPageShell() {
                 </strong>
                 <span style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{member.email}</span>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <div className="dashboard-chip-row">
                 <span style={roleBadge}>{ROLE_LABELS[member.role]}</span>
                 <span style={pillStyle(member.isActive)}>
                   {member.isActive ? "Active" : "Inactive"}
@@ -273,7 +268,7 @@ export function TeamPageShell() {
                   </label>
                   <RolePermissionsLegend activeRole={inviteRole} />
                 </div>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div className="dashboard-action-row">
                   <button onClick={handleInvite} style={primaryButton} disabled={submitting}>
                     {submitting ? "Adding…" : "Add member"}
                   </button>

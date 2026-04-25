@@ -3,6 +3,20 @@ import { NextRequest, NextResponse } from "next/server";
 const INTERNAL_API_BASE_URL =
   process.env.DASHBOARD_API_INTERNAL_BASE_URL ?? "https://sohe-nation-api.onrender.com/api/v1";
 
+function extractReadableErrorMessage(body: string): string {
+  const titleMatch = body.match(/<title>(.*?)<\/title>/i);
+  if (titleMatch?.[1]) {
+    return titleMatch[1].trim();
+  }
+
+  const headingMatch = body.match(/<h1[^>]*>(.*?)<\/h1>/i);
+  if (headingMatch?.[1]) {
+    return headingMatch[1].replace(/<[^>]+>/g, "").trim();
+  }
+
+  return body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240);
+}
+
 async function proxyRequest(
   request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
@@ -32,16 +46,35 @@ async function proxyRequest(
       ? undefined
       : Buffer.from(await request.arrayBuffer());
 
-  const upstreamResponse = await fetch(targetUrl, {
-    method: request.method,
-    headers: {
-      ...(requestContentType ? { "Content-Type": requestContentType } : {}),
-      ...(requestAccept ? { Accept: requestAccept } : {}),
-      ...(requestAuthorization ? { Authorization: requestAuthorization } : {}),
-    },
-    body: requestBody,
-    cache: "no-store",
-  });
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(targetUrl, {
+      method: request.method,
+      headers: {
+        ...(requestContentType ? { "Content-Type": requestContentType } : {}),
+        ...(requestAccept ? { Accept: requestAccept } : {}),
+        ...(requestAuthorization ? { Authorization: requestAuthorization } : {}),
+      },
+      body: requestBody,
+      cache: "no-store",
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "The dashboard could not reach the API service.";
+
+    return NextResponse.json(
+      {
+        error: {
+          code: "backend_unreachable",
+          message,
+          target: targetUrl.toString(),
+        },
+      },
+      { status: 502 },
+    );
+  }
 
   if ([204, 205, 304].includes(upstreamResponse.status)) {
     return new NextResponse(null, {
@@ -50,11 +83,26 @@ async function proxyRequest(
   }
 
   const responseText = await upstreamResponse.text();
+  const upstreamContentType = upstreamResponse.headers.get("content-type") ?? "application/json";
+
+  if (!upstreamResponse.ok && !upstreamContentType.includes("application/json")) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "backend_error",
+          message: extractReadableErrorMessage(responseText) || "The API returned an unexpected error.",
+          target: targetUrl.toString(),
+          status: upstreamResponse.status,
+        },
+      },
+      { status: upstreamResponse.status },
+    );
+  }
 
   return new NextResponse(responseText, {
     status: upstreamResponse.status,
     headers: {
-      "Content-Type": upstreamResponse.headers.get("content-type") ?? "application/json",
+      "Content-Type": upstreamContentType,
     },
   });
 }

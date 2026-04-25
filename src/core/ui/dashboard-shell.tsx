@@ -171,12 +171,17 @@ export function DashboardShell({
         }
 
         .dashboard-sidebar {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          max-height: 100vh;
           border-right: 1px solid var(--color-border);
           padding: 28px 20px;
           background:
             linear-gradient(180deg, rgba(255, 253, 248, 0.82), rgba(246, 238, 223, 0.94)),
             radial-gradient(circle at top, rgba(179, 123, 31, 0.1), transparent 44%);
           backdrop-filter: blur(18px);
+          overflow: hidden;
         }
 
         .dashboard-brand-block {
@@ -239,6 +244,12 @@ export function DashboardShell({
         .dashboard-nav {
           display: grid;
           gap: 10px;
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          padding-right: 6px;
+          margin-right: -6px;
+          overscroll-behavior: contain;
         }
 
         .dashboard-nav-link {
@@ -301,6 +312,7 @@ export function DashboardShell({
 
         .dashboard-signout {
           margin-top: 16px;
+          flex-shrink: 0;
           width: 100%;
           border: 1px solid var(--color-border);
           border-radius: 20px;
@@ -317,6 +329,7 @@ export function DashboardShell({
 
         .dashboard-main {
           padding: 24px;
+          min-width: 0;
         }
 
         .dashboard-topbar {
@@ -418,6 +431,8 @@ export function DashboardShell({
             radial-gradient(circle at top right, rgba(179, 123, 31, 0.06), transparent 36%);
           box-shadow: var(--shadow-soft);
           padding: 28px;
+          min-width: 0;
+          overflow: clip;
         }
 
         @media (max-width: 1180px) {
@@ -456,6 +471,8 @@ export function DashboardShell({
             transform: translateX(-102%);
             transition: transform 180ms ease;
             box-shadow: var(--shadow-soft);
+            min-height: 100svh;
+            max-height: 100svh;
           }
 
           .dashboard-sidebar[data-open="true"] {
@@ -487,6 +504,19 @@ export function DashboardShell({
         }
 
         @media (max-width: 640px) {
+          .dashboard-shell {
+            min-height: 100svh;
+          }
+
+          .dashboard-menu-button,
+          .dashboard-status-pill,
+          .dashboard-primary-link,
+          .dashboard-secondary-link,
+          .dashboard-ops-card {
+            width: 100%;
+            justify-content: space-between;
+          }
+
           .dashboard-route-card {
             max-width: none;
           }
@@ -494,6 +524,37 @@ export function DashboardShell({
           .dashboard-topbar-pills,
           .dashboard-topbar-actions {
             display: grid;
+          }
+
+          .dashboard-brand-title {
+            font-size: 36px;
+          }
+
+          .dashboard-sidebar {
+            width: min(340px, 92vw);
+            padding: 24px 18px;
+          }
+
+          .dashboard-content-frame {
+            border-radius: 22px;
+            padding: 16px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-main {
+            padding: 12px;
+          }
+
+          .dashboard-topbar {
+            gap: 12px;
+          }
+
+          .dashboard-route-card,
+          .dashboard-session-card,
+          .dashboard-nav-link,
+          .dashboard-signout {
+            border-radius: 18px;
           }
         }
       `}</style>

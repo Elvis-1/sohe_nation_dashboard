@@ -126,16 +126,12 @@ export function CustomerDetailPageShell({ customerId }: Props) {
                   {linkedOrders.map(({ orderId, record }) => (
                     <div
                       key={orderId}
+                      className="dashboard-split-row dashboard-split-row--center"
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 12,
-                        alignItems: "center",
                         border: "1px solid var(--color-border)",
                         borderRadius: 16,
                         padding: "12px 14px",
                         background: "rgba(255, 253, 248, 0.82)",
-                        flexWrap: "wrap",
                       }}
                     >
                       <span style={{ display: "grid", gap: 4 }}>
@@ -166,16 +162,12 @@ export function CustomerDetailPageShell({ customerId }: Props) {
                   {linkedReturns.map(({ returnId, record }) => (
                     <div
                       key={returnId}
+                      className="dashboard-split-row dashboard-split-row--center"
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 12,
-                        alignItems: "center",
                         border: "1px solid var(--color-border)",
                         borderRadius: 16,
                         padding: "12px 14px",
                         background: "rgba(255, 253, 248, 0.82)",
-                        flexWrap: "wrap",
                       }}
                     >
                       <span style={{ display: "grid", gap: 4 }}>

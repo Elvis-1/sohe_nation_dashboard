@@ -296,7 +296,7 @@ export function NotificationsPageShell() {
           </div>
         ) : null}
 
-        <div style={{ display: "grid", gap: 10, marginTop: 16, maxWidth: 420 }}>
+        <div className="dashboard-limited-stack">
           <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
             Send test email to
             <input
@@ -306,7 +306,7 @@ export function NotificationsPageShell() {
               onChange={(event) => setTestRecipient(event.target.value)}
             />
           </label>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div className="dashboard-action-row">
             <button style={primaryButton} type="button" onClick={() => void handleSendTest()} disabled={sendingTest}>
               {sendingTest ? "Sending..." : "Send test email"}
             </button>
@@ -376,7 +376,7 @@ export function NotificationsPageShell() {
             />
           </label>
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+        <div className="dashboard-action-row" style={{ marginTop: 14 }}>
           <button style={primaryButton} type="button" onClick={() => void handleApplyFilters()}>
             Apply filters
           </button>
@@ -432,15 +432,7 @@ export function NotificationsPageShell() {
                   background: "rgba(255,253,248,0.78)",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                  }}
-                >
+                <div className="dashboard-split-row dashboard-split-row--center">
                   <div>
                     <strong style={{ display: "block", marginBottom: 4 }}>
                       {EVENT_LABELS[log.eventType] ?? log.eventType}
@@ -449,7 +441,7 @@ export function NotificationsPageShell() {
                       {log.recipientEmail}
                     </span>
                   </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <div className="dashboard-chip-row">
                     <span style={statusPill(log.status)}>{STATUS_LABELS[log.status]}</span>
                     <span
                       style={{
@@ -526,7 +518,7 @@ export function NotificationsPageShell() {
                 </div>
 
                 {log.canRetry ? (
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div className="dashboard-action-row dashboard-action-row--end">
                     <button
                       style={primaryButton}
                       type="button"
