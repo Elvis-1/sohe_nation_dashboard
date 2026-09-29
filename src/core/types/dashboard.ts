@@ -82,6 +82,18 @@ export type DashboardOrderLine = {
   unitPrice: Money;
 };
 
+/** Structured shipping snapshot taken at checkout. */
+export type OrderShippingDetails = {
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  countryCode: string;
+};
+
 export type DashboardOrderRecord = {
   id: string;
   orderNumber: string;
@@ -93,6 +105,8 @@ export type DashboardOrderRecord = {
   total: Money;
   createdAt: string;
   shippingAddress: string;
+  /** Null for orders placed before structured snapshots; show `shippingAddress` then. */
+  shippingDetails: OrderShippingDetails | null;
   fulfillmentNote: string;
   internalNote: string;
   lines: DashboardOrderLine[];
@@ -165,8 +179,11 @@ export type DashboardCustomerRecord = {
   firstName: string;
   lastName: string;
   defaultRegion: "NG" | "US" | "GB" | "EU";
+  /** Filled on detail reads only; list reads carry the counts below. */
   orderIds: string[];
   returnIds: string[];
+  orderCount: number;
+  returnCount: number;
   addressCount: number;
 };
 

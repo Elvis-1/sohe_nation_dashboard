@@ -1,0 +1,33 @@
+{
+  "count": 3,
+  "next": "http://127.0.0.1:8001/api/v1/dashboard/returns/?page=2&page_size=2",
+  "previous": null,
+  "results": [
+    {
+      "customer_email": "ada@example.com",
+      "customer_id": "47e3df9a-601e-4c9b-84b3-5cc7b8918f2d",
+      "customer_name": "Ada Nwosu",
+      "customer_note": "",
+      "id": "432f1686-7079-4886-8591-c6d74c3bee59",
+      "internal_decision": "",
+      "item_summary": "Varsity Crest Cap / Sand / One size",
+      "order_id": "a7eaceec-48a5-481a-b4ce-5cc2f01230b8",
+      "reason": "Wrong colour",
+      "requested_at": "2026-09-29T10:52:58.180470Z",
+      "status": "new"
+    },
+    {
+      "customer_email": "kemi@example.com",
+      "customer_id": "0f9789c6-f606-4398-a14f-d80613733277",
+      "customer_name": "Kemi Adeyemi",
+      "customer_note": "",
+      "id": "71e142ae-c8b8-4239-bba5-ee252937c710",
+      "internal_decision": "",
+      "item_summary": "Varsity Crest Cap / Sand / One size",
+      "order_id": "2ddbe790-450e-4b5d-92be-14efecace175",
+      "reason": "Fit exchange",
+      "requested_at": "2026-09-29T10:52:58.179660Z",
+      "status": "approved"
+    }
+  ]
+}

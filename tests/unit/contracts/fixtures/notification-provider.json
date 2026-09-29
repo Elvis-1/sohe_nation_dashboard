@@ -1,0 +1,12 @@
+{
+  "backend_name": "django.core.mail.backends.console.EmailBackend",
+  "default_from_email": "Sohe's Nation <support@sohesnation.com>",
+  "delivery_mode": "local",
+  "host": "smtp.example.com",
+  "host_user_masked": "",
+  "is_configured": true,
+  "is_live_backend": false,
+  "notes": "Using a safe local email backend.",
+  "port": 587,
+  "use_tls": true
+}

@@ -6,6 +6,8 @@
  * Components subscribe to in-memory state invalidation via a lightweight event bus.
  */
 
+import { ApiError } from "@/src/core/api/http-client";
+import { fetchAllPages, type DeskLoadStatus } from "@/src/core/api/paginate";
 import type { DashboardProductRecord } from "@/src/core/types/dashboard";
 import {
   fetchDashboardProducts,
@@ -25,13 +27,52 @@ const EMPTY_PRODUCTS: DashboardProductRecord[] = [];
 
 let cachedProducts: DashboardProductRecord[] | null = null;
 let fetchPromise: Promise<DashboardProductRecord[]> | null = null;
+let lastProductsError: Error | null = null;
+// Ignores results from a load that a newer load has replaced.
+let loadGeneration = 0;
 
-function invalidate() {
-  cachedProducts = null;
-  fetchPromise = null;
+function dispatchChange() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(PRODUCT_CHANGE_EVENT));
   }
+}
+
+function startLoad() {
+  const generation = ++loadGeneration;
+  fetchPromise = fetchAllPages(fetchDashboardProducts)
+    .then((results) => {
+      if (generation !== loadGeneration) return results;
+      cachedProducts = results;
+      lastProductsError = null;
+      fetchPromise = null;
+      dispatchChange();
+      return results;
+    })
+    .catch((error) => {
+      if (generation !== loadGeneration) return EMPTY_PRODUCTS;
+      cachedProducts = EMPTY_PRODUCTS;
+      lastProductsError = error instanceof Error ? error : new Error("Products fetch failed.");
+      fetchPromise = null;
+      dispatchChange();
+      return EMPTY_PRODUCTS;
+    });
+}
+
+/** Refresh after a write, keeping the current catalog on screen until the new one lands. */
+function invalidate() {
+  if (cachedProducts === null || lastProductsError) {
+    resetProducts();
+    return;
+  }
+  startLoad();
+}
+
+function resetProducts() {
+  loadGeneration += 1;
+  cachedProducts = null;
+  fetchPromise = null;
+  lastProductsError = null;
+  dispatchChange();
 }
 
 // ---------------------------------------------------------------------------
@@ -51,18 +92,6 @@ export function subscribeToProducts(onStoreChange: () => void): () => void {
 // Reads
 // ---------------------------------------------------------------------------
 
-async function loadProducts(): Promise<DashboardProductRecord[]> {
-  const { results } = await fetchDashboardProducts({ page_size: 100 });
-  cachedProducts = results;
-  fetchPromise = null;
-
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(PRODUCT_CHANGE_EVENT));
-  }
-
-  return results;
-}
-
 /**
  * Returns current cached snapshot or triggers a load.
  * Used as the `getSnapshot` argument in useSyncExternalStore.
@@ -70,20 +99,22 @@ async function loadProducts(): Promise<DashboardProductRecord[]> {
  */
 export function getProductsSnapshot(): DashboardProductRecord[] {
   if (cachedProducts !== null) return cachedProducts;
-
-  // Trigger background load if not already in flight
-  if (!fetchPromise) {
-    fetchPromise = loadProducts().catch(() => {
-      cachedProducts = EMPTY_PRODUCTS;
-      fetchPromise = null;
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event(PRODUCT_CHANGE_EVENT));
-      }
-      return EMPTY_PRODUCTS;
-    });
-  }
-
+  if (!fetchPromise) startLoad();
   return EMPTY_PRODUCTS;
+}
+
+export function getProductsErrorSnapshot(): Error | null {
+  return lastProductsError;
+}
+
+export function getProductsStatusSnapshot(): DeskLoadStatus {
+  if (lastProductsError) return "error";
+  return cachedProducts === null ? "loading" : "ready";
+}
+
+/** Drop the cached catalog (including a failed load) so the next read refetches from the API. */
+export function retryProductsLoad(): void {
+  resetProducts();
 }
 
 /**
@@ -101,6 +132,19 @@ export async function listProducts(
   return results;
 }
 
+/**
+ * Full product record for the editor. The list endpoint omits narrative and region fields,
+ * so editing from a list record would save them back blank. Null when the product does not exist.
+ */
+export async function loadProductDetail(productId: string): Promise<DashboardProductRecord | null> {
+  try {
+    return await fetchDashboardProduct(productId);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
 export async function getProductById(productId: string): Promise<DashboardProductRecord | null> {
   try {
     return await fetchDashboardProduct(productId);
@@ -110,7 +154,7 @@ export async function getProductById(productId: string): Promise<DashboardProduc
 }
 
 export async function listLowStockProducts(threshold = 5): Promise<DashboardProductRecord[]> {
-  const { results } = await fetchDashboardProducts({ page_size: 100 });
+  const results = await fetchAllPages(fetchDashboardProducts);
   return results.filter((p) => p.inventoryQuantity <= threshold);
 }
 

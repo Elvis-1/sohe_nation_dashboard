@@ -1,13 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
+import { OWNER_IDENTIFIER, OWNER_PASSWORD, submitSignIn } from "./support/staff-auth";
 
-const ownerEmail = "admin";
-const ownerPassword = "admin123";
+const ownerEmail = OWNER_IDENTIFIER;
+const ownerPassword = OWNER_PASSWORD;
 
 async function signInAs(page: Page, identifier: string, password: string) {
-  await page.goto("/signin");
-  await page.getByLabel("Email").fill(identifier);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Continue to overview" }).click();
+  await submitSignIn(page, identifier, password);
   await expect(page).toHaveURL("/", { timeout: 10000 });
 }
 

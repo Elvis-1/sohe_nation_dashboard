@@ -1,5 +1,8 @@
 import type { DashboardCustomerRecord } from "@/src/core/types/dashboard";
-import { ApiError, apiRequest } from "@/src/core/api/http-client";
+import { apiRequest } from "@/src/core/api/http-client";
+
+/** Customers shown per page on the dashboard list. */
+export const CUSTOMER_PAGE_SIZE = 25;
 
 type ApiCustomerList = {
   count: number;
@@ -28,89 +31,34 @@ function mapApiCustomer(api: ApiCustomer): DashboardCustomerRecord {
     defaultRegion: api.default_region,
     orderIds: api.order_ids ?? [],
     returnIds: api.return_ids ?? [],
+    orderCount: api.order_count,
+    returnCount: api.return_count,
     addressCount: api.address_count,
   };
 }
 
-// ── client-side store ──────────────────────────────────────────────────────
+export type CustomerListFilters = {
+  /** Matches email, first name, last name, or an exact customer ID. */
+  search: string;
+  region: string;
+  page: number;
+};
 
-const CUSTOMER_CHANGE_EVENT = "sohe-dashboard-customers-change";
-const EMPTY: DashboardCustomerRecord[] = [];
+export type CustomerPage = {
+  count: number;
+  results: DashboardCustomerRecord[];
+};
 
-let cachedCustomers: DashboardCustomerRecord[] | null = null;
-let fetchPromise: Promise<DashboardCustomerRecord[]> | null = null;
-let customerLoadError: string | null = null;
-let customerLoading = false;
+export async function fetchCustomerPage(filters: CustomerListFilters): Promise<CustomerPage> {
+  const query = new URLSearchParams({
+    page: String(filters.page),
+    page_size: String(CUSTOMER_PAGE_SIZE),
+  });
+  if (filters.search.trim()) query.set("search", filters.search.trim());
+  if (filters.region) query.set("default_region", filters.region);
 
-function dispatchChange() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(CUSTOMER_CHANGE_EVENT));
-  }
-}
-
-async function loadCustomers(): Promise<DashboardCustomerRecord[]> {
-  customerLoading = true;
-  customerLoadError = null;
-  dispatchChange();
-  try {
-    const data = await apiRequest<ApiCustomerList>("/dashboard/customers/?page_size=200");
-    cachedCustomers = (data.results ?? []).map(mapApiCustomer);
-    fetchPromise = null;
-    return cachedCustomers;
-  } catch (error) {
-    cachedCustomers = EMPTY;
-    fetchPromise = null;
-    customerLoadError =
-      error instanceof ApiError
-        ? error.message
-        : "Unable to load customers right now.";
-    return EMPTY;
-  } finally {
-    customerLoading = false;
-    dispatchChange();
-  }
-}
-
-export function subscribeToStoredCustomers(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => undefined;
-  const handle = () => onStoreChange();
-  window.addEventListener(CUSTOMER_CHANGE_EVENT, handle);
-  return () => window.removeEventListener(CUSTOMER_CHANGE_EVENT, handle);
-}
-
-export function getStoredCustomersSnapshot(): DashboardCustomerRecord[] {
-  if (cachedCustomers !== null) return cachedCustomers;
-  if (!fetchPromise) {
-    fetchPromise = loadCustomers();
-  }
-  return EMPTY;
-}
-
-export function getServerCustomersSnapshot(): DashboardCustomerRecord[] {
-  return EMPTY;
-}
-
-export function getCustomersLoadErrorSnapshot(): string | null {
-  return customerLoadError;
-}
-
-export function getCustomersLoadingSnapshot(): boolean {
-  return customerLoading;
-}
-
-export function getServerCustomersLoadErrorSnapshot(): string | null {
-  return null;
-}
-
-export function getServerCustomersLoadingSnapshot(): boolean {
-  return false;
-}
-
-export function refreshCustomers() {
-  cachedCustomers = null;
-  fetchPromise = null;
-  customerLoadError = null;
-  dispatchChange();
+  const data = await apiRequest<ApiCustomerList>(`/dashboard/customers/?${query}`);
+  return { count: data.count, results: (data.results ?? []).map(mapApiCustomer) };
 }
 
 // ── detail fetch ───────────────────────────────────────────────────────────

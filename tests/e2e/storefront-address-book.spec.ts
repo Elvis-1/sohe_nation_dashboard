@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 const SESSION_KEY = "sohe-storefront-account-session";
 const CART_KEY = "sohe-storefront-cart";
-const API_BASE = "http://localhost:8000/api/v1";
+// Glob so route mocks match whichever API host the storefront env points at.
+const API_BASE = "**/api/v1";
 
 async function seedAuthenticatedState(page: Page) {
   await page.addInitScript(
@@ -22,10 +23,19 @@ async function seedAuthenticatedState(page: Page) {
       window.localStorage.setItem(
         cartKey,
         JSON.stringify([
+          // Same snapshot shape `createStoredCartLine` writes when a product is added to the bag.
           {
             productId: "sn-command-jacket",
             variantId: "variant-jacket-l",
             quantity: 1,
+            title: "Command Jacket",
+            variantLabel: "Black / L",
+            unitPriceAmount: 185000,
+            unitPriceCurrency: "NGN",
+            unitPriceFormatted: "NGN 185,000",
+            unitShippingAmount: 0,
+            unitShippingCurrency: "NGN",
+            unitShippingFormatted: "NGN 0",
           },
         ]),
       );
@@ -56,10 +66,10 @@ test.describe("storefront address capture and address book", () => {
       });
     });
 
-    await page.route(`${API_BASE}/account/orders/`, async (route) => {
+    await page.route(`${API_BASE}/account/orders/**`, async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [] }) });
     });
-    await page.route(`${API_BASE}/account/returns/`, async (route) => {
+    await page.route(`${API_BASE}/account/returns/**`, async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ results: [] }) });
     });
     await page.route(`${API_BASE}/settings/storefront/`, async (route) => {
@@ -143,6 +153,33 @@ test.describe("storefront address capture and address book", () => {
         }),
       });
     });
+    await page.route(`${API_BASE}/checkout/quote/`, async (route) => {
+      const money = (amount: number) => ({ amount, currency: "NGN", formatted: `NGN ${amount.toLocaleString("en-NG")}` });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          currency: "NGN",
+          lines: [
+            {
+              product_id: "sn-command-jacket",
+              variant_id: "variant-jacket-l",
+              title: "Command Jacket",
+              variant_label: "Black / L",
+              quantity: 1,
+              unit_price: money(185000),
+              line_total: money(185000),
+            },
+          ],
+          summary: {
+            subtotal: money(185000),
+            shipping: money(0),
+            discount: money(0),
+            total: money(185000),
+          },
+        }),
+      });
+    });
     await page.route(`${API_BASE}/checkout/sessions/`, async (route) => {
       await route.fulfill({
         status: 201,
@@ -150,7 +187,7 @@ test.describe("storefront address capture and address book", () => {
         body: JSON.stringify({
           id: "chk_mock_1",
           order_id: "00000000-0000-0000-0000-000000000001",
-          provider: "paypal",
+          provider: "flutterwave",
           status: "pending_redirect",
           region: "NG",
           currency: "NGN",
@@ -168,7 +205,7 @@ test.describe("storefront address capture and address book", () => {
     await page.getByPlaceholder("State / Province").fill("Lagos");
     await page.getByPlaceholder("Postal code").fill("100001");
     await page.getByLabel("Save this shipping address to my account").check();
-    await page.getByRole("button", { name: "Create paypal Session" }).click();
+    await page.getByRole("button", { name: "Create flutterwave Session" }).click();
 
     await expect(page.getByText("Hosted handoff prepared.")).toBeVisible();
     await expect(page.getByText("Shipping snapshot prepared for: 77 Marina Road, Lagos, Lagos.")).toBeVisible();

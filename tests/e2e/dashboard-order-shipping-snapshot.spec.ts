@@ -1,14 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OWNER_IDENTIFIER, OWNER_PASSWORD, submitSignIn } from "./support/staff-auth";
 
 const ORDER_ID = "snapshot-order-1";
 const ORDER_NUMBER = "SOH-SNAPSHOT-1";
 const SHIPPING_ADDRESS = "12 Admiralty Way, Lekki Phase 1, Lagos";
 
 async function signInAsAdmin(page: Page) {
-  await page.goto("/signin");
-  await page.getByLabel("Email").fill("admin");
-  await page.getByLabel("Password").fill("admin123");
-  await page.getByRole("button", { name: "Continue to overview" }).click();
+  await submitSignIn(page, OWNER_IDENTIFIER, OWNER_PASSWORD);
   await expect(page).toHaveURL("/");
 }
 

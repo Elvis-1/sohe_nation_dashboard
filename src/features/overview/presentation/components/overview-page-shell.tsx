@@ -10,17 +10,23 @@ import {
   subscribeToStoredOrders,
   getStoredOrdersSnapshot,
   getServerOrdersSnapshot,
+  retryOrdersLoad,
 } from "@/src/features/orders/data/repositories/order-repository";
 import {
   subscribeToProducts,
   getProductsSnapshot,
   getServerProductsSnapshot,
+  retryProductsLoad,
 } from "@/src/features/products/data/repositories/product-repository";
 import {
   subscribeToStoredReturns,
   getStoredReturnsSnapshot,
   getServerReturnsSnapshot,
+  retryReturnsLoad,
 } from "@/src/features/returns/data/repositories/return-repository";
+import { useOrderDeskStatus } from "@/src/features/orders/presentation/state/use-order-desk";
+import { useProductCatalogStatus } from "@/src/features/products/presentation/state/use-product-catalog";
+import { useReturnDeskStatus } from "@/src/features/returns/presentation/state/use-return-desk";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -51,6 +57,20 @@ const lightPillStyle = {
   fontWeight: 600,
 } as const;
 
+const deskNoticeStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  marginBottom: 16,
+  padding: "14px 18px",
+  borderRadius: 18,
+  border: "1px solid #a64f43",
+  background: "rgba(110, 58, 50, 0.12)",
+  color: "#8f2f24",
+} as const;
+
 export function OverviewPageShell() {
   const allOrders = useSyncExternalStore(
     subscribeToStoredOrders,
@@ -68,6 +88,13 @@ export function OverviewPageShell() {
     getServerReturnsSnapshot,
   );
   const allContent = useContentDesk();
+  const deskStatuses = [
+    { label: "orders", status: useOrderDeskStatus(), retry: retryOrdersLoad },
+    { label: "products", status: useProductCatalogStatus(), retry: retryProductsLoad },
+    { label: "returns", status: useReturnDeskStatus(), retry: retryReturnsLoad },
+  ];
+  const failedDesks = deskStatuses.filter((desk) => desk.status === "error");
+  const isLoadingDesks = deskStatuses.some((desk) => desk.status === "loading");
 
   const recentOrders = useMemo(() => allOrders.slice(0, 3), [allOrders]);
   const lowStockProducts = useMemo(
@@ -187,6 +214,26 @@ export function OverviewPageShell() {
     returnQueue.length > 0 ||
     liveModules.length > 0;
 
+  // Metrics read 0 while desks load or after a failed load, so say which numbers are not live.
+  const deskNotice =
+    failedDesks.length > 0 ? (
+      <div role="alert" style={deskNoticeStyle}>
+        <span>
+          Could not load {failedDesks.map((desk) => desk.label).join(", ")} from the API. Figures
+          below that depend on them are incomplete.
+        </span>
+        <button
+          onClick={() => failedDesks.forEach((desk) => desk.retry())}
+          style={{ ...lightPillStyle, cursor: "pointer" }}
+          type="button"
+        >
+          Retry
+        </button>
+      </div>
+    ) : isLoadingDesks ? (
+      <p style={{ marginBottom: 16, color: "var(--color-text-muted)" }}>Loading live data...</p>
+    ) : null;
+
   if (!hasOverviewData) {
     return (
       <div>
@@ -223,6 +270,8 @@ export function OverviewPageShell() {
           </>
         }
       />
+
+      {deskNotice}
 
       <section
         style={{

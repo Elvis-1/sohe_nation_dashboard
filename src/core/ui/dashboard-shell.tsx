@@ -24,14 +24,14 @@ export function DashboardShell({
 
   const activeItem = navItems.find((item) => item.href === pathname);
   const activeSectionNumber = activeIndex >= 0 ? String(activeIndex + 1).padStart(2, "0") : "00";
+  const navGroups = [
+    { label: "Operations", items: navItems.slice(0, 6) },
+    { label: "System", items: navItems.slice(6) },
+  ];
 
   useEffect(() => {
-    if (typeof document === "undefined") {
-      return;
-    }
-
+    if (typeof document === "undefined") return;
     document.body.style.overflow = isNavOpen ? "hidden" : "";
-
     return () => {
       document.body.style.overflow = "";
     };
@@ -61,49 +61,77 @@ export function DashboardShell({
         data-open={isNavOpen}
         id="dashboard-sidebar"
       >
-        <div className="dashboard-brand-block">
-          <div>
-            <p className="dashboard-brand-eyebrow">Sohe&apos;s Nation</p>
-            <h1 className="dashboard-brand-title">Control Desk</h1>
+        <div className="dashboard-sidebar-top">
+          <div className="dashboard-brand-block">
+            <div className="dashboard-brand-mark" aria-hidden="true">
+              SN
+            </div>
+            <div>
+              <p className="dashboard-brand-eyebrow">Sohe&apos;s Nation</p>
+              <h1 className="dashboard-brand-title">Control Desk</h1>
+            </div>
+            <p className="dashboard-brand-description">
+              Staff workspace for products, orders, content, and post-purchase flow.
+            </p>
           </div>
-          <p className="dashboard-brand-description">
-            Staff workspace for products, orders, content, and post-purchase flow.
-          </p>
-        </div>
-        <div className="dashboard-session-card">
-          <div>
-            <p className="dashboard-session-label">Live desk</p>
-            <strong className="dashboard-session-name">
-              {session?.name ?? "Staff Access"}
-            </strong>
+          <div className="dashboard-session-card">
+            <div>
+              <p className="dashboard-session-label">Live desk</p>
+              <strong className="dashboard-session-name">
+                {session?.name ?? "Staff Access"}
+              </strong>
+            </div>
+            <span className="dashboard-session-meta">
+              {session?.email ?? "Authenticated staff session"} · {session?.role ?? "Operations staff"}
+            </span>
           </div>
-          <span className="dashboard-session-meta">
-            {session?.email ?? "Authenticated staff session"} · {session?.role ?? "Operations staff"}
-          </span>
         </div>
-        <nav className="dashboard-nav">
-          {navItems.map((item) => (
-            <Link
-              aria-current={pathname === item.href ? "page" : undefined}
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsNavOpen(false)}
-              className="dashboard-nav-link"
-              data-active={pathname === item.href}
-            >
-              <span className="dashboard-nav-index">
-                {String(navItems.findIndex((navItem) => navItem.href === item.href) + 1).padStart(
-                  2,
-                  "0",
-                )}
-              </span>
-              <span>
-                <strong className="dashboard-nav-title">{item.label}</strong>
-                <span className="dashboard-nav-description">{item.description}</span>
-              </span>
-            </Link>
-          ))}
-        </nav>
+        <div className="dashboard-nav-shell">
+          <div className="dashboard-nav-header">
+            <div>
+              <span className="dashboard-nav-kicker">Workspace map</span>
+              <strong className="dashboard-nav-current">
+                {activeItem?.label ?? "Overview"}
+              </strong>
+            </div>
+            <span className="dashboard-nav-section-badge">
+              {activeSectionNumber}
+            </span>
+          </div>
+          <nav className="dashboard-nav">
+            {navGroups.map((group) => (
+              <div key={group.label} className="dashboard-nav-group">
+                <div className="dashboard-nav-group-label">{group.label}</div>
+                <div className="dashboard-nav-group-items">
+                  {group.items.map((item) => (
+                    <Link
+                      aria-current={pathname === item.href ? "page" : undefined}
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsNavOpen(false)}
+                      className="dashboard-nav-link"
+                      data-active={pathname === item.href}
+                    >
+                      <span className="dashboard-nav-index">
+                        {String(navItems.findIndex((navItem) => navItem.href === item.href) + 1).padStart(
+                          2,
+                          "0",
+                        )}
+                      </span>
+                      <span className="dashboard-nav-copy">
+                        <strong className="dashboard-nav-title">{item.label}</strong>
+                        <span className="dashboard-nav-description">{item.description}</span>
+                      </span>
+                      <span className="dashboard-nav-arrow" aria-hidden="true">
+                        ↗
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
         <button
           className="dashboard-signout"
           onClick={handleSignOut}
@@ -137,9 +165,7 @@ export function DashboardShell({
               </div>
             </div>
             <div className="dashboard-route-card">
-              <strong className="dashboard-route-title">
-                {activeItem?.label ?? "Control Desk"}
-              </strong>
+              <strong className="dashboard-route-title">{activeItem?.label ?? "Control Desk"}</strong>
               <span className="dashboard-route-copy">
                 {activeItem?.description ??
                   "Staff workspace for products, orders, content, returns, customers, and settings."}
@@ -171,7 +197,7 @@ export function DashboardShell({
         .dashboard-shell {
           position: relative;
           display: grid;
-          grid-template-columns: 320px minmax(0, 1fr);
+          grid-template-columns: 296px minmax(0, 1fr);
           min-height: 100vh;
         }
 
@@ -185,20 +211,59 @@ export function DashboardShell({
           display: flex;
           flex-direction: column;
           height: 100svh;
-          overflow-y: auto;
-          border-right: 1px solid var(--color-border);
-          padding: 28px 20px;
+          overflow: hidden;
+          border-right: 1px solid rgba(111, 93, 58, 0.14);
+          padding: 20px 18px 18px;
           background:
-            linear-gradient(180deg, rgba(255, 253, 248, 0.82), rgba(246, 238, 223, 0.94)),
-            radial-gradient(circle at top, rgba(179, 123, 31, 0.1), transparent 44%);
+            linear-gradient(180deg, rgba(251, 247, 239, 0.98), rgba(243, 235, 219, 0.95)),
+            linear-gradient(90deg, rgba(157, 120, 49, 0.06), transparent 26%);
           backdrop-filter: blur(18px);
+          box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .dashboard-sidebar::before {
+          content: "";
+          position: absolute;
+          inset: 10px 10px 10px 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(184, 148, 83, 0.12);
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 20%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+          pointer-events: none;
+        }
+
+        .dashboard-sidebar-top {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          gap: 14px;
         }
 
         .dashboard-brand-block {
-          margin-bottom: 28px;
           display: grid;
-          gap: 14px;
+          grid-template-columns: auto 1fr;
+          gap: 6px 12px;
+          align-items: start;
           flex-shrink: 0;
+          padding: 2px 6px 0;
+        }
+
+        .dashboard-brand-mark {
+          display: inline-grid;
+          place-items: center;
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          border: 1px solid rgba(184, 148, 83, 0.28);
+          background:
+            linear-gradient(180deg, rgba(255, 254, 250, 0.88), rgba(232, 219, 191, 0.64));
+          color: var(--color-accent);
+          font-family: var(--font-mono);
+          font-size: 12px;
+          letter-spacing: 0.2em;
+          text-indent: 0.2em;
+          box-shadow: 0 8px 18px rgba(84, 58, 19, 0.05);
         }
 
         .dashboard-brand-eyebrow {
@@ -210,33 +275,36 @@ export function DashboardShell({
         }
 
         .dashboard-brand-title {
-          margin-top: 8px;
+          margin-top: 2px;
           font-family: var(--font-heading);
-          font-size: 44px;
-          letter-spacing: 0.04em;
-          line-height: 0.92;
+          font-size: 26px;
+          letter-spacing: 0.03em;
+          line-height: 1;
         }
 
         .dashboard-brand-description {
+          grid-column: 1 / -1;
           color: var(--color-text-muted);
-          line-height: 1.6;
-          font-size: 14px;
+          line-height: 1.5;
+          font-size: 11px;
+          max-width: 24ch;
         }
 
         .dashboard-session-card {
-          margin-bottom: 22px;
-          border: 1px solid var(--color-border);
-          border-radius: 24px;
-          padding: 16px 18px;
-          background: linear-gradient(180deg, rgba(234, 215, 177, 0.46), rgba(255, 253, 248, 0.72));
+          border: 1px solid rgba(184, 148, 83, 0.16);
+          border-radius: 14px;
+          padding: 10px 12px;
+          background:
+            linear-gradient(180deg, rgba(255, 253, 248, 0.72), rgba(240, 231, 213, 0.72));
           display: grid;
-          gap: 10px;
+          gap: 4px;
           flex-shrink: 0;
+          box-shadow: none;
         }
 
         .dashboard-session-label {
           color: var(--color-text-muted);
-          font-size: 12px;
+          font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.18em;
           font-family: var(--font-mono);
@@ -244,347 +312,219 @@ export function DashboardShell({
 
         .dashboard-session-name {
           display: block;
-          font-size: 20px;
+          font-size: 15px;
         }
 
         .dashboard-session-meta {
           color: var(--color-text-muted);
+          font-size: 11px;
+          line-height: 1.4;
+          overflow-wrap: anywhere;
+        }
+
+        .dashboard-nav-shell {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          gap: 12px;
+          flex: 1;
+          min-height: 0;
+          margin-top: 12px;
+          padding-top: 14px;
+          border-top: 1px solid rgba(184, 148, 83, 0.16);
+        }
+
+        .dashboard-nav-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 0 6px;
+        }
+
+        .dashboard-nav-kicker {
+          color: var(--color-text-muted);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.22em;
+          font-family: var(--font-mono);
+        }
+
+        .dashboard-nav-current {
+          display: block;
+          margin-top: 3px;
           font-size: 14px;
-          line-height: 1.5;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          color: var(--color-text);
+          letter-spacing: 0.01em;
+        }
+
+        .dashboard-nav-section-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 36px;
+          height: 26px;
+          border-radius: 999px;
+          border: 1px solid rgba(184, 148, 83, 0.18);
+          background: rgba(255, 253, 248, 0.64);
+          color: var(--color-accent);
+          font-family: var(--font-body);
+          font-size: 11px;
+          letter-spacing: 0.08em;
         }
 
         .dashboard-nav {
           display: grid;
-          gap: 10px;
+          gap: 14px;
           flex: 1;
+          min-height: 0;
+          overflow: visible;
+          padding-right: 0;
+          padding-bottom: 140px; /* leave room for sticky signout */
+          align-content: start;
+        }
+
+        .dashboard-nav-group {
+          display: grid;
+          gap: 8px;
+        }
+
+        .dashboard-nav-group-label {
+          padding: 0 6px 0 14px;
+          color: rgba(100, 89, 74, 0.82);
+          font-size: 10px;
+          font-family: var(--font-mono);
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          position: relative;
+        }
+
+        .dashboard-nav-group-label::before {
+          content: "";
+          background: rgba(184, 148, 83, 0.5);
+          width: 8px;
+          height: 1px;
+          position: absolute;
+          top: 50%;
+          left: 0;
+        }
+
+        .dashboard-nav-group-items {
+          gap: 2px;
+          display: grid;
         }
 
         .dashboard-nav-link {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          gap: 14px;
-          align-items: start;
-          border: 1px solid var(--color-border);
-          border-radius: 20px;
-          padding: 14px 16px;
-          background: var(--color-surface);
           color: var(--color-text);
-          transition:
-            transform 160ms ease,
-            background 160ms ease,
-            color 160ms ease,
-            border-color 160ms ease;
-        }
-
-        .dashboard-nav-link:hover {
-          transform: translateX(3px);
-          border-color: var(--color-border-strong);
-        }
-
-        .dashboard-nav-link[data-active="true"] {
-          background: var(--color-surface-inverse);
-          color: var(--color-text-inverse);
-          border-color: rgba(244, 208, 119, 0.28);
-          transform: translateX(6px);
-        }
-
-        .dashboard-nav-index {
-          color: var(--color-accent);
-          font-size: 12px;
-          font-family: var(--font-mono);
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          padding-top: 4px;
-        }
-
-        .dashboard-nav-link[data-active="true"] .dashboard-nav-index {
-          color: #f4d077;
-        }
-
-        .dashboard-nav-title {
-          display: block;
-          margin-bottom: 4px;
-        }
-
-        .dashboard-nav-description {
-          display: block;
-          color: var(--color-text-muted);
-          font-size: 14px;
-          line-height: 1.5;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .dashboard-nav-link[data-active="true"] .dashboard-nav-description {
-          color: rgba(247, 240, 225, 0.72);
-        }
-
-        .dashboard-signout {
-          margin-top: 16px;
-          flex-shrink: 0;
-          width: 100%;
-          border: 1px solid var(--color-border);
-          border-radius: 20px;
-          padding: 14px 16px;
-          background: transparent;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .dashboard-signout-copy {
-          color: var(--color-text-muted);
-          font-size: 14px;
-        }
-
-        .dashboard-main {
-          padding: 24px;
-          min-width: 0;
-        }
-
-        .dashboard-topbar {
-          margin-bottom: 18px;
-          display: flex;
-          justify-content: space-between;
-          gap: 16px;
+          box-shadow: none;
+          background: 0 0;
+          border: 1px solid #0000;
+          border-radius: 12px;
+          grid-template-columns: 36px minmax(0,1fr);
           align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        .dashboard-topbar-copy {
+          gap: 12px;
+          min-height: 56px;
+          padding: 12px 12px 12px 14px;
+          transition: transform .16s,background .16s,color .16s,border-color .16s,box-shadow .16s;
           display: grid;
-          gap: 10px;
+          position: relative;
         }
 
-        .dashboard-topbar-pills {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
+        .dashboard-nav-link:hover{
+          background:#fffcf6b8;
+          border-color:#b8945324;
+          transform:translate(2px);
         }
 
-        .dashboard-status-pill,
-        .dashboard-primary-link,
-        .dashboard-secondary-link,
-        .dashboard-ops-card {
-          display: inline-flex;
-          align-items: center;
-          gap: 12px;
-          border-radius: var(--radius-pill);
-          padding: 12px 16px;
-          font-weight: 600;
+        .dashboard-nav-link[data-active=true]{
+          color:var(--color-text-inverse);
+          background:linear-gradient(135deg,#1d160ffa,#302415f5);
+          border-color:#f4d0772e;
+          transform:none;
+          box-shadow:0 10px 22px #1a120a1f,inset 3px 0 #f4d077;
         }
 
-        .dashboard-menu-button {
-          display: none;
-          align-items: center;
-          gap: 12px;
-          border-radius: var(--radius-pill);
-          padding: 12px 16px;
-          font-weight: 600;
-          border: 1px solid var(--color-border);
-          background: rgba(255, 253, 248, 0.82);
-          cursor: pointer;
+        .dashboard-nav-link::after{
+          content:"";
+          opacity:0;
+          background:#b894532e;
+          width:1px;
+          transition:opacity .16s;
+          position:absolute;
+          inset:8px auto 8px 0;
         }
 
-        .dashboard-status-pill,
-        .dashboard-ops-card {
-          border: 1px solid var(--color-border);
-          background: rgba(255, 253, 248, 0.82);
-        }
+        .dashboard-nav-link:hover::after{opacity:1}
 
-        .dashboard-status-pill--warm {
-          background: rgba(234, 215, 177, 0.4);
-        }
+        .dashboard-nav-index{color:#75571fe0;width:36px;height:36px;font-size:12px;font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase;background:#dac6a161;border-radius:999px;justify-content:center;align-self:start;align-items:center;display:inline-flex}
 
-        .dashboard-pill-copy {
-          color: var(--color-text-muted);
-          font-size: 14px;
-          font-weight: 500;
-        }
+        .dashboard-nav-link[data-active=true] .dashboard-nav-index{color:#f4d077;background:#f4d07724}
 
-        .dashboard-route-card {
-          border: 1px solid var(--color-border);
-          border-radius: 20px;
-          padding: 14px 16px;
-          background: rgba(255, 253, 248, 0.72);
-          max-width: 620px;
-        }
+        .dashboard-nav-copy{min-width:0;display:grid;gap:4px}
 
-        .dashboard-route-title {
-          display: block;
-          margin-bottom: 6px;
-        }
+        .dashboard-nav-title{font-size:17px;font-weight:700;line-height:1.18;display:block}
 
-        .dashboard-route-copy {
-          color: var(--color-text-muted);
-          line-height: 1.55;
-        }
+        .dashboard-nav-description{color:var(--color-text-muted);overflow-wrap:anywhere;opacity:1;max-width:64ch;font-size:15px;line-height:1.4;display:block}
 
-        .dashboard-topbar-actions {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-          align-items: center;
-        }
+        .dashboard-nav-link[data-active=true] .dashboard-nav-description{color:#f7f0e1c2;opacity:1}
 
-        .dashboard-primary-link {
-          background: var(--color-surface-inverse);
-          color: var(--color-text-inverse);
-        }
+        .dashboard-nav-arrow{display:none}
 
-        .dashboard-secondary-link {
-          border: 1px solid var(--color-border);
-          background: rgba(255, 253, 248, 0.82);
-        }
+        .dashboard-signout{z-index:1;text-align:left;cursor:pointer;background:#fffdf885;border:1px solid #b8945324;border-radius:14px;flex-shrink:0;width:100%;margin-top:14px;padding:12px;transition:border-color .16s,transform .16s,background .16s;position:sticky;bottom:18px}
 
-        .dashboard-content-frame {
-          border: 1px solid var(--color-border);
-          border-radius: 32px;
-          min-height: calc(100vh - 48px);
-          background:
-            linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(252, 248, 240, 0.9)),
-            radial-gradient(circle at top right, rgba(179, 123, 31, 0.06), transparent 36%);
-          box-shadow: var(--shadow-soft);
-          padding: 28px;
-          min-width: 0;
-          overflow: clip;
-        }
+        .dashboard-signout:hover{background:#fffdf8cc;border-color:#b8945338;transform:translateY(-1px)}
 
-        @media (max-width: 1180px) {
-          .dashboard-shell {
-            grid-template-columns: 290px minmax(0, 1fr);
-          }
-        }
+        .dashboard-signout-copy{color:var(--color-text-muted);font-size:12px;line-height:1.4}
 
-        @media (max-width: 920px) {
-          .dashboard-shell {
-            grid-template-columns: 1fr;
-          }
+        .dashboard-main{min-width:0;padding:24px}
 
-          .dashboard-menu-button {
-            display: inline-flex;
-          }
+        .dashboard-topbar{flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;display:flex}
 
-          .dashboard-backdrop {
-            display: block;
-            position: fixed;
-            inset: 0;
-            background: rgba(21, 17, 13, 0.42);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 180ms ease;
-            z-index: 25;
-            border: 0;
-          }
+        .dashboard-topbar-copy{gap:10px;display:grid}
 
-          .dashboard-backdrop[data-open="true"] {
-            opacity: 1;
-            pointer-events: auto;
-          }
+        .dashboard-topbar-pills{flex-wrap:wrap;gap:10px;display:flex}
 
-          .dashboard-sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            width: min(320px, 86vw);
-            z-index: 30;
-            transform: translateX(-102%);
-            transition: transform 180ms ease;
-            box-shadow: var(--shadow-soft);
-            height: 100svh;
-            overflow-y: auto;
-          }
+        .dashboard-status-pill,.dashboard-primary-link,.dashboard-secondary-link,.dashboard-ops-card{border-radius:var(--radius-pill);align-items:center;gap:12px;padding:12px 16px;font-weight:600;display:inline-flex}
 
-          .dashboard-sidebar[data-open="true"] {
-            transform: translateX(0);
-          }
+        .dashboard-menu-button{border-radius:var(--radius-pill);border:1px solid var(--color-border);cursor:pointer;background:#fffdf8d1;align-items:center;gap:12px;padding:12px 16px;font-weight:600;display:none}
 
-          .dashboard-nav-description {
-            white-space: normal;
-            overflow: visible;
-            text-overflow: clip;
-          }
+        .dashboard-route-card{border:1px solid var(--color-border);background:#fffdf8b8;border-radius:20px;max-width:760px;padding:14px 16px}
 
-          .dashboard-main {
-            padding: 16px;
-          }
+        .dashboard-route-title{margin-bottom:6px;font-size:18px;display:block}
 
-          .dashboard-topbar {
-            align-items: stretch;
-          }
+        .dashboard-route-copy{color:var(--color-text-muted);max-width:64ch;font-size:14px;line-height:1.55;display:block}
 
-          .dashboard-topbar-actions {
-            width: 100%;
-          }
+        .dashboard-status-pill,.dashboard-ops-card{border:1px solid var(--color-border);background:#fffdf8d1}
 
-          .dashboard-ops-card {
-            width: 100%;
-            justify-content: space-between;
-          }
+        .dashboard-status-pill--warm{background:#ead7b166}
 
-          .dashboard-content-frame {
-            border-radius: 26px;
-            min-height: calc(100vh - 32px);
-            padding: 20px;
-          }
-        }
+        .dashboard-pill-copy{color:var(--color-text-muted);font-size:14px;font-weight:500}
 
-        @media (max-width: 640px) {
-          .dashboard-shell {
-            min-height: 100svh;
-          }
+        .dashboard-route-card{border:1px solid var(--color-border);background:#fffdf8b8;border-radius:20px;max-width:620px;padding:14px 16px}
 
-          .dashboard-menu-button,
-          .dashboard-status-pill,
-          .dashboard-primary-link,
-          .dashboard-secondary-link,
-          .dashboard-ops-card {
-            width: 100%;
-            justify-content: space-between;
-          }
+        .dashboard-route-title{margin-bottom:6px;display:block}
 
-          .dashboard-route-card {
-            max-width: none;
-          }
+        .dashboard-route-copy{color:var(--color-text-muted);line-height:1.55}
 
-          .dashboard-topbar-pills,
-          .dashboard-topbar-actions {
-            display: grid;
-          }
+        .dashboard-topbar-actions{flex-wrap:wrap;align-items:center;gap:12px;display:flex}
 
-          .dashboard-brand-title {
-            font-size: 36px;
-          }
+        .dashboard-primary-link{background:var(--color-surface-inverse);color:var(--color-text-inverse)}
 
-          .dashboard-sidebar {
-            width: min(340px, 92vw);
-            padding: 24px 18px;
-          }
+        .dashboard-secondary-link{border:1px solid var(--color-border);background:#fffdf8d1}
 
-          .dashboard-content-frame {
-            border-radius: 22px;
-            padding: 16px;
-          }
-        }
+        .dashboard-content-frame{border:1px solid var(--color-border);min-height:calc(100vh - 48px);box-shadow:var(--shadow-soft);background:linear-gradient(180deg,#fffdf8f5,#fcf8f0e6),radial-gradient(circle at 100% 0,#b37b1f0f,#0000 36%);border-radius:32px;min-width:0;padding:28px;overflow:clip}
 
-        @media (max-width: 480px) {
-          .dashboard-main {
-            padding: 12px;
-          }
+        @media (max-width: 1180px){.dashboard-shell{grid-template-columns:278px minmax(0,1fr)}.dashboard-brand-title{font-size:24px}.dashboard-brand-description{max-width:22ch}}
 
-          .dashboard-topbar {
-            gap: 12px;
-          }
+        @media (min-width:921px){.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:4px 10px}.dashboard-brand-title{font-size:24px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-session-meta{white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.dashboard-nav-shell{gap:10px;margin-top:10px;padding-top:12px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:6px}.dashboard-nav-group-items{gap:1px}.dashboard-nav-link{padding:8px 9px 8px 10px}.dashboard-nav-title{font-size:13px}.dashboard-nav-description{display:block}}
 
-          .dashboard-route-card,
-          .dashboard-session-card,
-          .dashboard-nav-link,
-          .dashboard-signout {
-            border-radius: 18px;
-          }
-        }
+        @media (min-width: 921px) and (height<=860px){.dashboard-sidebar{padding:16px 14px 14px}.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:6px 10px;padding-top:0}.dashboard-brand-mark{width:40px;height:40px}.dashboard-brand-title{font-size:22px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-nav-shell{margin-top:8px;padding-top:10px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:5px}.dashboard-nav-group-items{gap:2px}.dashboard-nav-link{padding:8px 9px 8px 10px}.dashboard-nav-description{display:none}.dashboard-signout{margin-top:10px;padding:10px 11px}}
+
+        @media (max-width:920px){.dashboard-shell{grid-template-columns:1fr}.dashboard-menu-button{display:inline-flex}.dashboard-backdrop{opacity:0;pointer-events:none;z-index:25;background:rgba(21,17,13,0.42);border:0;transition:opacity .18s;display:block;position:fixed;inset:0}.dashboard-backdrop[data-open=true]{opacity:1;pointer-events:auto}.dashboard-sidebar{z-index:30;width:min(320px,86vw);box-shadow:var(--shadow-soft);height:100svh;padding:22px 16px;transition:transform .18s;position:fixed;inset:0 auto 0 0;transform:translate(-102%)}.dashboard-sidebar[data-open=true]{transform:translate(0)}.dashboard-sidebar::before{inset:12px 10px}.dashboard-main{padding:16px}.dashboard-topbar{align-items:stretch}.dashboard-topbar-actions{width:100%}.dashboard-ops-card{justify-content:space-between;width:100%}.dashboard-brand-title{font-size:38px}.dashboard-nav-current{font-size:15px}.dashboard-nav-section-badge{min-width:42px;height:32px}.dashboard-nav{overflow-y:auto;padding-right:2px}.dashboard-nav{gap:12px}.dashboard-nav-group{gap:10px}.dashboard-nav-link{background:linear-gradient(#fffdf8eb,#faf4e8cc);border-color:#b8945329;border-radius:16px;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;box-shadow:0 6px 14px #32220a09}.dashboard-nav-description{opacity:1;font-size:13px;line-height:1.45;display:block}.dashboard-nav-link::after{display:none}.dashboard-nav-index{background:0 0;width:auto;height:auto}.dashboard-nav-arrow{display:none}.dashboard-content-frame{border-radius:26px;min-height:calc(100vh - 32px);padding:20px}}
+
+        @media (max-width:640px){.dashboard-shell{min-height:100svh}.dashboard-menu-button,.dashboard-status-pill,.dashboard-primary-link,.dashboard-secondary-link,.dashboard-ops-card{justify-content:space-between;width:100%}.dashboard-route-card{max-width:none}.dashboard-topbar-pills,.dashboard-topbar-actions{display:grid}.dashboard-brand-title{font-size:36px}.dashboard-sidebar{width:min(100vw,380px);padding:18px 12px}.dashboard-brand-block{padding:6px 6px 0}.dashboard-nav-header{padding:0 6px}.dashboard-nav-group-label{padding:0 6px}.dashboard-nav-link{padding:14px 14px;border-radius:18px}.dashboard-session-card,.dashboard-signout{border-radius:18px}.dashboard-content-frame{border-radius:22px;padding:16px}}
+
+        @media (max-width:480px){.dashboard-main{padding:12px}.dashboard-topbar{gap:12px}.dashboard-route-card,.dashboard-session-card,.dashboard-nav-link,.dashboard-signout{border-radius:18px}}
       `}</style>
     </div>
   );

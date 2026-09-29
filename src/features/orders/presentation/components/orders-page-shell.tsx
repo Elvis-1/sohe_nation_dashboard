@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import { useOrderDesk } from "@/src/features/orders/presentation/state/use-order-desk";
+import { retryOrdersLoad } from "@/src/features/orders/data/repositories/order-repository";
+import {
+  useOrderDesk,
+  useOrderDeskError,
+  useOrderDeskStatus,
+} from "@/src/features/orders/presentation/state/use-order-desk";
 
 const primaryLinkStyle = {
   display: "inline-flex",
@@ -32,6 +38,8 @@ const subtleLinkStyle = {
 
 export function OrdersPageShell() {
   const orders = useOrderDesk();
+  const ordersError = useOrderDeskError();
+  const deskStatus = useOrderDeskStatus();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
@@ -54,6 +62,18 @@ export function OrdersPageShell() {
       return matchesQuery && matchesStatus && matchesDate && matchesPayment;
     });
   }, [dateFilter, orders, paymentFilter, query, statusFilter]);
+
+  if (ordersError) {
+    return (
+      <AppStateMessage
+        eyebrow="Orders"
+        title="The order desk could not load."
+        description={`The dashboard could not read orders from the API. ${ordersError.message}`}
+        actionLabel="Retry"
+        onAction={retryOrdersLoad}
+      />
+    );
+  }
 
   return (
     <div>
@@ -137,7 +157,9 @@ export function OrdersPageShell() {
           </label>
         </div>
 
-        {orders.length === 0 ? (
+        {deskStatus === "loading" ? (
+          <p style={{ color: "var(--color-text-muted)" }}>Loading orders...</p>
+        ) : orders.length === 0 ? (
           <EmptyStatePanel
             eyebrow="Orders"
             title="No orders are moving through the desk."

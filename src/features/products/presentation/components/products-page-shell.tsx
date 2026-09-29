@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
+import { retryProductsLoad } from "@/src/features/products/data/repositories/product-repository";
+import {
+  useProductCatalog,
+  useProductCatalogError,
+  useProductCatalogStatus,
+} from "@/src/features/products/presentation/state/use-product-catalog";
 
 const pillLinkStyle = {
   display: "inline-flex",
@@ -32,6 +38,8 @@ const subtleLinkStyle = {
 
 export function ProductsPageShell() {
   const products = useProductCatalog();
+  const productsError = useProductCatalogError();
+  const catalogStatus = useProductCatalogStatus();
   const [query, setQuery] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState("all");
   const [audienceFilter, setAudienceFilter] = useState("all");
@@ -54,6 +62,18 @@ export function ProductsPageShell() {
       return matchesQuery && matchesVisibility && matchesAudience;
     });
   }, [audienceFilter, products, query, visibilityFilter]);
+
+  if (productsError) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="The catalog desk could not load."
+        description={`The dashboard could not read products from the API. ${productsError.message}`}
+        actionLabel="Retry"
+        onAction={retryProductsLoad}
+      />
+    );
+  }
 
   return (
     <div>
@@ -142,7 +162,9 @@ export function ProductsPageShell() {
           </label>
         </div>
 
-        {products.length === 0 ? (
+        {catalogStatus === "loading" ? (
+          <p style={{ color: "var(--color-text-muted)" }}>Loading products...</p>
+        ) : products.length === 0 ? (
           <EmptyStatePanel
             eyebrow="Products"
             title="The catalog desk is empty right now."

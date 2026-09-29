@@ -1,15 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
 import { ApiError } from "@/src/core/api/http-client";
 import type { DashboardReturnRecord } from "@/src/core/types/dashboard";
-import { updateReturnRecord } from "@/src/features/returns/data/repositories/return-repository";
-import { useReturnDesk } from "@/src/features/returns/presentation/state/use-return-desk";
+import {
+  loadReturnIntoDesk,
+  retryReturnsLoad,
+  updateReturnRecord,
+} from "@/src/features/returns/data/repositories/return-repository";
+import {
+  useReturnDesk,
+  useReturnDeskError,
+  useReturnDeskStatus,
+} from "@/src/features/returns/presentation/state/use-return-desk";
 
 type ReturnDetailPageShellProps = {
   returnId: string;
@@ -17,34 +25,73 @@ type ReturnDetailPageShellProps = {
 
 export function ReturnDetailPageShell({ returnId }: ReturnDetailPageShellProps) {
   const returns = useReturnDesk();
+  const returnsError = useReturnDeskError();
+  const deskStatus = useReturnDeskStatus();
   const returnRecord = useMemo(
     () => returns.find((item) => item.id === returnId) ?? null,
     [returnId, returns],
   );
-  const toast = useToast();
-  const [status, setStatus] = useState<DashboardReturnRecord["status"] | "">(returnRecord?.status ?? "");
-  const [internalDecision, setInternalDecision] = useState(returnRecord?.internalDecision ?? "");
+  // Returns missing from the loaded queue are looked up directly before showing "missing".
+  const [lookedUpReturnId, setLookedUpReturnId] = useState<string | null>(null);
+  const needsLookup = deskStatus === "ready" && !returnRecord && lookedUpReturnId !== returnId;
+
+  useEffect(() => {
+    if (!needsLookup) return;
+    let isActive = true;
+    void loadReturnIntoDesk(returnId).then(() => {
+      if (isActive) setLookedUpReturnId(returnId);
+    });
+    return () => {
+      isActive = false;
+    };
+  }, [needsLookup, returnId]);
+
+  if (returnsError) {
+    return (
+      <AppStateMessage
+        eyebrow="Returns"
+        title="The returns queue could not load."
+        description={`The dashboard could not read returns from the API. ${returnsError.message}`}
+        actionLabel="Retry"
+        onAction={retryReturnsLoad}
+      />
+    );
+  }
+
+  if (!returnRecord && (deskStatus === "loading" || needsLookup)) {
+    return (
+      <AppStateMessage
+        eyebrow="Returns"
+        title="Loading return"
+        description="Reading this return from the API."
+      />
+    );
+  }
 
   if (!returnRecord) {
     return (
       <AppStateMessage
         eyebrow="Returns"
         title="This return record is missing"
-        description="The return you tried to open is not available in the current queue."
+        description="The return you tried to open does not exist."
         action={<Link href="/returns">Back to returns</Link>}
       />
     );
   }
 
-  async function handleSave() {
-    if (!returnRecord) {
-      return;
-    }
+  return <ReturnDetailEditor key={returnRecord.id} returnRecord={returnRecord} />;
+}
 
+function ReturnDetailEditor({ returnRecord }: { returnRecord: DashboardReturnRecord }) {
+  const toast = useToast();
+  const [status, setStatus] = useState<DashboardReturnRecord["status"]>(returnRecord.status);
+  const [internalDecision, setInternalDecision] = useState(returnRecord.internalDecision);
+
+  async function handleSave() {
     try {
       await updateReturnRecord({
         ...returnRecord,
-        status: (status || returnRecord.status) as DashboardReturnRecord["status"],
+        status,
         internalDecision,
       });
       toast.success("Return updates saved.");

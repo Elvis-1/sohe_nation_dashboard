@@ -1,0 +1,84 @@
+{
+  "count": 7,
+  "next": "http://127.0.0.1:8001/api/v1/dashboard/orders/?page=2&page_size=2",
+  "previous": null,
+  "results": [
+    {
+      "created_at": "2026-09-20T10:00:00Z",
+      "customer_email": "tomi@example.com",
+      "customer_id": "3a1e9cde-89b5-403b-ae22-c0c633a2a7c7",
+      "customer_name": "Tomi Alade",
+      "fulfillment_note": "",
+      "id": "a8e63be5-1f01-4ef8-8212-1a779f0fda34",
+      "internal_note": "",
+      "lines": [
+        {
+          "id": "455ae6a4-f179-4fba-ac01-c848f1d62e8d",
+          "product_id": "931ba441-5a76-4757-ba3e-d85964c61265",
+          "quantity": 1,
+          "title": "Rally Knit Set",
+          "unit_price": {
+            "amount": 132000.0,
+            "currency": "NGN",
+            "formatted": "NGN 132,000"
+          },
+          "variant_id": "e8036f10-defd-478e-ade1-e3aab9f820c1",
+          "variant_label": "Ash / S"
+        }
+      ],
+      "order_number": "SOH-2040",
+      "payment_provider": "flutterwave",
+      "shipping_address": "4 Raymond Njoku Street, Ikoyi, Lagos",
+      "shipping_details": {
+        "city": "Ikoyi",
+        "country_code": "NG",
+        "line_1": "4 Raymond Njoku Street",
+        "line_2": "",
+        "phone": "+2348030000000",
+        "postal_code": "",
+        "recipient_name": "Tomi Alade",
+        "state": "Lagos"
+      },
+      "status": "awaiting_capture",
+      "total": {
+        "amount": 132000.0,
+        "currency": "NGN",
+        "formatted": "NGN 132,000"
+      }
+    },
+    {
+      "created_at": "2026-09-20T10:00:00Z",
+      "customer_email": "ada@example.com",
+      "customer_id": "47e3df9a-601e-4c9b-84b3-5cc7b8918f2d",
+      "customer_name": "Ada Nwosu",
+      "fulfillment_note": "",
+      "id": "35f1c21e-7cf6-4bff-9801-355e8b137e58",
+      "internal_note": "",
+      "lines": [
+        {
+          "id": "85fb899b-2c55-4d1d-ad0d-9818552f0d9f",
+          "product_id": "f94a1538-c7ce-4b4c-a34f-3a79cdad8b91",
+          "quantity": 1,
+          "title": "Lunar Utility Jacket",
+          "unit_price": {
+            "amount": 185000.0,
+            "currency": "NGN",
+            "formatted": "NGN 185,000"
+          },
+          "variant_id": "b8aab9a0-3f11-4fc4-88de-61ce61fd51cd",
+          "variant_label": "Black / L"
+        }
+      ],
+      "order_number": "SOH-2041",
+      "payment_provider": "paypal",
+      "shipping_address": "12 Admiralty Way, Lekki Phase 1, Lagos",
+      "shipping_details": null,
+      "status": "paid",
+      "total": {
+        "amount": 185000.0,
+        "currency": "NGN",
+        "formatted": "NGN 185,000"
+      }
+    }
+  ]
+}

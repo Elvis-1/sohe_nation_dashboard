@@ -1,5 +1,10 @@
 # Sohe's Nation Dashboard Implementation Plan
 
+> **Historical (fixture phase, completed 2026-04-16).** The dashboard has since moved to the live API.
+> Every module now reads through an API-backed repository (`src/features/*/data/repositories/*-repository.ts`),
+> and the mock repositories, `mock-*.ts` fixtures, and mocked staff auth referenced below were deleted
+> (2026-09-29). Current status lives in [api/PLAN.md](../api/PLAN.md) §10.
+
 ## 0. Mission
 
 - Build a simple, high-clarity back-office dashboard for Sohe's Nation staff.

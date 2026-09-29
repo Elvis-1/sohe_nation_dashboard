@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
@@ -11,10 +11,10 @@ import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/das
 import {
   createProductRecord,
   archiveProductRecord,
+  loadProductDetail,
   updateProductRecord,
 } from "@/src/features/products/data/repositories/product-repository";
 import { uploadDashboardCatalogMedia } from "@/src/features/products/data/api/product-api-client";
-import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
 
 type ProductEditorPageShellProps = {
   productId?: string;
@@ -128,31 +128,83 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
   };
 }
 
+type DetailResult = { key: string; product: DashboardProductRecord | null; error: string | null };
+
 export function ProductEditorPageShell({ productId }: ProductEditorPageShellProps) {
+  // Always read the full record: the catalog list omits narrative and region fields.
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<DetailResult | null>(null);
+  const requestKey = `${productId ?? "new"}:${attempt}`;
+
+  useEffect(() => {
+    if (!productId) return;
+    let isActive = true;
+    loadProductDetail(productId).then(
+      (product) => {
+        if (isActive) setResult({ key: requestKey, product, error: null });
+      },
+      (error: unknown) => {
+        if (!isActive) return;
+        const message = error instanceof Error ? error.message : "Products fetch failed.";
+        setResult({ key: requestKey, product: null, error: message });
+      },
+    );
+    return () => {
+      isActive = false;
+    };
+  }, [productId, requestKey]);
+
+  if (!productId) {
+    return <ProductEditorForm key="new" product={null} />;
+  }
+
+  const current = result?.key === requestKey ? result : null;
+
+  if (!current) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="Loading product"
+        description="Reading this product from the API."
+      />
+    );
+  }
+
+  if (current.error) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="This product could not load."
+        description={`The dashboard could not read this product from the API. ${current.error}`}
+        actionLabel="Retry"
+        onAction={() => setAttempt((value) => value + 1)}
+      />
+    );
+  }
+
+  if (!current.product) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="This product record is missing"
+        description="The product you tried to open does not exist or has been archived."
+        action={<Link href="/products">Back to products</Link>}
+      />
+    );
+  }
+
+  return <ProductEditorForm key={current.product.id} product={current.product} />;
+}
+
+function ProductEditorForm({ product }: { product: DashboardProductRecord | null }) {
   const router = useRouter();
   const toast = useToast();
-  const products = useProductCatalog();
-  const product = useMemo(
-    () => (productId ? products.find((item) => item.id === productId) ?? null : null),
-    [productId, products],
-  );
   const [formState, setFormState] = useState<ProductFormState>(() => createFormState(product ?? undefined));
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [pendingAction, setPendingAction] = useState<
     "draft" | "published" | "archive" | null
   >(null);
   const isSaving = pendingAction !== null;
-
-  if (productId && !product) {
-    return (
-      <AppStateMessage
-        eyebrow="Products"
-        title="This product record is missing"
-        description="The product you tried to open is not available in the current catalog."
-        action={<Link href="/products">Back to products</Link>}
-      />
-    );
-  }
 
   function updateField<Key extends keyof ProductFormState>(field: Key, value: ProductFormState[Key]) {
     setFormState((currentState) => ({

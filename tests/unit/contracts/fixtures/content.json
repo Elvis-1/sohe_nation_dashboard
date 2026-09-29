@@ -1,0 +1,104 @@
+{
+  "count": 4,
+  "next": "http://127.0.0.1:8001/api/v1/dashboard/content/?page=2&page_size=2",
+  "previous": null,
+  "results": [
+    {
+      "area": "navigation_promos",
+      "body": "Compact promo copy for navigation and footer touchpoints, used to move staff-approved campaign messages into storefront support slots.",
+      "call_to_action_href": "/stories",
+      "call_to_action_label": "Read The Lookbook",
+      "campaign_statement": "",
+      "campaign_stats": [],
+      "chapter_label": "",
+      "created_at": "2026-09-29T10:52:58.207637Z",
+      "eyebrow": "Navigation Push",
+      "headline": "Stories and restock messaging",
+      "hotspots": [],
+      "id": "26378db0-42de-4500-add9-3426c1bcff06",
+      "linked_product_ids": [
+        "8b5fbd65-265f-405b-bdd9-b82e04b8db61"
+      ],
+      "media_references": [
+        {
+          "alt": "Promo tile art for navigation messaging",
+          "id": "media_navigation_promo_badge",
+          "kind": "image",
+          "poster_url": "",
+          "url": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c"
+        }
+      ],
+      "modules": [
+        {
+          "body": "Move readers from navigation support into the editorial story.",
+          "title": "Footer Promo"
+        }
+      ],
+      "preview_bullets": [
+        "Navigation promo label",
+        "Footer support message",
+        "Story CTA"
+      ],
+      "secondary_call_to_action_href": "",
+      "secondary_call_to_action_label": "",
+      "slug": null,
+      "summary": "Small merchandising hooks for nav and footer promo messaging.",
+      "title": "Navigation promo slots and footer messaging",
+      "updated_at": "2026-09-29T10:52:58.207689Z",
+      "visibility": "draft"
+    },
+    {
+      "area": "stories",
+      "body": "Editorial story module with campaign framing, lookbook context, and product callouts for the next release window.",
+      "call_to_action_href": "/stories/built-like-an-army",
+      "call_to_action_label": "Enter The Story",
+      "campaign_statement": "Discipline in silhouette, motion, and utility.",
+      "campaign_stats": [],
+      "chapter_label": "Drop Narrative",
+      "created_at": "2026-09-29T10:52:58.205373Z",
+      "eyebrow": "Lookbook 01",
+      "headline": "Built Like An Army",
+      "hotspots": [
+        {
+          "id": "hotspot_story_01",
+          "label": "Lead Look",
+          "left": "42%",
+          "note": "Primary featured styling cue.",
+          "product_slug": "rally-knit-set",
+          "top": "48%"
+        }
+      ],
+      "id": "fdcdb84d-fcb1-41ea-9078-18eb89057b91",
+      "linked_product_ids": [
+        "931ba441-5a76-4757-ba3e-d85964c61265"
+      ],
+      "media_references": [
+        {
+          "alt": "Lookbook cover frame for the next story release",
+          "id": "media_story_drop_01_cover",
+          "kind": "image",
+          "poster_url": "",
+          "url": "https://images.unsplash.com/photo-1496747611176-843222e1e57c"
+        }
+      ],
+      "modules": [
+        {
+          "body": "Campaign posture, fabric weight, and movement work together.",
+          "title": "Frame One"
+        }
+      ],
+      "preview_bullets": [
+        "Story cover",
+        "Campaign summary",
+        "Linked product callouts"
+      ],
+      "secondary_call_to_action_href": "",
+      "secondary_call_to_action_label": "",
+      "slug": "built-like-an-army",
+      "summary": "Editorial story module with product callouts for the upcoming release.",
+      "title": "Story and lookbook campaign entry",
+      "updated_at": "2026-09-29T10:52:58.205395Z",
+      "visibility": "published"
+    }
+  ]
+}

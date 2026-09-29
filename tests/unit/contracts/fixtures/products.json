@@ -1,0 +1,93 @@
+{
+  "count": 5,
+  "next": "http://127.0.0.1:8001/api/v1/dashboard/catalog/products/?page=2&page_size=2",
+  "previous": null,
+  "results": [
+    {
+      "category": "tops",
+      "compare_at_price": null,
+      "gender": "unisex",
+      "id": "899b6194-ba47-4e9f-95ab-18addcffa4a3",
+      "inventory_quantity": 5,
+      "price": {
+        "amount": 50000.0,
+        "currency": "NGN",
+        "formatted": "NGN 50,000"
+      },
+      "primary_media": {
+        "alt": "E2E Edit Target front view",
+        "id": "67495544-7227-46f7-b73f-4f7bed009e67",
+        "kind": "image",
+        "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800"
+      },
+      "shipping": {
+        "amount": 0.0,
+        "currency": "NGN",
+        "formatted": "NGN 0"
+      },
+      "slug": "e2e-edit-target",
+      "subtitle": "Product the edit spec may rename",
+      "title": "E2E Edit Target",
+      "variants": [
+        {
+          "color": "White",
+          "compare_at_price": null,
+          "id": "c1033c30-dfe6-437c-822c-4274f7b85f2e",
+          "inventory_quantity": 5,
+          "is_available": true,
+          "price": {
+            "amount": 50000.0,
+            "currency": "NGN",
+            "formatted": "NGN 50,000"
+          },
+          "size": "M",
+          "sku": "SN-EET-WHT-M"
+        }
+      ],
+      "visibility": "draft"
+    },
+    {
+      "category": "bottoms",
+      "compare_at_price": null,
+      "gender": "men",
+      "id": "8089e46b-7106-4893-b12d-1856daa6667e",
+      "inventory_quantity": 6,
+      "price": {
+        "amount": 98000.0,
+        "currency": "NGN",
+        "formatted": "NGN 98,000"
+      },
+      "primary_media": {
+        "alt": "Night Shift Cargo front view",
+        "id": "96805524-1740-4fc0-942c-b398936fce14",
+        "kind": "image",
+        "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800"
+      },
+      "shipping": {
+        "amount": 0.0,
+        "currency": "NGN",
+        "formatted": "NGN 0"
+      },
+      "slug": "night-shift-cargo",
+      "subtitle": "Draft cargo pant",
+      "title": "Night Shift Cargo",
+      "variants": [
+        {
+          "color": "Black",
+          "compare_at_price": null,
+          "id": "bcdf0e4d-2c8f-4407-b2e1-c2bd488951f5",
+          "inventory_quantity": 6,
+          "is_available": true,
+          "price": {
+            "amount": 98000.0,
+            "currency": "NGN",
+            "formatted": "NGN 98,000"
+          },
+          "size": "32",
+          "sku": "SN-NSC-BLK-32"
+        }
+      ],
+      "visibility": "draft"
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 import {
+  getReturnsErrorSnapshot,
+  getReturnsStatusSnapshot,
   getServerReturnsSnapshot,
   getStoredReturnsSnapshot,
   subscribeToStoredReturns,
@@ -13,4 +15,12 @@ export function useReturnDesk() {
     getStoredReturnsSnapshot,
     getServerReturnsSnapshot,
   );
+}
+
+export function useReturnDeskError() {
+  return useSyncExternalStore(subscribeToStoredReturns, getReturnsErrorSnapshot, () => null);
+}
+
+export function useReturnDeskStatus() {
+  return useSyncExternalStore(subscribeToStoredReturns, getReturnsStatusSnapshot, () => "loading" as const);
 }

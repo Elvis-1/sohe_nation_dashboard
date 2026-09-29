@@ -1,0 +1,72 @@
+{
+  "badge": "",
+  "category": "outerwear",
+  "compare_at_price": null,
+  "created_at": "2026-09-29T10:59:29.020248Z",
+  "default_region": "NG",
+  "description": "Lunar Utility Jacket for e2e runs.",
+  "gender": "men",
+  "id": "a4ae8ce7-a10a-4d4b-bc24-906b2855095b",
+  "inventory_quantity": 15,
+  "narrative": {
+    "campaign_note": "Lunar Utility Jacket campaign note.",
+    "delivery_note": "Ships from Lagos in 2-4 days.",
+    "fit_guidance": "True to size.",
+    "material_story": "Heavyweight cotton twill.",
+    "sustainability_note": ""
+  },
+  "price": {
+    "amount": 185000.0,
+    "currency": "NGN",
+    "formatted": "NGN 185,000"
+  },
+  "primary_media": {
+    "alt": "Lunar Utility Jacket front view",
+    "id": "2542ac82-2b0d-486f-9908-6173ccac8f14",
+    "kind": "image",
+    "url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800"
+  },
+  "region_availability": [
+    "NG"
+  ],
+  "shipping": {
+    "amount": 0.0,
+    "currency": "NGN",
+    "formatted": "NGN 0"
+  },
+  "slug": "lunar-utility-jacket",
+  "subtitle": "Weatherproof shell",
+  "title": "Lunar Utility Jacket",
+  "updated_at": "2026-09-29T10:59:29.020275Z",
+  "variants": [
+    {
+      "color": "Black",
+      "compare_at_price": null,
+      "id": "2b724d2a-82ad-4948-8a02-afa993b45198",
+      "inventory_quantity": 12,
+      "is_available": true,
+      "price": {
+        "amount": 185000.0,
+        "currency": "NGN",
+        "formatted": "NGN 185,000"
+      },
+      "size": "L",
+      "sku": "SN-LUJ-BLK-L"
+    },
+    {
+      "color": "Black",
+      "compare_at_price": null,
+      "id": "8b8d7b59-ed2a-48ac-8b1f-c2e3d8683828",
+      "inventory_quantity": 3,
+      "is_available": true,
+      "price": {
+        "amount": 185000.0,
+        "currency": "NGN",
+        "formatted": "NGN 185,000"
+      },
+      "size": "M",
+      "sku": "SN-LUJ-BLK-M"
+    }
+  ],
+  "visibility": "published"
+}
