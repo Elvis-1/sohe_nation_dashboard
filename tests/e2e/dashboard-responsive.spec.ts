@@ -404,11 +404,14 @@ test.describe("dashboard responsive coverage", () => {
       };
     });
 
-    const navOverflow = await nav.evaluate(
-      (element) => window.getComputedStyle(element as HTMLElement).overflowY,
-    );
+    // The nav may scroll on very short screens, but at this size every item must fit.
+    const navMetrics = await nav.evaluate((element) => ({
+      clientHeight: (element as HTMLElement).clientHeight,
+      scrollHeight: (element as HTMLElement).scrollHeight,
+    }));
 
-    expect(navOverflow).toBe("visible");
+    expect(navMetrics.scrollHeight).toBeLessThanOrEqual(navMetrics.clientHeight + 1);
+    await expect(page.getByRole("link", { name: /Team/ })).toBeInViewport();
     expect(sidebarMetrics.overflowY).toBe("hidden");
     expect(sidebarMetrics.scrollHeight).toBeLessThanOrEqual(sidebarMetrics.clientHeight + 1);
   });

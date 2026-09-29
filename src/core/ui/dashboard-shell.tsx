@@ -193,7 +193,9 @@ export function DashboardShell({
           {children}
         </div>
       </main>
-      <style jsx>{`
+      {/* Global, not scoped: scoped styled-jsx classes never reach <Link>, which left the nav
+          links and topbar links unstyled. Every class here is dashboard-* and shell-only. */}
+      <style jsx global>{`
         .dashboard-shell {
           position: relative;
           display: grid;
@@ -326,6 +328,7 @@ export function DashboardShell({
           position: relative;
           z-index: 1;
           display: grid;
+          grid-template-rows: auto minmax(0, 1fr);
           gap: 12px;
           flex: 1;
           min-height: 0;
@@ -378,9 +381,10 @@ export function DashboardShell({
           gap: 14px;
           flex: 1;
           min-height: 0;
-          overflow: visible;
-          padding-right: 0;
-          padding-bottom: 140px; /* leave room for sticky signout */
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          padding-right: 2px;
+          padding-bottom: 4px;
           align-content: start;
         }
 
@@ -470,7 +474,7 @@ export function DashboardShell({
 
         .dashboard-nav-arrow{display:none}
 
-        .dashboard-signout{z-index:1;text-align:left;cursor:pointer;background:#fffdf885;border:1px solid #b8945324;border-radius:14px;flex-shrink:0;width:100%;margin-top:14px;padding:12px;transition:border-color .16s,transform .16s,background .16s;position:sticky;bottom:18px}
+        .dashboard-signout{z-index:1;text-align:left;cursor:pointer;background:#fffdf885;border:1px solid #b8945324;border-radius:14px;flex-shrink:0;width:100%;margin-top:14px;padding:12px;transition:border-color .16s,transform .16s,background .16s;position:relative}
 
         .dashboard-signout:hover{background:#fffdf8cc;border-color:#b8945338;transform:translateY(-1px)}
 
@@ -516,9 +520,9 @@ export function DashboardShell({
 
         @media (max-width: 1180px){.dashboard-shell{grid-template-columns:278px minmax(0,1fr)}.dashboard-brand-title{font-size:24px}.dashboard-brand-description{max-width:22ch}}
 
-        @media (min-width:921px){.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:4px 10px}.dashboard-brand-title{font-size:24px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-session-meta{white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.dashboard-nav-shell{gap:10px;margin-top:10px;padding-top:12px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:6px}.dashboard-nav-group-items{gap:1px}.dashboard-nav-link{padding:8px 9px 8px 10px}.dashboard-nav-title{font-size:13px}.dashboard-nav-description{display:block}}
+        @media (min-width:921px){.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:4px 10px}.dashboard-brand-title{font-size:24px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-session-meta{white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.dashboard-nav-shell{gap:10px;margin-top:10px;padding-top:12px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:6px}.dashboard-nav-group-items{gap:1px}.dashboard-nav-link{grid-template-columns:30px minmax(0,1fr);align-items:center;gap:10px;min-height:0;padding:8px 9px 8px 10px}.dashboard-nav-index{width:30px;height:30px;font-size:11px}.dashboard-nav-title{font-size:13px}.dashboard-nav-description{display:block;font-size:12px;line-height:1.35}}
 
-        @media (min-width: 921px) and (height<=860px){.dashboard-sidebar{padding:16px 14px 14px}.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:6px 10px;padding-top:0}.dashboard-brand-mark{width:40px;height:40px}.dashboard-brand-title{font-size:22px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-nav-shell{margin-top:8px;padding-top:10px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:5px}.dashboard-nav-group-items{gap:2px}.dashboard-nav-link{padding:8px 9px 8px 10px}.dashboard-nav-description{display:none}.dashboard-signout{margin-top:10px;padding:10px 11px}}
+        @media (min-width: 921px) and (height<=860px){.dashboard-sidebar{padding:16px 14px 14px}.dashboard-sidebar-top{gap:10px}.dashboard-brand-block{gap:6px 10px;padding-top:0}.dashboard-brand-mark{width:40px;height:40px}.dashboard-brand-title{font-size:22px}.dashboard-brand-description{display:none}.dashboard-session-card{padding:8px 10px}.dashboard-nav-shell{margin-top:8px;padding-top:10px}.dashboard-nav{gap:10px}.dashboard-nav-group{gap:5px}.dashboard-nav-group-items{gap:2px}.dashboard-nav-link{grid-template-columns:26px minmax(0,1fr);padding:6px 9px 6px 10px}.dashboard-nav-index{width:26px;height:26px;font-size:10px}.dashboard-nav-description{display:none}.dashboard-signout{margin-top:10px;padding:10px 11px}}
 
         @media (max-width:920px){.dashboard-shell{grid-template-columns:1fr}.dashboard-menu-button{display:inline-flex}.dashboard-backdrop{opacity:0;pointer-events:none;z-index:25;background:rgba(21,17,13,0.42);border:0;transition:opacity .18s;display:block;position:fixed;inset:0}.dashboard-backdrop[data-open=true]{opacity:1;pointer-events:auto}.dashboard-sidebar{z-index:30;width:min(320px,86vw);box-shadow:var(--shadow-soft);height:100svh;padding:22px 16px;transition:transform .18s;position:fixed;inset:0 auto 0 0;transform:translate(-102%)}.dashboard-sidebar[data-open=true]{transform:translate(0)}.dashboard-sidebar::before{inset:12px 10px}.dashboard-main{padding:16px}.dashboard-topbar{align-items:stretch}.dashboard-topbar-actions{width:100%}.dashboard-ops-card{justify-content:space-between;width:100%}.dashboard-brand-title{font-size:38px}.dashboard-nav-current{font-size:15px}.dashboard-nav-section-badge{min-width:42px;height:32px}.dashboard-nav{overflow-y:auto;padding-right:2px}.dashboard-nav{gap:12px}.dashboard-nav-group{gap:10px}.dashboard-nav-link{background:linear-gradient(#fffdf8eb,#faf4e8cc);border-color:#b8945329;border-radius:16px;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;box-shadow:0 6px 14px #32220a09}.dashboard-nav-description{opacity:1;font-size:13px;line-height:1.45;display:block}.dashboard-nav-link::after{display:none}.dashboard-nav-index{background:0 0;width:auto;height:auto}.dashboard-nav-arrow{display:none}.dashboard-content-frame{border-radius:26px;min-height:calc(100vh - 32px);padding:20px}}
 
