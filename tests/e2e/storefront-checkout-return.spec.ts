@@ -100,7 +100,7 @@ test.describe("storefront checkout to provider and back", () => {
     await page.getByPlaceholder("Address line 1").fill("12 Admiralty Way");
     await page.getByPlaceholder("City").fill("Lagos");
     await page.getByPlaceholder("State / Province").fill("Lagos");
-    await page.getByRole("button", { name: "Create flutterwave Session" }).click();
+    await page.getByRole("button", { name: "Pay with Flutterwave" }).click();
 
     await expect(page).toHaveURL(/\/checkout\/return\?/);
     await expect(page.getByRole("heading", { name: "Payment confirmed." })).toBeVisible();

@@ -1,6 +1,6 @@
 {
   "backend_name": "django.core.mail.backends.console.EmailBackend",
-  "default_from_email": "Sohe's Nation <support@sohesnation.com>",
+  "default_from_email": "Sohe's Nation <support@sohenation.com>",
   "delivery_mode": "local",
   "host": "smtp.example.com",
   "host_user_masked": "",

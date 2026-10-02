@@ -76,7 +76,7 @@ test.describe("storefront address capture and address book", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ store_name: "Sohe's Nation", support_email: "support@sohesnation.com" }),
+        body: JSON.stringify({ store_name: "Sohe's Nation", support_email: "support@sohenation.com" }),
       });
     });
     await page.route(`${API_BASE}/account/addresses/`, async (route) => {
@@ -205,9 +205,9 @@ test.describe("storefront address capture and address book", () => {
     await page.getByPlaceholder("State / Province").fill("Lagos");
     await page.getByPlaceholder("Postal code").fill("100001");
     await page.getByLabel("Save this shipping address to my account").check();
-    await page.getByRole("button", { name: "Create flutterwave Session" }).click();
+    await page.getByRole("button", { name: "Pay with Flutterwave" }).click();
 
-    await expect(page.getByText("Hosted handoff prepared.")).toBeVisible();
-    await expect(page.getByText("Shipping snapshot prepared for: 77 Marina Road, Lagos, Lagos.")).toBeVisible();
+    await expect(page.getByText("Taking you to secure payment.")).toBeVisible();
+    await expect(page.getByText("Delivering to: 77 Marina Road, Lagos, Lagos.")).toBeVisible();
   });
 });

@@ -43,11 +43,10 @@ test.describe("storefront catalog and product detail", () => {
   });
 
   test("unknown product slugs show the not-found state", async ({ page }) => {
-    await page.goto("/products/not-a-real-product");
+    const response = await page.goto("/products/not-a-real-product");
 
-    // The root loading.tsx streams the page first, so Next.js serves this not-found view
-    // with status 200 plus a noindex tag instead of a 404 status.
+    // No loading boundary wraps the product page, so the status is a real 404 (Slice 13C).
+    expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { name: "Route off-grid" })).toBeVisible();
-    await expect(page.locator('meta[name="robots"][content*="noindex"]').first()).toBeAttached();
   });
 });

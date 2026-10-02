@@ -60,6 +60,14 @@ export type DashboardProductRecord = {
     deliveryNote: string;
   };
   variants: DashboardProductVariant[];
+  /** Search/share overrides; empty means the storefront uses its defaults. Detail read only. */
+  seo?: DashboardSeoOverrides;
+};
+
+export type DashboardSeoOverrides = {
+  seoTitle: string;
+  seoDescription: string;
+  shareImageUrl: string;
 };
 
 export type PaymentProvider = "paypal" | "flutterwave";
@@ -116,7 +124,8 @@ export type DashboardContentArea =
   | "homepage"
   | "stories"
   | "featured_drop"
-  | "navigation_promos";
+  | "navigation_promos"
+  | "info_page";
 
 export type ContentVisibility = "draft" | "ready" | "published";
 
@@ -155,6 +164,8 @@ export type DashboardContentRecord = {
     note: string;
   }>;
   summary: string;
+  updatedAt?: string;
+  seo?: DashboardSeoOverrides;
 };
 
 export type ReturnStatus = "new" | "in_review" | "approved" | "rejected" | "completed";

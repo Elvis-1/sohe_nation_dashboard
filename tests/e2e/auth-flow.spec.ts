@@ -54,7 +54,7 @@ test.describe("dashboard phase 1 auth flow", () => {
         window.localStorage.setItem(
           storageKey,
           JSON.stringify({
-            email: "ops@sohesnation.com",
+            email: "ops@sohenation.com",
             name: "Operations Desk",
             role: "Staff Access",
             expiresAt: Date.now() - 60_000,
@@ -103,7 +103,7 @@ test.describe("dashboard phase 1 auth flow", () => {
     });
 
     await page.goto("/forgot-password");
-    await page.getByLabel("Email or username").fill("ops@sohesnation.com");
+    await page.getByLabel("Email or username").fill("ops@sohenation.com");
     await page.getByRole("button", { name: "Send reset link" }).click();
 
     await expect(page).toHaveURL("/forgot-password");

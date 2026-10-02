@@ -87,6 +87,9 @@ type CreateProductPayload = {
     sustainability_note?: string;
     delivery_note?: string;
   };
+  seo_title?: string;
+  seo_description?: string;
+  share_image_url?: string;
   variants?: Array<{
     sku: string;
     size: string;
@@ -155,6 +158,9 @@ type UpdateProductPayload = Partial<{
     sustainability_note?: string;
     delivery_note?: string;
   };
+  seo_title: string;
+  seo_description: string;
+  share_image_url: string;
   variants: VariantUpdateItem[];
 }>;
 

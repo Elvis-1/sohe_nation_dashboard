@@ -7,7 +7,12 @@ import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
-import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/dashboard";
+import type {
+  DashboardProductRecord,
+  DashboardSeoOverrides,
+  ProductRegion,
+} from "@/src/core/types/dashboard";
+import { SeoFieldsSection } from "@/src/core/ui/seo-fields-section";
 import {
   createProductRecord,
   archiveProductRecord,
@@ -50,8 +55,11 @@ type ProductFormState = {
   materialStory: string;
   sustainabilityNote: string;
   deliveryNote: string;
+  seo: DashboardSeoOverrides;
   variants: VariantFormItem[];
 };
+
+const EMPTY_SEO: DashboardSeoOverrides = { seoTitle: "", seoDescription: "", shareImageUrl: "" };
 
 const REGION_OPTIONS: ProductRegion[] = ["NG", "US", "GB", "EU"];
 
@@ -80,6 +88,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       materialStory: product.narrative?.materialStory ?? "",
       sustainabilityNote: product.narrative?.sustainabilityNote ?? "",
       deliveryNote: product.narrative?.deliveryNote ?? "",
+      seo: product.seo ?? EMPTY_SEO,
       variants: product.variants.map((variant) => ({
         localId: variant.id,
         apiId: variant.id,
@@ -114,6 +123,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     materialStory: "",
     sustainabilityNote: "",
     deliveryNote: "",
+    seo: EMPTY_SEO,
     variants: [
       {
         localId: `${draftId}_v1`,
@@ -304,6 +314,9 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
             sustainability_note: formState.sustainabilityNote,
             delivery_note: formState.deliveryNote,
           },
+          seo_title: formState.seo.seoTitle.trim(),
+          seo_description: formState.seo.seoDescription.trim(),
+          share_image_url: formState.seo.shareImageUrl.trim(),
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             if (v.apiId) {
@@ -362,6 +375,9 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
             sustainability_note: formState.sustainabilityNote,
             delivery_note: formState.deliveryNote,
           },
+          seo_title: formState.seo.seoTitle.trim(),
+          seo_description: formState.seo.seoDescription.trim(),
+          share_image_url: formState.seo.shareImageUrl.trim(),
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             return {
@@ -748,6 +764,18 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
             </label>
           </div>
         </SectionCard>
+
+        <SeoFieldsSection
+          idPrefix="Product"
+          path={`/products/${formState.slug || "new-product"}`}
+          value={formState.seo}
+          onChange={(seo) => updateField("seo", seo)}
+          defaults={{
+            title: formState.subtitle ? `${formState.title}: ${formState.subtitle}` : formState.title || "Product title",
+            description: formState.subtitle || "The product description",
+            imageUrl: formState.primaryMediaUrl,
+          }}
+        />
 
         <SectionCard
           title="Variants"

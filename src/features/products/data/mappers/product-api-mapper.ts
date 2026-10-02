@@ -72,6 +72,9 @@ export type ApiProductRecord = {
   description?: string;
   default_region?: string;
   region_availability?: string[];
+  seo_title?: string;
+  seo_description?: string;
+  share_image_url?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -158,5 +161,14 @@ export function mapApiProductToRecord(api: ApiProductRecord): DashboardProductRe
     shipping: api.shipping ? mapMoney(api.shipping) : fallbackMoney,
     narrative: mapNarrative(api.narrative ?? null),
     variants: api.variants.map(mapVariant),
+    ...(api.seo_title !== undefined
+      ? {
+          seo: {
+            seoTitle: api.seo_title ?? "",
+            seoDescription: api.seo_description ?? "",
+            shareImageUrl: api.share_image_url ?? "",
+          },
+        }
+      : {}),
   };
 }

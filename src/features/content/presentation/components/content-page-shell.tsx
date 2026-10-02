@@ -5,7 +5,8 @@ import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import type { DashboardContentArea } from "@/src/core/types/dashboard";
+import type { DashboardContentArea, DashboardContentRecord } from "@/src/core/types/dashboard";
+import { needsOwnerReview } from "@/src/features/content/presentation/components/info-page-editor-shell";
 import {
   useContentDesk,
   useContentDeskError,
@@ -27,6 +28,7 @@ const areaRouteMap: Record<DashboardContentArea, string> = {
   featured_drop: "/content/featured-products",
   stories: "/content/stories",
   navigation_promos: "/content/stories#navigation-promos",
+  info_page: "/content#information-pages",
 };
 
 const DASHBOARD_EDITABLE_AREAS: DashboardContentArea[] = ["homepage", "featured_drop"];
@@ -36,6 +38,7 @@ const areaLabelMap: Record<DashboardContentArea, string> = {
   featured_drop: "Featured drop",
   stories: "Stories",
   navigation_promos: "Navigation promos",
+  info_page: "Information page",
 };
 
 const areaMetaMap: Record<
@@ -71,6 +74,12 @@ const areaMetaMap: Record<
     storefrontComponent: "StoryBand",
     publishingNote: "A published navigation promo feeds the story band CTA and promo modules near the bottom of the homepage.",
   },
+  info_page: {
+    storefrontRoute: "/[page]",
+    storefrontSurface: "Information and legal page",
+    storefrontComponent: "InfoPageView",
+    publishingNote: "A published page is live at its storefront address and linked from the footer.",
+  },
 };
 
 export function ContentPageShell() {
@@ -79,6 +88,10 @@ export function ContentPageShell() {
   const editableEntries = contentEntries.filter((entry) =>
     DASHBOARD_EDITABLE_AREAS.includes(entry.area),
   );
+  const stories = contentEntries.filter((entry) => entry.area === "stories");
+  const infoPages = contentEntries
+    .filter((entry) => entry.area === "info_page")
+    .sort((a, b) => (a.slug ?? "").localeCompare(b.slug ?? ""));
 
   if (contentError) {
     return (
@@ -106,6 +119,8 @@ export function ContentPageShell() {
           actionHref="/"
           actionLabel="Return to overview"
         />
+        <StoriesSection stories={stories} />
+        <InformationPagesSection pages={infoPages} />
       </div>
     );
   }
@@ -234,6 +249,117 @@ export function ContentPageShell() {
           ))}
         </div>
       </SectionCard>
+
+      <StoriesSection stories={stories} />
+      <InformationPagesSection pages={infoPages} />
     </div>
   );
 }
+
+function StoriesSection({ stories }: { stories: DashboardContentRecord[] }) {
+  if (stories.length === 0) return null;
+  return (
+    <div id="stories">
+      <SectionCard
+        title="Stories"
+        description="Story copy is managed outside the dashboard. Set how each story appears in search results and when shared."
+      >
+        <ul style={{ display: "grid", gap: 10, margin: 0, padding: 0, listStyle: "none" }}>
+          {stories.map((story) => {
+            const hasOverrides = Boolean(
+              story.seo?.seoTitle || story.seo?.seoDescription || story.seo?.shareImageUrl,
+            );
+            return (
+              <li
+                key={story.id}
+                className="dashboard-split-row dashboard-split-row--center"
+                style={{
+                  border: "1px solid var(--color-border)",
+                  borderRadius: 16,
+                  padding: "14px 16px",
+                  background: "rgba(255, 253, 248, 0.82)",
+                }}
+              >
+                <div style={{ display: "grid", gap: 4 }}>
+                  <strong>{story.headline || story.title}</strong>
+                  <span style={{ color: "var(--color-text-muted)", fontSize: 13 }}>
+                    /stories/{story.slug} · {story.visibility === "published" ? "Live on storefront" : `Not live (${story.visibility})`}
+                    {hasOverrides ? " · Custom search and sharing" : ""}
+                  </span>
+                </div>
+                <Link
+                  href={`/content/stories/${story.id}`}
+                  style={darkPillStyle}
+                  aria-label={`Search and sharing for ${story.headline || story.title}`}
+                >
+                  Search and sharing
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </SectionCard>
+    </div>
+  );
+}
+
+function InformationPagesSection({ pages }: { pages: DashboardContentRecord[] }) {
+  if (pages.length === 0) return null;
+  const pendingReview = pages.filter(needsOwnerReview).length;
+
+  return (
+    <div id="information-pages">
+      <SectionCard
+        title="Information pages"
+        description={
+          pendingReview
+            ? `About, help, and legal pages linked from the storefront footer. ${pendingReview} of ${pages.length} still need owner review before launch.`
+            : "About, help, and legal pages linked from the storefront footer."
+        }
+      >
+        <ul style={{ display: "grid", gap: 10, margin: 0, padding: 0, listStyle: "none" }}>
+          {pages.map((page) => {
+            const review = needsOwnerReview(page);
+            const live = page.visibility === "published";
+            return (
+              <li
+                key={page.id}
+                className="dashboard-split-row dashboard-split-row--center"
+                style={{
+                  border: "1px solid var(--color-border)",
+                  borderRadius: 16,
+                  padding: "14px 16px",
+                  background: "rgba(255, 253, 248, 0.82)",
+                }}
+              >
+                <div style={{ display: "grid", gap: 4 }}>
+                  <strong>{page.headline || page.title}</strong>
+                  <span style={{ color: "var(--color-text-muted)", fontSize: 13 }}>
+                    /{page.slug} · {live ? "Live on storefront" : `Not live (${page.visibility})`}
+                  </span>
+                </div>
+                <div className="dashboard-action-row" style={{ alignItems: "center" }}>
+                  {review ? (
+                    <span style={{ ...badgeStyle, background: "rgba(179, 123, 31, 0.14)", color: "var(--color-accent)" }}>
+                      Needs owner review
+                    </span>
+                  ) : null}
+                  <Link href={`/content/pages/${page.id}`} style={darkPillStyle} aria-label={`Edit ${page.headline || page.title}`}>
+                    Edit page
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </SectionCard>
+    </div>
+  );
+}
+
+const badgeStyle = {
+  borderRadius: "var(--radius-pill)",
+  padding: "8px 12px",
+  fontWeight: 600,
+  fontSize: 13,
+} as const;

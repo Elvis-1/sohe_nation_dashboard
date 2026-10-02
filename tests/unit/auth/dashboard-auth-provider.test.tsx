@@ -19,7 +19,7 @@ function AuthHarness() {
       <button
         type="button"
         onClick={async () => {
-          await signIn("ops@sohesnation.com", "dashboard-demo");
+          await signIn("ops@sohenation.com", "dashboard-demo");
         }}
       >
         Sign in valid
@@ -76,7 +76,7 @@ describe("DashboardAuthProvider", () => {
           typeof rawBody === "string" ? (JSON.parse(rawBody) as { identifier?: string; password?: string }) : {};
 
         if (
-          body.identifier !== "ops@sohesnation.com" ||
+          body.identifier !== "ops@sohenation.com" ||
           body.password !== "dashboard-demo"
         ) {
           return new Response(
@@ -95,7 +95,7 @@ describe("DashboardAuthProvider", () => {
             token: "staff-token",
             expires_at: "2026-12-31T23:59:59Z",
             user: {
-              email: "ops@sohesnation.com",
+              email: "ops@sohenation.com",
               first_name: "Operations",
               last_name: "Desk",
               is_staff: true,
@@ -157,7 +157,7 @@ describe("DashboardAuthProvider", () => {
 
     const storedSession = window.localStorage.getItem(sessionStorageKey);
     expect(storedSession).not.toBeNull();
-    expect(screen.getByTestId("session-email")).toHaveTextContent("ops@sohesnation.com");
+    expect(screen.getByTestId("session-email")).toHaveTextContent("ops@sohenation.com");
     expect(hasExpiredDashboardSession()).toBe(false);
   });
 
@@ -205,7 +205,7 @@ describe("DashboardAuthProvider", () => {
     window.localStorage.setItem(
       sessionStorageKey,
       JSON.stringify({
-        email: "ops@sohesnation.com",
+        email: "ops@sohenation.com",
         name: "Operations Desk",
         role: "Staff Access",
         expiresAt: Date.now() - 60_000,

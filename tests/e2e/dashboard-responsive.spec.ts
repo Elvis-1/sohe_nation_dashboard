@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { SIGN_IN_BUTTON } from "./support/staff-auth";
 
-const demoEmail = "ops@sohesnation.com";
+const demoEmail = "ops@sohenation.com";
 const demoPassword = "dashboard-demo";
 const sessionToken = "responsive-test-token";
 
@@ -148,7 +148,7 @@ const settingsGroups = [
     title: "Store profile",
     description: "Profile defaults used across support and storefront handoff.",
     fields: [
-      { id: "support_email", label: "Support email", value: "ops@sohesnation.com", placeholder: false },
+      { id: "support_email", label: "Support email", value: "ops@sohenation.com", placeholder: false },
       { id: "support_phone", label: "Support phone", value: "+234 800 000 0000", placeholder: false },
     ],
   },
@@ -176,7 +176,7 @@ const staffMembers = [
   },
   {
     id: "staff_tolu",
-    email: "tolu@sohesnation.com",
+    email: "tolu@sohenation.com",
     first_name: "Tolu",
     last_name: "Adeyemi",
     role: "editor",
@@ -220,9 +220,9 @@ const providerStatus = {
   is_configured: true,
   host: "smtp.zoho.com",
   port: 587,
-  host_user_masked: "su***@sohesnation.com",
+  host_user_masked: "su***@sohenation.com",
   use_tls: true,
-  default_from_email: "Sohe's Nation <support@sohesnation.com>",
+  default_from_email: "Sohe's Nation <support@sohenation.com>",
   notes: "Responsive test fixture provider status",
 };
 
@@ -350,7 +350,7 @@ async function mockDashboardApi(page: Page) {
 
     if (path === "/dashboard/notifications/provider/test/" && method === "POST") {
       return json({
-        recipient_email: "ops@sohesnation.com",
+        recipient_email: "ops@sohenation.com",
         sent_count: 1,
         backend_name: providerStatus.backend_name,
         delivery_mode: providerStatus.delivery_mode,
