@@ -11,6 +11,7 @@ import type {
   DashboardProductRecord,
   DashboardSeoOverrides,
   ProductRegion,
+  ProductReturnPolicy,
 } from "@/src/core/types/dashboard";
 import { SeoFieldsSection } from "@/src/core/ui/seo-fields-section";
 import {
@@ -56,10 +57,35 @@ type ProductFormState = {
   sustainabilityNote: string;
   deliveryNote: string;
   seo: DashboardSeoOverrides;
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: string;
   variants: VariantFormItem[];
 };
 
 const EMPTY_SEO: DashboardSeoOverrides = { seoTitle: "", seoDescription: "", shareImageUrl: "" };
+
+const RETURN_RULE_OPTIONS: Array<{ value: ProductReturnPolicy; label: string; description: string }> = [
+  { value: "standard", label: "Standard", description: "The store-wide return window from Settings → Returns." },
+  {
+    value: "final_sale",
+    label: "Final sale",
+    description: "Not returnable unless faulty, for deliveries to the countries ticked in Settings → Returns.",
+  },
+  { value: "custom", label: "Custom window", description: "A different number of days for this product." },
+];
+
+function returnOptionStyle(active: boolean) {
+  return {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 12,
+    border: `1px solid ${active ? "var(--color-surface-inverse)" : "var(--color-border)"}`,
+    borderRadius: 16,
+    padding: "12px 14px",
+    background: active ? "rgba(26, 20, 16, 0.05)" : "var(--color-surface)",
+    cursor: "pointer",
+  } as const;
+}
 
 const REGION_OPTIONS: ProductRegion[] = ["NG", "US", "GB", "EU"];
 
@@ -89,6 +115,8 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       sustainabilityNote: product.narrative?.sustainabilityNote ?? "",
       deliveryNote: product.narrative?.deliveryNote ?? "",
       seo: product.seo ?? EMPTY_SEO,
+      returnPolicy: product.returnPolicy,
+      returnWindowDays: product.returnWindowDays ? String(product.returnWindowDays) : "",
       variants: product.variants.map((variant) => ({
         localId: variant.id,
         apiId: variant.id,
@@ -124,6 +152,8 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     sustainabilityNote: "",
     deliveryNote: "",
     seo: EMPTY_SEO,
+    returnPolicy: "standard",
+    returnWindowDays: "",
     variants: [
       {
         localId: `${draftId}_v1`,
@@ -317,6 +347,9 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
           seo_title: formState.seo.seoTitle.trim(),
           seo_description: formState.seo.seoDescription.trim(),
           share_image_url: formState.seo.shareImageUrl.trim(),
+          return_policy: formState.returnPolicy,
+          return_window_days:
+            formState.returnPolicy === "custom" ? Number(formState.returnWindowDays) || null : null,
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             if (v.apiId) {
@@ -378,6 +411,9 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
           seo_title: formState.seo.seoTitle.trim(),
           seo_description: formState.seo.seoDescription.trim(),
           share_image_url: formState.seo.shareImageUrl.trim(),
+          return_policy: formState.returnPolicy,
+          return_window_days:
+            formState.returnPolicy === "custom" ? Number(formState.returnWindowDays) || null : null,
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             return {
@@ -763,6 +799,53 @@ function ProductEditorForm({ product }: { product: DashboardProductRecord | null
               />
             </label>
           </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Returns"
+          description="How this product can be returned. Standard follows Settings → Returns. Each order keeps the rule it was bought under, so changes here only affect new orders."
+        >
+          <fieldset
+            aria-label="Product return rule"
+            style={{ border: 0, margin: 0, padding: 0, display: "grid", gap: 10 }}
+          >
+            {RETURN_RULE_OPTIONS.map((option) => (
+              <label key={option.value} style={returnOptionStyle(formState.returnPolicy === option.value)}>
+                <input
+                  type="radio"
+                  name="return-policy"
+                  value={option.value}
+                  checked={formState.returnPolicy === option.value}
+                  onChange={() => updateField("returnPolicy", option.value)}
+                />
+                <span style={{ display: "grid", gap: 2 }}>
+                  <strong>{option.label}</strong>
+                  <span style={{ color: "var(--color-text-muted)", fontSize: 13 }}>{option.description}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          {formState.returnPolicy === "custom" ? (
+            <label style={{ display: "grid", gap: 8, marginTop: 14, maxWidth: 260 }}>
+              <span>Return window</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <input
+                  aria-label="Product custom return window"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  value={formState.returnWindowDays}
+                  onChange={(event) => updateField("returnWindowDays", event.target.value)}
+                  style={{ ...inputStyle, width: 120 }}
+                />
+                <span style={{ color: "var(--color-text-muted)" }}>days after delivery</span>
+              </span>
+              <span style={{ color: "var(--color-text-muted)", fontSize: 12 }}>
+                Up to the longest custom window set in Settings → Returns.
+              </span>
+            </label>
+          ) : null}
         </SectionCard>
 
         <SeoFieldsSection

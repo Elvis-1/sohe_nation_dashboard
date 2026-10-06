@@ -90,6 +90,8 @@ type CreateProductPayload = {
   seo_title?: string;
   seo_description?: string;
   share_image_url?: string;
+  return_policy?: "standard" | "final_sale" | "custom";
+  return_window_days?: number | null;
   variants?: Array<{
     sku: string;
     size: string;
@@ -161,6 +163,8 @@ type UpdateProductPayload = Partial<{
   seo_title: string;
   seo_description: string;
   share_image_url: string;
+  return_policy: "standard" | "final_sale" | "custom";
+  return_window_days: number | null;
   variants: VariantUpdateItem[];
 }>;
 

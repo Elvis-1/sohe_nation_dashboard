@@ -62,7 +62,12 @@ export type DashboardProductRecord = {
   variants: DashboardProductVariant[];
   /** Search/share overrides; empty means the storefront uses its defaults. Detail read only. */
   seo?: DashboardSeoOverrides;
+  /** Return rule (Slice 14). Days only for "custom". */
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
+
+export type ProductReturnPolicy = "standard" | "final_sale" | "custom";
 
 export type DashboardSeoOverrides = {
   seoTitle: string;

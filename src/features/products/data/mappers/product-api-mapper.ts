@@ -75,6 +75,8 @@ export type ApiProductRecord = {
   seo_title?: string;
   seo_description?: string;
   share_image_url?: string;
+  return_policy?: DashboardProductRecord["returnPolicy"];
+  return_window_days?: number | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -161,6 +163,8 @@ export function mapApiProductToRecord(api: ApiProductRecord): DashboardProductRe
     shipping: api.shipping ? mapMoney(api.shipping) : fallbackMoney,
     narrative: mapNarrative(api.narrative ?? null),
     variants: api.variants.map(mapVariant),
+    returnPolicy: api.return_policy ?? "standard",
+    returnWindowDays: api.return_window_days ?? null,
     ...(api.seo_title !== undefined
       ? {
           seo: {
