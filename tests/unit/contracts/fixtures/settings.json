@@ -1,0 +1,97 @@
+[
+  {
+    "description": "Brand-facing defaults shared across commerce operations.",
+    "fields": [
+      {
+        "id": "store_name",
+        "label": "Store name",
+        "placeholder": false,
+        "value": "Sohe's Nation"
+      },
+      {
+        "id": "support_email",
+        "label": "Support email",
+        "placeholder": false,
+        "value": "support@sohenation.com"
+      }
+    ],
+    "id": "store_profile",
+    "title": "Store profile"
+  },
+  {
+    "description": "Gateway and settlement defaults reserved for later API wiring.",
+    "fields": [
+      {
+        "id": "primary_provider",
+        "label": "Primary provider",
+        "placeholder": true,
+        "value": "Flutterwave"
+      },
+      {
+        "id": "secondary_provider",
+        "label": "Secondary provider",
+        "placeholder": true,
+        "value": "PayPal"
+      }
+    ],
+    "id": "payments",
+    "title": "Payments placeholder"
+  },
+  {
+    "description": "Carrier, cutoff, and delivery defaults for future backend configuration.",
+    "fields": [
+      {
+        "id": "primary_region",
+        "label": "Primary region",
+        "placeholder": true,
+        "value": "Nigeria"
+      },
+      {
+        "id": "pickup_window",
+        "label": "Pickup window",
+        "placeholder": true,
+        "value": "Weekdays 4pm"
+      }
+    ],
+    "id": "shipping",
+    "title": "Shipping placeholder"
+  },
+  {
+    "description": "Operational messaging defaults reserved for later workflow and delivery wiring.",
+    "fields": [
+      {
+        "id": "returns_alert_channel",
+        "label": "Returns alert channel",
+        "placeholder": true,
+        "value": "Ops email digest"
+      },
+      {
+        "id": "order_alert_window",
+        "label": "Order alert window",
+        "placeholder": true,
+        "value": "Weekdays 9am-6pm"
+      }
+    ],
+    "id": "notifications",
+    "title": "Notifications placeholder"
+  },
+  {
+    "description": "Simple access placeholders for the MVP staff flow.",
+    "fields": [
+      {
+        "id": "ops_role",
+        "label": "Operations role",
+        "placeholder": true,
+        "value": "Staff Access"
+      },
+      {
+        "id": "session_mode",
+        "label": "Session mode",
+        "placeholder": true,
+        "value": "Fixture mode"
+      }
+    ],
+    "id": "staff_roles",
+    "title": "Staff roles placeholder"
+  }
+]

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
+import { SIGN_IN_BUTTON } from "./support/staff-auth";
 
-const demoEmail = "ops@sohesnation.com";
+const demoEmail = "ops@sohenation.com";
 const demoPassword = "dashboard-demo";
 const sessionToken = "responsive-test-token";
 
@@ -147,7 +148,7 @@ const settingsGroups = [
     title: "Store profile",
     description: "Profile defaults used across support and storefront handoff.",
     fields: [
-      { id: "support_email", label: "Support email", value: "ops@sohesnation.com", placeholder: false },
+      { id: "support_email", label: "Support email", value: "ops@sohenation.com", placeholder: false },
       { id: "support_phone", label: "Support phone", value: "+234 800 000 0000", placeholder: false },
     ],
   },
@@ -175,7 +176,7 @@ const staffMembers = [
   },
   {
     id: "staff_tolu",
-    email: "tolu@sohesnation.com",
+    email: "tolu@sohenation.com",
     first_name: "Tolu",
     last_name: "Adeyemi",
     role: "editor",
@@ -219,9 +220,9 @@ const providerStatus = {
   is_configured: true,
   host: "smtp.zoho.com",
   port: 587,
-  host_user_masked: "su***@sohesnation.com",
+  host_user_masked: "su***@sohenation.com",
   use_tls: true,
-  default_from_email: "Sohe's Nation <support@sohesnation.com>",
+  default_from_email: "Sohe's Nation <support@sohenation.com>",
   notes: "Responsive test fixture provider status",
 };
 
@@ -240,8 +241,8 @@ const routes = [
   { path: "/returns/RET-103", heading: "Return RET-103" },
   { path: "/customers", heading: "Profile, order, and return context in one place." },
   { path: "/customers/customer_ada_nwosu", heading: "Ada Nwosu" },
-  { path: "/content", heading: "Manage campaign and editorial surfaces." },
-  { path: "/content/homepage", heading: "Homepage and featured drop editor." },
+  { path: "/content", heading: "Manage homepage media and featured products." },
+  { path: "/content/homepage", heading: "Homepage hero media." },
   { path: "/notifications", heading: "Delivery log and retry control." },
   { path: "/settings", heading: "Operational defaults with live API backing." },
   { path: "/team", heading: "Staff access and role management." },
@@ -251,7 +252,7 @@ async function signIn(page: Page) {
   await page.goto("/signin");
   await page.getByLabel("Email").fill(demoEmail);
   await page.getByLabel("Password").fill(demoPassword);
-  await page.getByRole("button", { name: "Continue to overview" }).click();
+  await page.getByRole("button", { name: SIGN_IN_BUTTON }).click();
   await expect(page).toHaveURL("/");
 }
 
@@ -349,7 +350,7 @@ async function mockDashboardApi(page: Page) {
 
     if (path === "/dashboard/notifications/provider/test/" && method === "POST") {
       return json({
-        recipient_email: "ops@sohesnation.com",
+        recipient_email: "ops@sohenation.com",
         sent_count: 1,
         backend_name: providerStatus.backend_name,
         delivery_mode: providerStatus.delivery_mode,
@@ -381,6 +382,38 @@ test.describe("dashboard responsive coverage", () => {
   test.beforeEach(async ({ page }) => {
     await mockDashboardApi(page);
     await signIn(page);
+  });
+
+  test("desktop shell keeps the full menu visible without sidebar scrolling", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.goto("/");
+
+    const sidebar = page.locator("#dashboard-sidebar");
+    const nav = page.locator(".dashboard-nav");
+    const signOut = page.getByRole("button", { name: /sign out/i });
+
+    await expect(sidebar).toBeVisible();
+    await expect(signOut).toBeVisible();
+
+    const sidebarMetrics = await sidebar.evaluate((element) => {
+      const sidebarElement = element as HTMLElement;
+      return {
+        clientHeight: sidebarElement.clientHeight,
+        scrollHeight: sidebarElement.scrollHeight,
+        overflowY: window.getComputedStyle(sidebarElement).overflowY,
+      };
+    });
+
+    // The nav may scroll on very short screens, but at this size every item must fit.
+    const navMetrics = await nav.evaluate((element) => ({
+      clientHeight: (element as HTMLElement).clientHeight,
+      scrollHeight: (element as HTMLElement).scrollHeight,
+    }));
+
+    expect(navMetrics.scrollHeight).toBeLessThanOrEqual(navMetrics.clientHeight + 1);
+    await expect(page.getByRole("link", { name: /Team/ })).toBeInViewport();
+    expect(sidebarMetrics.overflowY).toBe("hidden");
+    expect(sidebarMetrics.scrollHeight).toBeLessThanOrEqual(sidebarMetrics.clientHeight + 1);
   });
 
   for (const viewport of viewports) {

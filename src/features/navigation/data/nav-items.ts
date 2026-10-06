@@ -17,7 +17,7 @@ export const navItems = [
   {
     href: "/content",
     label: "Homepage Desk",
-    description: "Homepage hero media and featured-product rail control.",
+    description: "Homepage media, featured products, story search settings, and information pages.",
   },
   {
     href: "/returns",
@@ -28,6 +28,11 @@ export const navItems = [
     href: "/customers",
     label: "Customers",
     description: "Profile, history, and support context at a glance.",
+  },
+  {
+    href: "/subscribers",
+    label: "Subscribers",
+    description: "Drop-list sign-ups, Brevo sync status, export, and removal requests.",
   },
   {
     href: "/settings",

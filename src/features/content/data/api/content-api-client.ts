@@ -65,6 +65,9 @@ type WritePayload = Partial<{
     poster_url?: string;
   }>;
   preview_bullets: string[];
+  seo_title: string;
+  seo_description: string;
+  share_image_url: string;
   campaign_stats: Array<{ label: string; value: string }>;
   modules: Array<{ title: string; body: string }>;
   hotspots: Array<{

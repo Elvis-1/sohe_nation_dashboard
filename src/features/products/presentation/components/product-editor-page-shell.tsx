@@ -2,19 +2,24 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
-import type { DashboardProductRecord, ProductRegion } from "@/src/core/types/dashboard";
+import type {
+  DashboardProductRecord,
+  DashboardSeoOverrides,
+  ProductRegion,
+} from "@/src/core/types/dashboard";
+import { SeoFieldsSection } from "@/src/core/ui/seo-fields-section";
 import {
   createProductRecord,
   archiveProductRecord,
+  loadProductDetail,
   updateProductRecord,
 } from "@/src/features/products/data/repositories/product-repository";
 import { uploadDashboardCatalogMedia } from "@/src/features/products/data/api/product-api-client";
-import { useProductCatalog } from "@/src/features/products/presentation/state/use-product-catalog";
 
 type ProductEditorPageShellProps = {
   productId?: string;
@@ -50,8 +55,11 @@ type ProductFormState = {
   materialStory: string;
   sustainabilityNote: string;
   deliveryNote: string;
+  seo: DashboardSeoOverrides;
   variants: VariantFormItem[];
 };
+
+const EMPTY_SEO: DashboardSeoOverrides = { seoTitle: "", seoDescription: "", shareImageUrl: "" };
 
 const REGION_OPTIONS: ProductRegion[] = ["NG", "US", "GB", "EU"];
 
@@ -80,6 +88,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
       materialStory: product.narrative?.materialStory ?? "",
       sustainabilityNote: product.narrative?.sustainabilityNote ?? "",
       deliveryNote: product.narrative?.deliveryNote ?? "",
+      seo: product.seo ?? EMPTY_SEO,
       variants: product.variants.map((variant) => ({
         localId: variant.id,
         apiId: variant.id,
@@ -114,6 +123,7 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
     materialStory: "",
     sustainabilityNote: "",
     deliveryNote: "",
+    seo: EMPTY_SEO,
     variants: [
       {
         localId: `${draftId}_v1`,
@@ -128,31 +138,83 @@ function createFormState(product?: DashboardProductRecord): ProductFormState {
   };
 }
 
+type DetailResult = { key: string; product: DashboardProductRecord | null; error: string | null };
+
 export function ProductEditorPageShell({ productId }: ProductEditorPageShellProps) {
+  // Always read the full record: the catalog list omits narrative and region fields.
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<DetailResult | null>(null);
+  const requestKey = `${productId ?? "new"}:${attempt}`;
+
+  useEffect(() => {
+    if (!productId) return;
+    let isActive = true;
+    loadProductDetail(productId).then(
+      (product) => {
+        if (isActive) setResult({ key: requestKey, product, error: null });
+      },
+      (error: unknown) => {
+        if (!isActive) return;
+        const message = error instanceof Error ? error.message : "Products fetch failed.";
+        setResult({ key: requestKey, product: null, error: message });
+      },
+    );
+    return () => {
+      isActive = false;
+    };
+  }, [productId, requestKey]);
+
+  if (!productId) {
+    return <ProductEditorForm key="new" product={null} />;
+  }
+
+  const current = result?.key === requestKey ? result : null;
+
+  if (!current) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="Loading product"
+        description="Reading this product from the API."
+      />
+    );
+  }
+
+  if (current.error) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="This product could not load."
+        description={`The dashboard could not read this product from the API. ${current.error}`}
+        actionLabel="Retry"
+        onAction={() => setAttempt((value) => value + 1)}
+      />
+    );
+  }
+
+  if (!current.product) {
+    return (
+      <AppStateMessage
+        eyebrow="Products"
+        title="This product record is missing"
+        description="The product you tried to open does not exist or has been archived."
+        action={<Link href="/products">Back to products</Link>}
+      />
+    );
+  }
+
+  return <ProductEditorForm key={current.product.id} product={current.product} />;
+}
+
+function ProductEditorForm({ product }: { product: DashboardProductRecord | null }) {
   const router = useRouter();
   const toast = useToast();
-  const products = useProductCatalog();
-  const product = useMemo(
-    () => (productId ? products.find((item) => item.id === productId) ?? null : null),
-    [productId, products],
-  );
   const [formState, setFormState] = useState<ProductFormState>(() => createFormState(product ?? undefined));
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [pendingAction, setPendingAction] = useState<
     "draft" | "published" | "archive" | null
   >(null);
   const isSaving = pendingAction !== null;
-
-  if (productId && !product) {
-    return (
-      <AppStateMessage
-        eyebrow="Products"
-        title="This product record is missing"
-        description="The product you tried to open is not available in the current catalog."
-        action={<Link href="/products">Back to products</Link>}
-      />
-    );
-  }
 
   function updateField<Key extends keyof ProductFormState>(field: Key, value: ProductFormState[Key]) {
     setFormState((currentState) => ({
@@ -252,6 +314,9 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             sustainability_note: formState.sustainabilityNote,
             delivery_note: formState.deliveryNote,
           },
+          seo_title: formState.seo.seoTitle.trim(),
+          seo_description: formState.seo.seoDescription.trim(),
+          share_image_url: formState.seo.shareImageUrl.trim(),
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             if (v.apiId) {
@@ -310,6 +375,9 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             sustainability_note: formState.sustainabilityNote,
             delivery_note: formState.deliveryNote,
           },
+          seo_title: formState.seo.seoTitle.trim(),
+          seo_description: formState.seo.seoDescription.trim(),
+          share_image_url: formState.seo.shareImageUrl.trim(),
           variants: validVariants.map((v) => {
             const compareAt = Number(v.compareAtPriceAmount);
             return {
@@ -696,6 +764,18 @@ export function ProductEditorPageShell({ productId }: ProductEditorPageShellProp
             </label>
           </div>
         </SectionCard>
+
+        <SeoFieldsSection
+          idPrefix="Product"
+          path={`/products/${formState.slug || "new-product"}`}
+          value={formState.seo}
+          onChange={(seo) => updateField("seo", seo)}
+          defaults={{
+            title: formState.subtitle ? `${formState.title}: ${formState.subtitle}` : formState.title || "Product title",
+            description: formState.subtitle || "The product description",
+            imageUrl: formState.primaryMediaUrl,
+          }}
+        />
 
         <SectionCard
           title="Variants"

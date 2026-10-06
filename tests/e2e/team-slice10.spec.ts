@@ -1,13 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
+import { OWNER_IDENTIFIER, OWNER_PASSWORD, submitSignIn } from "./support/staff-auth";
 
-const ownerEmail = "admin";
-const ownerPassword = "admin123";
+const ownerEmail = OWNER_IDENTIFIER;
+const ownerPassword = OWNER_PASSWORD;
 
 async function signInAs(page: Page, identifier: string, password: string) {
-  await page.goto("/signin");
-  await page.getByLabel("Email").fill(identifier);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Continue to overview" }).click();
+  await submitSignIn(page, identifier, password);
   await expect(page).toHaveURL("/", { timeout: 10000 });
 }
 
@@ -63,7 +61,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
     ).toBeVisible();
 
     // Tolu row
-    await expect(page.getByText("tolu@sohesnation.com", { exact: true })).toBeVisible();
+    await expect(page.getByText("tolu@sohenation.com", { exact: true })).toBeVisible();
     // Status badge (Active or Inactive — depends on prior run state)
     await expect(page.locator("span", { hasText: /Active|Inactive/ }).first()).toBeVisible();
   });
@@ -91,7 +89,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
 
     await expect(page.getByPlaceholder("Tolu", { exact: true })).toBeVisible();
     await expect(page.getByPlaceholder("Adeyemi", { exact: true })).toBeVisible();
-    await expect(page.getByPlaceholder("tolu@sohesnation.com", { exact: true })).toBeVisible();
+    await expect(page.getByPlaceholder("tolu@sohenation.com", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Add member" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
   });
@@ -112,7 +110,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
   test("owner can create a new staff member and see email invite confirmation", async ({
     page,
   }) => {
-    const uniqueEmail = `e2e-${Date.now()}@sohesnation.com`;
+    const uniqueEmail = `e2e-${Date.now()}@sohenation.com`;
 
     await page.goto("/team");
     await waitForStaffList(page);
@@ -120,7 +118,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
     await page.getByRole("button", { name: "Add staff member" }).click();
     await page.getByPlaceholder("Tolu", { exact: true }).fill("E2E");
     await page.getByPlaceholder("Adeyemi", { exact: true }).fill("Testmember");
-    await page.getByPlaceholder("tolu@sohesnation.com", { exact: true }).fill(uniqueEmail);
+    await page.getByPlaceholder("tolu@sohenation.com", { exact: true }).fill(uniqueEmail);
     await page.locator("select").last().selectOption("editor");
     await page.getByRole("button", { name: "Add member" }).click();
 
@@ -142,7 +140,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
     await page.goto("/team");
     await waitForStaffList(page);
 
-    await manageForEmail(page, "tolu@sohesnation.com").click();
+    await manageForEmail(page, "tolu@sohenation.com").click();
     await expect(page).toHaveURL(/\/team\/.+/);
 
     await expect(page.getByRole("heading", { name: "Role and access" })).toBeVisible({ timeout: 8000 });
@@ -172,7 +170,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
     await page.goto("/team");
     await waitForStaffList(page);
 
-    await manageForEmail(page, "tolu@sohesnation.com").click();
+    await manageForEmail(page, "tolu@sohenation.com").click();
     await expect(page).toHaveURL(/\/team\/.+/);
     await expect(page.getByRole("heading", { name: "Role and access" })).toBeVisible({ timeout: 8000 });
 
@@ -191,7 +189,7 @@ test.describe("Slice 10 — Team: owner-level access", () => {
     await page.goto("/team");
     await waitForStaffList(page);
 
-    await manageForEmail(page, "tolu@sohesnation.com").click();
+    await manageForEmail(page, "tolu@sohenation.com").click();
     await expect(page).toHaveURL(/\/team\/.+/);
 
     const deactivateBtn = page.getByRole("button", { name: "Deactivate" });

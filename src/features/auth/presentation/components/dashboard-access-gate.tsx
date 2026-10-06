@@ -13,19 +13,26 @@ export function DashboardAccessGate({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Dev bypass: when NEXT_PUBLIC_DASHBOARD_BYPASS=1, render dashboard without auth.
+  // Checked after the hooks so they run in the same order on every render.
+  const bypassAuth = (process.env.NEXT_PUBLIC_DASHBOARD_BYPASS as string) === "1";
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isReady } = useDashboardAuth();
 
   useEffect(() => {
-    if (!isReady) {
+    if (bypassAuth || !isReady) {
       return;
     }
 
     if (!isAuthenticated && pathname !== "/signin") {
       router.replace(hasExpiredDashboardSession() ? "/session-expired" : "/signin");
     }
-  }, [isAuthenticated, isReady, pathname, router]);
+  }, [bypassAuth, isAuthenticated, isReady, pathname, router]);
+
+  if (bypassAuth) {
+    return <>{children}</>;
+  }
 
   if (!isReady) {
     return (

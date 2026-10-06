@@ -51,6 +51,9 @@ export type ApiContentRecord = {
   hotspots?: ApiHotspot[];
   created_at?: string;
   updated_at?: string;
+  seo_title?: string;
+  seo_description?: string;
+  share_image_url?: string;
 };
 
 export type ApiPaginatedResponse<T> = {
@@ -100,5 +103,11 @@ export function mapApiContentToRecord(api: ApiContentRecord): DashboardContentRe
       note: hotspot.note,
     })),
     summary: api.summary,
+    updatedAt: api.updated_at,
+    seo: {
+      seoTitle: api.seo_title ?? "",
+      seoDescription: api.seo_description ?? "",
+      shareImageUrl: api.share_image_url ?? "",
+    },
   };
 }

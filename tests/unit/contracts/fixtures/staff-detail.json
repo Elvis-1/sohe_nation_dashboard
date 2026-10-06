@@ -1,0 +1,21 @@
+{
+  "audit_log": [
+    {
+      "action": "created",
+      "created_at": "2026-09-29T10:52:57.485017Z",
+      "metadata": {
+        "bootstrap": true,
+        "role": "owner"
+      },
+      "performed_by_email": "admin@sohe.com"
+    }
+  ],
+  "created_at": "2026-09-29T10:52:57.483363Z",
+  "email": "admin@sohe.com",
+  "first_name": "",
+  "id": "5cb19b18-58e4-4cf9-b824-17cef17a64a2",
+  "is_active": true,
+  "is_owner": true,
+  "last_name": "",
+  "role": "owner"
+}

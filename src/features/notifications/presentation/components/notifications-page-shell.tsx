@@ -302,7 +302,7 @@ export function NotificationsPageShell() {
             <input
               style={inputStyle}
               value={testRecipient}
-              placeholder="owner@sohesnation.com"
+              placeholder="owner@sohenation.com"
               onChange={(event) => setTestRecipient(event.target.value)}
             />
           </label>

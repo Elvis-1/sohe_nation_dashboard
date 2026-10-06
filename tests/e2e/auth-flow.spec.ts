@@ -1,7 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import { OWNER_IDENTIFIER, OWNER_PASSWORD, SIGN_IN_BUTTON } from "./support/staff-auth";
 
-const demoEmail = "admin";
-const demoPassword = "admin123";
+const demoEmail = OWNER_IDENTIFIER;
+const demoPassword = OWNER_PASSWORD;
 const sessionStorageKey = "sohe-dashboard-session";
 const expiredSessionFlagKey = "sohe-dashboard-session-expired";
 
@@ -9,7 +10,7 @@ async function signIn(page: Page) {
   await page.goto("/signin");
   await page.getByLabel("Email or username").fill(demoEmail);
   await page.getByLabel("Password").fill(demoPassword);
-  await page.getByRole("button", { name: "Continue to overview" }).click();
+  await page.getByRole("button", { name: SIGN_IN_BUTTON }).click();
   await expect(page).toHaveURL("/");
 }
 
@@ -21,7 +22,7 @@ test.describe("dashboard phase 1 auth flow", () => {
 
     await page.getByLabel("Email or username").fill(demoEmail);
     await page.getByLabel("Password").fill(demoPassword);
-    await page.getByRole("button", { name: "Continue to overview" }).click();
+    await page.getByRole("button", { name: SIGN_IN_BUTTON }).click();
 
     await expect(page).toHaveURL("/");
     await expect(page.getByRole("heading", { name: "Daily operations at a glance." })).toBeVisible();
@@ -34,7 +35,7 @@ test.describe("dashboard phase 1 auth flow", () => {
 
     await page.getByLabel("Email or username").fill("wrong@example.com");
     await page.getByLabel("Password").fill("not-the-password");
-    await page.getByRole("button", { name: "Continue to overview" }).click();
+    await page.getByRole("button", { name: SIGN_IN_BUTTON }).click();
 
     await expect(page).toHaveURL("/signin");
     await expect(page.getByText("Invalid credentials.")).toBeVisible();
@@ -53,7 +54,7 @@ test.describe("dashboard phase 1 auth flow", () => {
         window.localStorage.setItem(
           storageKey,
           JSON.stringify({
-            email: "ops@sohesnation.com",
+            email: "ops@sohenation.com",
             name: "Operations Desk",
             role: "Staff Access",
             expiresAt: Date.now() - 60_000,
@@ -102,7 +103,7 @@ test.describe("dashboard phase 1 auth flow", () => {
     });
 
     await page.goto("/forgot-password");
-    await page.getByLabel("Email or username").fill("ops@sohesnation.com");
+    await page.getByLabel("Email or username").fill("ops@sohenation.com");
     await page.getByRole("button", { name: "Send reset link" }).click();
 
     await expect(page).toHaveURL("/forgot-password");

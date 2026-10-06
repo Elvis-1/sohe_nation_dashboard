@@ -33,6 +33,14 @@ function buildWritePayload(nextRecord: DashboardContentRecord) {
       return {
         visibility: nextRecord.visibility,
       };
+    case "info_page":
+      return {
+        visibility: nextRecord.visibility,
+        title: nextRecord.title,
+        headline: nextRecord.headline,
+        summary: nextRecord.summary,
+        body: nextRecord.body,
+      };
     case "stories":
     default:
       return {
@@ -128,6 +136,23 @@ export async function updateContentRecord(
 ): Promise<DashboardContentRecord> {
   const updated = await updateDashboardContentRecord(nextRecord.id, buildWritePayload(nextRecord));
 
+  if (cachedContent !== null) {
+    cachedContent = cachedContent.map((entry) => (entry.id === updated.id ? updated : entry));
+  }
+  dispatchChange();
+  return updated;
+}
+
+/** Stories only accept their search/share overrides from the dashboard; copy stays locked. */
+export async function updateContentSeo(
+  record: DashboardContentRecord,
+  seo: NonNullable<DashboardContentRecord["seo"]>,
+): Promise<DashboardContentRecord> {
+  const updated = await updateDashboardContentRecord(record.id, {
+    seo_title: seo.seoTitle.trim(),
+    seo_description: seo.seoDescription.trim(),
+    share_image_url: seo.shareImageUrl.trim(),
+  });
   if (cachedContent !== null) {
     cachedContent = cachedContent.map((entry) => (entry.id === updated.id ? updated : entry));
   }

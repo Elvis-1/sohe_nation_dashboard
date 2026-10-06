@@ -2,21 +2,20 @@
 
 You are building the Sohe's Nation back-office dashboard.
 
-The dashboard is a staff-only operational surface for managing products, orders, content, returns, customers, and settings. It comes after the storefront UI phase and before live API integration.
+The dashboard is a staff-only operational surface for managing products, orders, content, returns, customers, settings, staff, and notifications. It is wired to the live API in `api/`.
 
 ## Scope Guardrails
 
 - `dashboard/` is for staff and admin workflows only.
 - Customer-facing shopping, editorial, checkout, and account flows belong in `web/storefront`.
 - Shared services and live integrations belong in `api/`.
-- Keep the dashboard fixture-first until the API phase begins.
+- Read and write data through the API only. There are no mock repositories or fixtures; do not reintroduce them.
 
-## Current Project Status (2026-04-16)
+## Current Project Status (2026-09-29)
 
-- `web/storefront` is the most mature app in the repo and is already live in fixture mode.
-- The dashboard is the next major product surface to build.
-- Delivery order remains: `web` first, `dashboard` second, `api` third.
-- The dashboard roadmap and phased build order live in [PLAN.md](/Users/mac/Documents/AI%20AGENTS/SOHE_NATION/dashboard/PLAN.md).
+- The fixture phase is finished (2026-04-16). Every module now reads through an API-backed repository, and the mock repositories and `mock-*.ts` fixtures were deleted (2026-09-29).
+- Slice status and API contracts live in [api/PLAN.md](/Users/mac/Documents/AI%20AGENTS/SOHE_NATION/api/PLAN.md) §10. [PLAN.md](/Users/mac/Documents/AI%20AGENTS/SOHE_NATION/dashboard/PLAN.md) is the historical fixture-phase plan.
+- The phase notes below describe each module's scope; file paths in them point to the current API-backed code.
 
 ## Required Dashboard Modules
 
@@ -33,9 +32,9 @@ Build around these MVP features:
 
 ## Delivery Workflow
 
-1. Follow the phased order in `dashboard/PLAN.md`.
+1. Follow the slice workflow in `api/PLAN.md`.
 2. Keep module boundaries clear and simple.
-3. Use mocked repositories and local fixtures until API work begins.
+3. Each feature reads the API through `data/api/*-api-client.ts` and `data/repositories/*-repository.ts`; shared HTTP and paging live in `src/core/api/`.
 4. Build the dashboard to support the already-defined storefront feature set.
 
 ## Architecture
@@ -52,8 +51,8 @@ Phase 0 foundation decisions now in force:
 
 - the dashboard owns its own route space inside the `dashboard/` Next.js app
 - top-level module routes are `/`, `/products`, `/orders`, `/content`, `/returns`, `/customers`, and `/settings`
-- shared dashboard fixture contracts live in `src/core/types/dashboard.ts`
-- feature modules should read fixture data through `data/repositories/` boundaries, not by coupling page shells directly to raw mock files
+- shared dashboard contracts live in `src/core/types/dashboard.ts`
+- feature modules read data through `data/repositories/` boundaries, not by calling the API from page shells
 - dashboard tokens live in `src/app/globals.css` and should stay aligned with storefront brand direction without reusing the storefront shell aesthetic verbatim
 
 Suggested structure:
@@ -91,12 +90,12 @@ src/
 - `content` must support homepage and story/editorial management.
 - `returns` must support the customer account returns flow.
 - `customers` should focus on profile, order context, and return context.
-- `settings` should stay simple and placeholder-friendly until live integration.
+- `settings` should stay simple; groups other than `store_profile` are still operational placeholders.
 
 Current Phase 1 auth foundation:
 
-- mocked staff access is the approved MVP auth mode
-- demo credentials should be sourced from `src/features/auth/data/mock-staff-auth-repository.ts`
+- staff sign in against the backend staff auth API (`/auth/staff/login/`); bearer-token session state lives in `src/features/auth/presentation/state/dashboard-auth-provider.tsx`
+- there are no demo credentials in code; local dev uses the seeded owner account (see `api/CLAUDE.md`)
 - protected dashboard routes should stay behind `dashboard-access-gate`
 - auth-facing routes should redirect authenticated staff back into the dashboard instead of duplicating the sign-in surface
 
@@ -110,7 +109,7 @@ Current Phase 1.5 shell foundation:
 Current Phase 2 overview foundation:
 
 - the overview is the dashboard landing surface and should remain the fastest operational entry point for staff
-- overview data should be composed through `src/features/overview/data/repositories/mock-overview-repository.ts`
+- overview KPIs are computed in `src/features/overview/presentation/components/overview-page-shell.tsx` from the complete product, order, return, and content repositories; desks that are loading or failed are flagged (with Retry) instead of showing zeros
 - the overview must summarize products, orders, returns, and content in one screen and hand staff into deeper modules without dead ends
 - overview state should retain automated coverage for KPI visibility, summary blocks, handoff links, and empty-state behavior
 
@@ -118,7 +117,7 @@ Current Phase 3 products foundation:
 
 - the products module now owns the first complete operator workflow in the dashboard
 - list, filter/search, create, edit, and draft/publish behavior should stay inside the products feature boundary
-- fixture-backed product changes should flow through `src/features/products/data/repositories/mock-product-repository.ts`
+- product reads and writes flow through `src/features/products/data/repositories/product-repository.ts`
 - product editor fields must stay aligned to storefront catalog and PDP assumptions: title, slug, category, audience, price, stock, variants, visibility, and media
 - product workflow coverage should continue to protect list rendering, filtering, creation, editing, and status transitions
 
@@ -126,49 +125,48 @@ Current Phase 4 orders foundation:
 
 - the orders module now owns the post-purchase list/detail workflow in the dashboard
 - list filtering, detail review, fulfillment updates, and internal notes should stay inside the orders feature boundary
-- fixture-backed order changes should flow through `src/features/orders/data/repositories/mock-order-repository.ts`
+- order reads and writes flow through `src/features/orders/data/repositories/order-repository.ts`
 - order records must stay aligned to storefront checkout and account-history assumptions: items, totals, customer details, shipping details, payment provider, fulfillment note, and internal note
-- orders can hand staff into a lightweight customer drill-in at `/customers/[id]` until the full customers phase lands
+- orders hand staff into the customer record at `/customers/[id]`
 - order workflow coverage should continue to protect list rendering, filtering, detail review, status updates, note persistence, and customer handoff
 
 Current Phase 5 content foundation:
 
 - the content module now owns the campaign and editorial management workflow in the dashboard
-- content-area selection, homepage editing, stories editing, linked products, media references, preview structure, and draft/ready behavior should stay inside the content feature boundary
-- fixture-backed content changes should flow through `src/features/content/data/repositories/mock-content-repository.ts`
-- content records must stay aligned to the live storefront homepage, stories/lookbooks, featured drop, and navigation-promos surfaces already present in fixture mode
+- dashboard editing is limited to homepage hero media (Cloudinary upload or URL) and featured-drop product links; stories and navigation promos are backend-owned and not editable here (see `api/AGENTS.md` Content)
+- content reads and writes flow through `src/features/content/data/repositories/content-repository.ts`
+- content records must stay aligned to the storefront homepage, stories/lookbooks, featured drop, and navigation-promos surfaces
 - content workflow coverage should continue to protect hub navigation, editor behavior, linked-product editing, and draft/ready transitions
 
 Current Phase 6 returns foundation:
 
 - the returns module now owns the internal return-processing workflow in the dashboard
 - queue filtering, return detail review, lifecycle updates, and internal decision capture should stay inside the returns feature boundary
-- fixture-backed return changes should flow through `src/features/returns/data/repositories/mock-return-repository.ts`
-- return records must stay aligned to the live storefront account returns flow already present in fixture mode: customer context, order context, item summary, request reason, and staff decision handling
+- return reads and writes flow through `src/features/returns/data/repositories/return-repository.ts`
+- return records must stay aligned to the storefront account returns flow: customer context, order context, item summary, request reason, and staff decision handling
 - returns workflow coverage should continue to protect queue rendering, filtering, detail review, lifecycle transitions, persistence, and customer handoff
 
 Current Phase 7 customers foundation:
 
 - the customers module now owns the customer lookup and record-review workflow in the dashboard
 - customer search, profile review, linked order history, and linked return history should stay inside the customers feature boundary
-- customer-linked order and return handoff should resolve against the current fixture-backed dashboard records where those records exist
-- customer records must stay aligned to the live storefront account, checkout, and returns context already present in fixture mode
+- `/customers` searches, filters by region, and pages on the server through `src/features/customers/data/repositories/customer-repository.ts`
+- customer-linked order and return handoff resolves against the order and return desks
+- customer records must stay aligned to the storefront account, checkout, and returns context
 - customers workflow coverage should continue to protect list rendering, lookup behavior, detail review, and linked order/return handoff
 
 Current Phase 8 settings foundation:
 
 - the settings module now owns the grouped operational-defaults workflow in the dashboard
 - grouped settings review, placeholder editing, and save behavior should stay inside the settings feature boundary
-- fixture-backed settings changes should flow through `src/features/settings/data/repositories/mock-setting-repository.ts`
-- settings records must stay aligned to the operational defaults the storefront and dashboard will eventually consume during API wiring
+- settings reads and writes flow through `src/features/settings/data/repositories/setting-repository.ts`
+- settings records must stay aligned to the operational defaults the storefront and dashboard consume
 - settings workflow coverage should continue to protect grouped rendering, editable placeholder behavior, save flow, and persistence
 
 Current Phase 8.5 parity foundation:
 
-- the dashboard/storefront parity checkpoint is now a required handoff step before API implementation begins
-- parity review findings and remaining gaps should be logged in `dashboard/PARITY_CHECKPOINT.md`
-- cross-surface parity checks that are feasible in fixture mode should remain protected by automated verification
-- API work should treat the documented parity gaps as explicit design items rather than silent assumptions
+- the parity checkpoint was the handoff into API work; its findings are in `dashboard/PARITY_CHECKPOINT.md`
+- remaining parity gaps are tracked as explicit design items in `api/PLAN.md` (for example the Slice 5 storefront profile-depth decision)
 
 ## Rendering Rules
 
@@ -187,42 +185,28 @@ Current Phase 8.5 parity foundation:
 
 ## Data Rules
 
-- Model dashboard fixtures around the storefront features already implemented.
-- Prepare for later Django/API wiring, but do not build live integration yet.
-- Keep product, order, return, content, and customer shapes compatible with the storefront plan.
+- The API is the source of truth. Map API responses to dashboard contracts in explicit mappers and keep them covered by `tests/unit/contracts/api-contracts.test.ts`.
+- List reads follow every page (`src/core/api/paginate.ts`) unless the screen pages on the server.
+- A failed read shows an error state with Retry; never fall back silently to an empty list.
+- Keep product, order, return, content, and customer shapes compatible with the storefront.
 
 ## Definition of Ready
 
 Before building a module:
 
-- its operator flow is documented in `dashboard/PLAN.md`
+- its slice and API contract are documented in `api/PLAN.md`
 - the route shape is clear
-- the mocked data shape is defined
 - its dependency on storefront behavior is understood
 
 ## Definition of Done
 
 A dashboard module is done when:
 
-- the main list/detail or edit flow works in fixture mode
+- the main list/detail or edit flow works against the live API
 - loading, empty, and error states exist
 - the module supports the related storefront behavior it is meant to manage
-- the implementation matches the current dashboard phase plan
+- adapter unit tests and e2e coverage pass
 
 ## Current Priority
 
-Use `dashboard/PLAN.md` as the source of truth for what to build next.
-
-The immediate sequence is:
-
-1. dashboard foundations
-2. auth
-3. shell
-4. overview
-5. products
-6. orders
-7. content
-8. returns
-9. customers
-10. settings
-11. dashboard parity checkpoint before API work
+Use `api/PLAN.md` §10 for slice status and open work (each slice's Pending list) and `TESTING.md` for slice sign-off.

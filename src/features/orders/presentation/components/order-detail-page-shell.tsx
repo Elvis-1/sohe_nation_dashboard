@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
@@ -11,47 +11,105 @@ import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
 import { ApiError } from "@/src/core/api/http-client";
 import {
   archiveOrderRecord,
+  loadOrderIntoDesk,
+  retryOrdersLoad,
   updateOrderRecord,
 } from "@/src/features/orders/data/repositories/order-repository";
-import { useOrderDesk } from "@/src/features/orders/presentation/state/use-order-desk";
+import {
+  useOrderDesk,
+  useOrderDeskError,
+  useOrderDeskStatus,
+} from "@/src/features/orders/presentation/state/use-order-desk";
 
 type OrderDetailPageShellProps = {
   orderId: string;
 };
 
+
+/** Courier-ready address lines; falls back to the text snapshot for older orders. */
+function formatShippingLines(order: DashboardOrderRecord): string[] {
+  const details = order.shippingDetails;
+  if (!details) return [order.shippingAddress];
+  return [
+    details.phone ? `${details.recipientName} · ${details.phone}` : details.recipientName,
+    details.line1,
+    details.line2,
+    [details.city, details.state, details.postalCode].filter(Boolean).join(", "),
+    details.countryCode,
+  ].filter(Boolean);
+}
 export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
-  const router = useRouter();
   const orders = useOrderDesk();
+  const ordersError = useOrderDeskError();
+  const deskStatus = useOrderDeskStatus();
   const order = useMemo(
     () => orders.find((item) => item.id === orderId) ?? null,
     [orderId, orders],
   );
-  const toast = useToast();
-  const [status, setStatus] = useState<DashboardOrderRecord["status"] | "">(order?.status ?? "");
-  const [fulfillmentNote, setFulfillmentNote] = useState(order?.fulfillmentNote ?? "");
-  const [internalNote, setInternalNote] = useState(order?.internalNote ?? "");
-  const canArchive = order?.status === "cancelled" || order?.status === "delivered";
+  // Orders missing from the loaded desk are looked up directly before showing "missing".
+  const [lookedUpOrderId, setLookedUpOrderId] = useState<string | null>(null);
+  const needsLookup = deskStatus === "ready" && !order && lookedUpOrderId !== orderId;
+
+  useEffect(() => {
+    if (!needsLookup) return;
+    let isActive = true;
+    void loadOrderIntoDesk(orderId).then(() => {
+      if (isActive) setLookedUpOrderId(orderId);
+    });
+    return () => {
+      isActive = false;
+    };
+  }, [needsLookup, orderId]);
+
+  if (ordersError) {
+    return (
+      <AppStateMessage
+        eyebrow="Orders"
+        title="The order desk could not load."
+        description={`The dashboard could not read orders from the API. ${ordersError.message}`}
+        actionLabel="Retry"
+        onAction={retryOrdersLoad}
+      />
+    );
+  }
+
+  if (!order && (deskStatus === "loading" || needsLookup)) {
+    return (
+      <AppStateMessage
+        eyebrow="Orders"
+        title="Loading order"
+        description="Reading this order from the API."
+      />
+    );
+  }
 
   if (!order) {
     return (
       <AppStateMessage
         eyebrow="Orders"
         title="This order record is missing"
-        description="The order you tried to open is not available in the current order desk."
+        description="The order you tried to open does not exist or has been archived."
         action={<Link href="/orders">Back to orders</Link>}
       />
     );
   }
 
-  async function handleSave() {
-    if (!order) {
-      return;
-    }
+  return <OrderDetailEditor key={order.id} order={order} />;
+}
 
+function OrderDetailEditor({ order }: { order: DashboardOrderRecord }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [status, setStatus] = useState<DashboardOrderRecord["status"]>(order.status);
+  const [fulfillmentNote, setFulfillmentNote] = useState(order.fulfillmentNote);
+  const [internalNote, setInternalNote] = useState(order.internalNote);
+  const canArchive = order.status === "cancelled" || order.status === "delivered";
+
+  async function handleSave() {
     try {
       await updateOrderRecord({
         ...order,
-        status: (status || order.status) as DashboardOrderRecord["status"],
+        status,
         fulfillmentNote,
         internalNote,
       });
@@ -67,10 +125,6 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
   }
 
   async function handleArchive() {
-    if (!order) {
-      return;
-    }
-
     try {
       await archiveOrderRecord(order.id);
       toast.success("Order archived.");
@@ -140,7 +194,7 @@ export function OrderDetailPageShell({ orderId }: OrderDetailPageShellProps) {
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Shipping address</p>
-              <strong>{order.shippingAddress}</strong>
+              <strong style={{ whiteSpace: "pre-line" }}>{formatShippingLines(order).join("\n")}</strong>
             </div>
           </div>
         </SectionCard>

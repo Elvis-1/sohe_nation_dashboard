@@ -248,7 +248,7 @@ export function TeamPageShell() {
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="tolu@sohesnation.com"
+                    placeholder="tolu@sohenation.com"
                   />
                 </label>
                 <div style={{ display: "grid", gap: 6 }}>

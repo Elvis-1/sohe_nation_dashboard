@@ -106,6 +106,11 @@ const areaSurfaceMap: Record<
     storefrontRoute: "/#story-band",
     publishingOutcome: "Publishing this record powers the story band CTA and promo modules on the homepage.",
   },
+  info_page: {
+    storefrontSurface: "Information and legal page",
+    storefrontRoute: "/[page]",
+    publishingOutcome: "Publishing this record makes the page live at its storefront address.",
+  },
 };
 
 const areaEditNotes: Record<DashboardContentArea, string> = {
@@ -116,7 +121,8 @@ const areaEditNotes: Record<DashboardContentArea, string> = {
   stories:
     "Story content is fully editable here, including copy, media, linked products, and narrative structure.",
   navigation_promos:
-    "Navigation promos remain locked in this slice. You can review the record and change publish state, but not edit the content fields here.",
+    "Navigation promos remain locked in this slice. You can review the record and change publish state, but not edit the content fields here.",  info_page:
+    "Information pages are edited in their own editor under Content → Information pages.",
 };
 
 const lightPillStyle = {

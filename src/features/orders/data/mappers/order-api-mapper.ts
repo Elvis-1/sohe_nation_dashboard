@@ -1,4 +1,9 @@
-import type { DashboardOrderLine, DashboardOrderRecord, Money } from "@/src/core/types/dashboard";
+import type {
+  DashboardOrderLine,
+  DashboardOrderRecord,
+  Money,
+  OrderShippingDetails,
+} from "@/src/core/types/dashboard";
 
 type ApiMoney = {
   amount: number;
@@ -27,9 +32,21 @@ export type ApiOrderRecord = {
   total: ApiMoney;
   created_at: string;
   shipping_address: string;
+  shipping_details?: ApiShippingDetails | null;
   fulfillment_note: string;
   internal_note: string;
   lines: ApiOrderLine[];
+};
+
+export type ApiShippingDetails = {
+  recipient_name: string;
+  phone: string;
+  line_1: string;
+  line_2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country_code: string;
 };
 
 export type ApiPaginatedResponse<T> = {
@@ -59,6 +76,20 @@ function mapLine(api: ApiOrderLine): DashboardOrderLine {
   };
 }
 
+function mapShippingDetails(api: ApiShippingDetails | null | undefined): OrderShippingDetails | null {
+  if (!api) return null;
+  return {
+    recipientName: api.recipient_name,
+    phone: api.phone,
+    line1: api.line_1,
+    line2: api.line_2,
+    city: api.city,
+    state: api.state,
+    postalCode: api.postal_code,
+    countryCode: api.country_code,
+  };
+}
+
 export function mapApiOrderToRecord(api: ApiOrderRecord): DashboardOrderRecord {
   return {
     id: api.id,
@@ -71,6 +102,7 @@ export function mapApiOrderToRecord(api: ApiOrderRecord): DashboardOrderRecord {
     total: mapMoney(api.total),
     createdAt: api.created_at,
     shippingAddress: api.shipping_address,
+    shippingDetails: mapShippingDetails(api.shipping_details),
     fulfillmentNote: api.fulfillment_note,
     internalNote: api.internal_note,
     lines: api.lines.map(mapLine),

@@ -60,6 +60,14 @@ export type DashboardProductRecord = {
     deliveryNote: string;
   };
   variants: DashboardProductVariant[];
+  /** Search/share overrides; empty means the storefront uses its defaults. Detail read only. */
+  seo?: DashboardSeoOverrides;
+};
+
+export type DashboardSeoOverrides = {
+  seoTitle: string;
+  seoDescription: string;
+  shareImageUrl: string;
 };
 
 export type PaymentProvider = "paypal" | "flutterwave";
@@ -82,6 +90,18 @@ export type DashboardOrderLine = {
   unitPrice: Money;
 };
 
+/** Structured shipping snapshot taken at checkout. */
+export type OrderShippingDetails = {
+  recipientName: string;
+  phone: string;
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  countryCode: string;
+};
+
 export type DashboardOrderRecord = {
   id: string;
   orderNumber: string;
@@ -93,6 +113,8 @@ export type DashboardOrderRecord = {
   total: Money;
   createdAt: string;
   shippingAddress: string;
+  /** Null for orders placed before structured snapshots; show `shippingAddress` then. */
+  shippingDetails: OrderShippingDetails | null;
   fulfillmentNote: string;
   internalNote: string;
   lines: DashboardOrderLine[];
@@ -102,7 +124,8 @@ export type DashboardContentArea =
   | "homepage"
   | "stories"
   | "featured_drop"
-  | "navigation_promos";
+  | "navigation_promos"
+  | "info_page";
 
 export type ContentVisibility = "draft" | "ready" | "published";
 
@@ -141,6 +164,8 @@ export type DashboardContentRecord = {
     note: string;
   }>;
   summary: string;
+  updatedAt?: string;
+  seo?: DashboardSeoOverrides;
 };
 
 export type ReturnStatus = "new" | "in_review" | "approved" | "rejected" | "completed";
@@ -165,8 +190,11 @@ export type DashboardCustomerRecord = {
   firstName: string;
   lastName: string;
   defaultRegion: "NG" | "US" | "GB" | "EU";
+  /** Filled on detail reads only; list reads carry the counts below. */
   orderIds: string[];
   returnIds: string[];
+  orderCount: number;
+  returnCount: number;
   addressCount: number;
 };
 

@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { EmptyStatePanel } from "@/src/core/ui/empty-state-panel";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
-import { useReturnDesk } from "@/src/features/returns/presentation/state/use-return-desk";
+import { retryReturnsLoad } from "@/src/features/returns/data/repositories/return-repository";
+import {
+  useReturnDesk,
+  useReturnDeskError,
+  useReturnDeskStatus,
+} from "@/src/features/returns/presentation/state/use-return-desk";
 
 const primaryLinkStyle = {
   display: "inline-flex",
@@ -32,6 +38,8 @@ const subtleLinkStyle = {
 
 export function ReturnsPageShell() {
   const returns = useReturnDesk();
+  const returnsError = useReturnDeskError();
+  const deskStatus = useReturnDeskStatus();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -52,6 +60,18 @@ export function ReturnsPageShell() {
       return matchesQuery && matchesStatus;
     });
   }, [query, returns, statusFilter]);
+
+  if (returnsError) {
+    return (
+      <AppStateMessage
+        eyebrow="Returns"
+        title="The returns queue could not load."
+        description={`The dashboard could not read returns from the API. ${returnsError.message}`}
+        actionLabel="Retry"
+        onAction={retryReturnsLoad}
+      />
+    );
+  }
 
   return (
     <div>
@@ -107,7 +127,9 @@ export function ReturnsPageShell() {
           </label>
         </div>
 
-        {returns.length === 0 ? (
+        {deskStatus === "loading" ? (
+          <p style={{ color: "var(--color-text-muted)" }}>Loading returns...</p>
+        ) : returns.length === 0 ? (
           <EmptyStatePanel
             eyebrow="Returns"
             title="No return requests are waiting."

@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const STOREFRONT_SESSION_KEY = "sohe-storefront-account-session";
-const API_BASE = "http://localhost:8000/api/v1";
+// Glob so route mocks match whichever API host the storefront env points at.
+const API_BASE = "**/api/v1";
 
 async function mockStorefrontAccountApis(page: Page) {
   await page.route(`${API_BASE}/auth/customer/session/`, async (route) => {
@@ -22,7 +23,7 @@ async function mockStorefrontAccountApis(page: Page) {
     });
   });
 
-  await page.route(`${API_BASE}/account/orders/`, async (route) => {
+  await page.route(`${API_BASE}/account/orders/**`, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -30,7 +31,7 @@ async function mockStorefrontAccountApis(page: Page) {
     });
   });
 
-  await page.route(`${API_BASE}/account/returns/`, async (route) => {
+  await page.route(`${API_BASE}/account/returns/**`, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
