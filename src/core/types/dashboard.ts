@@ -198,11 +198,34 @@ export type DashboardCustomerRecord = {
   addressCount: number;
 };
 
+export type SettingFieldType =
+  | "text"
+  | "email"
+  | "url"
+  | "integer"
+  | "boolean"
+  | "choice"
+  | "multi_choice";
+
+export type SettingFieldOptions = {
+  helpText?: string;
+  required?: boolean;
+  locked?: boolean;
+  min?: number;
+  max?: number;
+  unit?: string;
+  maxLength?: number;
+  choices?: Array<{ value: string; label: string }>;
+};
+
+/** Values are always text: integers as digits, booleans as "true"/"false", multi-choice comma-joined. */
 export type DashboardSettingField = {
   id: string;
   label: string;
   value: string;
   placeholder?: boolean;
+  type: SettingFieldType;
+  options: SettingFieldOptions;
 };
 
 export type DashboardSettingGroup = {

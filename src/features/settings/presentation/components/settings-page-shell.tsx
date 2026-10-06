@@ -9,6 +9,7 @@ import { SectionCard } from "@/src/core/ui/section-card";
 import { useToast } from "@/src/core/ui/toast";
 import type { DashboardSettingGroup } from "@/src/core/types/dashboard";
 import { updateSettingGroups } from "@/src/features/settings/data/repositories/setting-repository";
+import { SettingFieldControl } from "@/src/features/settings/presentation/components/setting-field-control";
 import {
   useSettingGroups,
   useSettingGroupsError,
@@ -118,7 +119,7 @@ export function SettingsPageShell() {
 
       <SectionCard
         title="Settings groups"
-        description="Grouped operational values for store profile, payments, shipping, notifications, and staff access."
+        description="Grouped operational values for store profile, returns, payments, shipping, notifications, and staff access."
       >
         <div style={{ display: "grid", gap: 16 }}>
           {draftGroups.map((group) => (
@@ -131,17 +132,25 @@ export function SettingsPageShell() {
                 }}
               >
                 {group.fields.map((field) => (
-                  <label key={field.id} style={{ display: "grid", gap: 8 }}>
+                  <div
+                    key={field.id}
+                    style={{
+                      display: "grid",
+                      gap: 8,
+                      alignContent: "start",
+                      // Option chips need the whole row to stay readable.
+                      ...(field.type === "multi_choice" ? { gridColumn: "1 / -1" } : {}),
+                    }}
+                  >
                     <span style={{ color: "var(--color-text-muted)", fontSize: 14 }}>
                       {field.label}
                     </span>
-                    <input
-                      aria-label={`${group.title} ${field.label}`}
-                      onChange={(event) => updateField(group.id, field.id, event.target.value)}
-                      style={inputStyle}
-                      value={field.value}
+                    <SettingFieldControl
+                      field={field}
+                      name={`${group.title} ${field.label}`}
+                      onChange={(value) => updateField(group.id, field.id, value)}
                     />
-                  </label>
+                  </div>
                 ))}
               </div>
             </SectionCard>
@@ -157,10 +166,3 @@ export function SettingsPageShell() {
     </div>
   );
 }
-
-const inputStyle = {
-  border: "1px solid var(--color-border)",
-  borderRadius: 16,
-  padding: "14px 16px",
-  background: "var(--color-surface)",
-} as const;
