@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { returnRuleLabel } from "@/src/core/utils/return-rule";
 import { useToast } from "@/src/core/ui/toast";
 import type { DashboardOrderRecord } from "@/src/core/types/dashboard";
 import { ApiError } from "@/src/core/api/http-client";
@@ -222,7 +223,21 @@ function OrderDetailEditor({ order }: { order: DashboardOrderRecord }) {
                 </div>
                 <span>{line.unitPrice.formatted}</span>
                 <span>{line.quantity} qty</span>
-                <span>{line.variantId}</span>
+                <span
+                  aria-label={`Return rule for ${line.title}`}
+                  style={{
+                    justifySelf: "start",
+                    alignSelf: "start",
+                    borderRadius: "var(--radius-pill)",
+                    padding: "6px 10px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: line.returnPolicy === "final_sale" ? "rgba(179, 123, 31, 0.14)" : "rgba(26, 20, 16, 0.06)",
+                    color: line.returnPolicy === "final_sale" ? "var(--color-accent)" : "var(--color-text)",
+                  }}
+                >
+                  {returnRuleLabel(line.returnPolicy, line.returnWindowDays)}
+                </span>
               </div>
             ))}
           </div>

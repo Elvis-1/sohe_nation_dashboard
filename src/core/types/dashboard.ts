@@ -93,6 +93,9 @@ export type DashboardOrderLine = {
   variantLabel: string;
   quantity: number;
   unitPrice: Money;
+  /** Return rule saved at checkout (Slice 14); days null for final sale. */
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
 
 /** Structured shipping snapshot taken at checkout. */
@@ -187,6 +190,20 @@ export type DashboardReturnRecord = {
   itemSummary: string;
   customerNote: string;
   internalDecision: string;
+  /** Item-level returns (Slice 14C); empty for older order-level returns. */
+  lines: DashboardReturnLine[];
+};
+
+export type DashboardReturnLine = {
+  id: string;
+  orderLineId: string;
+  title: string;
+  variantLabel: string;
+  quantity: number;
+  reasonCode: string;
+  reasonLabel: string;
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
 
 export type DashboardCustomerRecord = {
