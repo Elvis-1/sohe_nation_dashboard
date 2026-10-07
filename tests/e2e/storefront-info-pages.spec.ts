@@ -44,6 +44,14 @@ test.describe("storefront information and legal pages (Slice 13B)", () => {
 
     await page.goto("/returns");
     await expect(page.locator("article ol li")).toHaveCount(3);
+    // Slice 14F: final sale regions and window come from Settings → Returns.
+    await expect(page.getByRole("heading", { level: 2, name: "Final sale and longer windows" })).toBeVisible();
+    await expect(
+      page.getByText(
+        "Final sale applies to orders delivered to Nigeria, the United Kingdom, the United States and the European Union;",
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Faulty or damaged items" })).toBeVisible();
     await page.locator("article").getByRole("link", { name: "account returns page" }).first().click();
     await expect(page).toHaveURL(/\/account\/returns$/);
   });
