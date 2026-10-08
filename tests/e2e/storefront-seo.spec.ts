@@ -287,6 +287,25 @@ test.describe("structured data", () => {
     ]);
   });
 
+  test("each product's return policy follows its return rule (Slice 14F)", async ({ page }) => {
+    // Seeded: knit is final sale (applies in every region by default), cap has a 30-day window.
+    await page.goto("/products/rally-knit-set");
+    const [knit] = ofType(await jsonLd(page), "ProductGroup");
+    expect(knit.hasVariant[0].offers.hasMerchantReturnPolicy).toEqual({
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: ["NG"],
+      returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+      merchantReturnLink: expect.stringMatching(/\/returns$/),
+    });
+
+    await page.goto("/products/varsity-crest-cap");
+    const [cap] = ofType(await jsonLd(page), "ProductGroup");
+    expect(cap.hasVariant[0].offers.hasMerchantReturnPolicy).toMatchObject({
+      returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+      merchantReturnDays: 30,
+    });
+  });
+
   test("home page describes the organisation and website", async ({ page }) => {
     await page.goto("/");
     const data = await jsonLd(page);

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AppStateMessage } from "@/src/core/ui/app-state-message";
 import { PageHeader } from "@/src/core/ui/page-header";
 import { SectionCard } from "@/src/core/ui/section-card";
+import { returnRuleLabel } from "@/src/core/utils/return-rule";
 import { useToast } from "@/src/core/ui/toast";
 import { ApiError } from "@/src/core/api/http-client";
 import type { DashboardReturnRecord } from "@/src/core/types/dashboard";
@@ -131,6 +132,43 @@ function ReturnDetailEditor({ returnRecord }: { returnRecord: DashboardReturnRec
       />
 
       <div style={{ display: "grid", gap: 16 }}>
+        {returnRecord.lines.length > 0 ? (
+          <SectionCard
+            title="Items being returned"
+            description="Each item, how many, why, and the return rule it was bought under. Final-sale items are only returnable when faulty."
+          >
+            <div style={{ overflowX: "auto" }}>
+              <table aria-label="Returned items" style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", color: "var(--color-text-muted)", fontSize: 13 }}>
+                    <th style={returnCellStyle}>Item</th>
+                    <th style={returnCellStyle}>Qty</th>
+                    <th style={returnCellStyle}>Reason</th>
+                    <th style={returnCellStyle}>Bought under</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {returnRecord.lines.map((line) => (
+                    <tr key={line.id} style={{ borderTop: "1px solid var(--color-border)" }}>
+                      <td style={returnCellStyle}>
+                        <strong>{line.title}</strong>
+                        <div style={{ color: "var(--color-text-muted)", fontSize: 13 }}>{line.variantLabel}</div>
+                      </td>
+                      <td style={returnCellStyle}>{line.quantity}</td>
+                      <td style={returnCellStyle}>{line.reasonLabel}</td>
+                      <td style={returnCellStyle}>
+                        <span style={ruleBadgeStyle(line.returnPolicy === "final_sale")}>
+                          {returnRuleLabel(line.returnPolicy, line.returnWindowDays)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </SectionCard>
+        ) : null}
+
         <SectionCard
           title="Return summary"
           description="The core request data already implied by the storefront account returns workflow."
@@ -157,14 +195,18 @@ function ReturnDetailEditor({ returnRecord }: { returnRecord: DashboardReturnRec
               <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Requested</p>
               <strong>{returnRecord.requestedAt.slice(0, 10)}</strong>
             </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Item</p>
-              <strong>{returnRecord.itemSummary}</strong>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Reason</p>
-              <strong>{returnRecord.reason}</strong>
-            </div>
+            {returnRecord.lines.length === 0 ? (
+              <>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Item</p>
+                  <strong>{returnRecord.itemSummary}</strong>
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <p style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Reason</p>
+                  <strong>{returnRecord.reason}</strong>
+                </div>
+              </>
+            ) : null}
           </div>
         </SectionCard>
 
@@ -267,3 +309,17 @@ const secondaryLinkStyle = {
   color: "var(--color-text)",
   fontWeight: 600,
 } as const;
+
+const returnCellStyle = { padding: "10px 8px", verticalAlign: "top" as const } as const;
+
+function ruleBadgeStyle(warn: boolean) {
+  return {
+    display: "inline-flex",
+    borderRadius: "var(--radius-pill)",
+    padding: "6px 10px",
+    fontSize: 13,
+    fontWeight: 600,
+    background: warn ? "rgba(179, 123, 31, 0.14)" : "rgba(26, 20, 16, 0.06)",
+    color: warn ? "var(--color-accent)" : "var(--color-text)",
+  } as const;
+}

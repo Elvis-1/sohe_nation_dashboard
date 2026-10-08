@@ -19,6 +19,8 @@ type ApiOrderLine = {
   variant_label: string;
   quantity: number;
   unit_price: ApiMoney;
+  return_policy?: DashboardOrderLine["returnPolicy"];
+  return_window_days?: number | null;
 };
 
 export type ApiOrderRecord = {
@@ -73,6 +75,8 @@ function mapLine(api: ApiOrderLine): DashboardOrderLine {
     variantLabel: api.variant_label,
     quantity: api.quantity,
     unitPrice: mapMoney(api.unit_price),
+    returnPolicy: api.return_policy ?? "standard",
+    returnWindowDays: api.return_window_days ?? null,
   };
 }
 

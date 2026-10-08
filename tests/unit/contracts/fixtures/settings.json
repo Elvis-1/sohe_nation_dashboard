@@ -5,18 +5,177 @@
       {
         "id": "store_name",
         "label": "Store name",
+        "options": {
+          "max_length": 80,
+          "required": true
+        },
         "placeholder": false,
+        "type": "text",
         "value": "Sohe's Nation"
       },
       {
         "id": "support_email",
         "label": "Support email",
+        "options": {
+          "help_text": "Shown on the storefront and in customer emails.",
+          "required": true
+        },
         "placeholder": false,
+        "type": "email",
         "value": "support@sohenation.com"
+      },
+      {
+        "id": "instagram_url",
+        "label": "Instagram URL",
+        "options": {
+          "allowed_hosts": [
+            "instagram.com"
+          ],
+          "help_text": "e.g. https://www.instagram.com/yourhandle"
+        },
+        "placeholder": false,
+        "type": "url",
+        "value": ""
+      },
+      {
+        "id": "tiktok_url",
+        "label": "TikTok URL",
+        "options": {
+          "allowed_hosts": [
+            "tiktok.com"
+          ],
+          "help_text": "e.g. https://www.tiktok.com/@yourhandle"
+        },
+        "placeholder": false,
+        "type": "url",
+        "value": ""
+      },
+      {
+        "id": "x_url",
+        "label": "X (Twitter) URL",
+        "options": {
+          "allowed_hosts": [
+            "x.com",
+            "twitter.com"
+          ],
+          "help_text": "e.g. https://x.com/yourhandle"
+        },
+        "placeholder": false,
+        "type": "url",
+        "value": ""
+      },
+      {
+        "id": "facebook_url",
+        "label": "Facebook URL",
+        "options": {
+          "allowed_hosts": [
+            "facebook.com",
+            "fb.com"
+          ],
+          "help_text": "e.g. https://www.facebook.com/yourpage"
+        },
+        "placeholder": false,
+        "type": "url",
+        "value": ""
+      },
+      {
+        "id": "youtube_url",
+        "label": "YouTube URL",
+        "options": {
+          "allowed_hosts": [
+            "youtube.com"
+          ],
+          "help_text": "e.g. https://www.youtube.com/@yourchannel"
+        },
+        "placeholder": false,
+        "type": "url",
+        "value": ""
       }
     ],
     "id": "store_profile",
     "title": "Store profile"
+  },
+  {
+    "description": "Store-wide return rules. The API enforces these, and the storefront returns page shows them automatically.",
+    "fields": [
+      {
+        "id": "return_window_days",
+        "label": "Return window",
+        "options": {
+          "help_text": "Days after delivery a customer can request a return. Applies to orders placed after you change it.",
+          "max": 90,
+          "min": 1,
+          "unit": "days"
+        },
+        "placeholder": false,
+        "type": "integer",
+        "value": "14"
+      },
+      {
+        "id": "custom_window_max_days",
+        "label": "Longest custom window",
+        "options": {
+          "help_text": "The most days staff can give a single product with a custom return window.",
+          "max": 365,
+          "min": 1,
+          "unit": "days"
+        },
+        "placeholder": false,
+        "type": "integer",
+        "value": "90"
+      },
+      {
+        "id": "allow_multiple_returns_per_order",
+        "label": "Allow several returns per order",
+        "options": {
+          "help_text": "Customers can return more items from the same order later, up to the quantities they bought."
+        },
+        "placeholder": false,
+        "type": "boolean",
+        "value": "true"
+      },
+      {
+        "id": "final_sale_regions",
+        "label": "Final sale applies to deliveries in",
+        "options": {
+          "choices": [
+            {
+              "label": "Nigeria",
+              "value": "NG"
+            },
+            {
+              "label": "United Kingdom",
+              "value": "GB"
+            },
+            {
+              "label": "United States",
+              "value": "US"
+            },
+            {
+              "label": "European Union",
+              "value": "EU"
+            }
+          ],
+          "help_text": "Final-sale products can't be returned for orders delivered here; elsewhere they follow the return window. Take legal advice for the UK."
+        },
+        "placeholder": false,
+        "type": "multi_choice",
+        "value": "NG,GB,US,EU"
+      },
+      {
+        "id": "faulty_always_returnable",
+        "label": "Faulty items can always be returned",
+        "options": {
+          "help_text": "A legal right in Nigeria, the UK, and the US, so it can't be switched off.",
+          "locked": true
+        },
+        "placeholder": false,
+        "type": "boolean",
+        "value": "true"
+      }
+    ],
+    "id": "returns",
+    "title": "Returns"
   },
   {
     "description": "Gateway and settlement defaults reserved for later API wiring.",
@@ -24,13 +183,17 @@
       {
         "id": "primary_provider",
         "label": "Primary provider",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "Flutterwave"
       },
       {
         "id": "secondary_provider",
         "label": "Secondary provider",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "PayPal"
       }
     ],
@@ -43,14 +206,18 @@
       {
         "id": "primary_region",
         "label": "Primary region",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "Nigeria"
       },
       {
         "id": "pickup_window",
         "label": "Pickup window",
+        "options": {},
         "placeholder": true,
-        "value": "Weekdays 4pm"
+        "type": "text",
+        "value": "Weekdays 2pm"
       }
     ],
     "id": "shipping",
@@ -62,13 +229,17 @@
       {
         "id": "returns_alert_channel",
         "label": "Returns alert channel",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "Ops email digest"
       },
       {
         "id": "order_alert_window",
         "label": "Order alert window",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "Weekdays 9am-6pm"
       }
     ],
@@ -81,14 +252,18 @@
       {
         "id": "ops_role",
         "label": "Operations role",
+        "options": {},
         "placeholder": true,
+        "type": "text",
         "value": "Staff Access"
       },
       {
         "id": "session_mode",
         "label": "Session mode",
+        "options": {},
         "placeholder": true,
-        "value": "Fixture mode"
+        "type": "text",
+        "value": "Fixture mode with persistence"
       }
     ],
     "id": "staff_roles",

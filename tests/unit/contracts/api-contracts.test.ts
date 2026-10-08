@@ -150,12 +150,22 @@ describe("dashboard API adapters against recorded API responses", () => {
     const groups = await fetchDashboardSettings();
 
     expect(groups.map((g) => g.id)).toEqual(settingGroups.map((g) => g.id));
-    expect(groups[0].fields[0]).toEqual({
+    expect(groups[0].fields[0]).toMatchObject({
       id: settingGroups[0].fields[0].id,
       label: settingGroups[0].fields[0].label,
       value: settingGroups[0].fields[0].value,
       placeholder: settingGroups[0].fields[0].placeholder,
+      type: "text",
     });
+
+    // Typed fields carry their control options (Slice 14A).
+    const returns = groups.find((g) => g.id === "returns");
+    const window = returns?.fields.find((f) => f.id === "return_window_days");
+    expect(window).toMatchObject({ type: "integer", options: { min: 1, max: 90, unit: "days" } });
+    const regions = returns?.fields.find((f) => f.id === "final_sale_regions");
+    expect(regions?.type).toBe("multi_choice");
+    expect(regions?.options.choices?.map((c) => c.value)).toEqual(["NG", "GB", "US", "EU"]);
+    expect(returns?.fields.find((f) => f.id === "faulty_always_returnable")?.options.locked).toBe(true);
   });
 
   it("staff list and detail map owner flags and the audit log", async () => {

@@ -12,6 +12,17 @@ export type ApiReturnRecord = {
   item_summary: string;
   customer_note: string;
   internal_decision: string;
+  lines?: Array<{
+    id: string;
+    order_line_id: string;
+    title: string;
+    variant_label: string;
+    quantity: number;
+    reason_code: string;
+    reason_label: string;
+    return_policy: DashboardReturnRecord["lines"][number]["returnPolicy"];
+    return_window_days: number | null;
+  }>;
 };
 
 export type ApiPaginatedResponse<T> = {
@@ -34,5 +45,16 @@ export function mapApiReturnToRecord(api: ApiReturnRecord): DashboardReturnRecor
     itemSummary: api.item_summary,
     customerNote: api.customer_note,
     internalDecision: api.internal_decision,
+    lines: (api.lines ?? []).map((line) => ({
+      id: line.id,
+      orderLineId: line.order_line_id,
+      title: line.title,
+      variantLabel: line.variant_label,
+      quantity: line.quantity,
+      reasonCode: line.reason_code,
+      reasonLabel: line.reason_label,
+      returnPolicy: line.return_policy,
+      returnWindowDays: line.return_window_days,
+    })),
   };
 }

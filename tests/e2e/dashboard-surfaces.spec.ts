@@ -344,7 +344,8 @@ test.describe("dashboard implemented surfaces", () => {
 
     const ada = page.locator("article").filter({ hasText: "ada@example.com" });
     await expect(ada).toBeVisible();
-    await expect(page.getByText(/Page 1 of 1 · 3 customers/)).toBeVisible();
+    // Ada, Tomi, Kemi, and Ife (owner of the Slice 14D return-rules order).
+    await expect(page.getByText(/Page 1 of 1 · 4 customers/)).toBeVisible();
   });
 
   test("customers module searches and filters on the server", async ({ page }) => {

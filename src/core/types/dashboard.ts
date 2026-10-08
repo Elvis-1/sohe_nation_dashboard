@@ -62,7 +62,12 @@ export type DashboardProductRecord = {
   variants: DashboardProductVariant[];
   /** Search/share overrides; empty means the storefront uses its defaults. Detail read only. */
   seo?: DashboardSeoOverrides;
+  /** Return rule (Slice 14). Days only for "custom". */
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
+
+export type ProductReturnPolicy = "standard" | "final_sale" | "custom";
 
 export type DashboardSeoOverrides = {
   seoTitle: string;
@@ -88,6 +93,9 @@ export type DashboardOrderLine = {
   variantLabel: string;
   quantity: number;
   unitPrice: Money;
+  /** Return rule saved at checkout (Slice 14); days null for final sale. */
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
 
 /** Structured shipping snapshot taken at checkout. */
@@ -182,6 +190,20 @@ export type DashboardReturnRecord = {
   itemSummary: string;
   customerNote: string;
   internalDecision: string;
+  /** Item-level returns (Slice 14C); empty for older order-level returns. */
+  lines: DashboardReturnLine[];
+};
+
+export type DashboardReturnLine = {
+  id: string;
+  orderLineId: string;
+  title: string;
+  variantLabel: string;
+  quantity: number;
+  reasonCode: string;
+  reasonLabel: string;
+  returnPolicy: ProductReturnPolicy;
+  returnWindowDays: number | null;
 };
 
 export type DashboardCustomerRecord = {
@@ -198,11 +220,34 @@ export type DashboardCustomerRecord = {
   addressCount: number;
 };
 
+export type SettingFieldType =
+  | "text"
+  | "email"
+  | "url"
+  | "integer"
+  | "boolean"
+  | "choice"
+  | "multi_choice";
+
+export type SettingFieldOptions = {
+  helpText?: string;
+  required?: boolean;
+  locked?: boolean;
+  min?: number;
+  max?: number;
+  unit?: string;
+  maxLength?: number;
+  choices?: Array<{ value: string; label: string }>;
+};
+
+/** Values are always text: integers as digits, booleans as "true"/"false", multi-choice comma-joined. */
 export type DashboardSettingField = {
   id: string;
   label: string;
   value: string;
   placeholder?: boolean;
+  type: SettingFieldType;
+  options: SettingFieldOptions;
 };
 
 export type DashboardSettingGroup = {
