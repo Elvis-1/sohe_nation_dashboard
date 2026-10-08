@@ -67,7 +67,7 @@ export function DashboardShell({
               SN
             </div>
             <div>
-              <p className="dashboard-brand-eyebrow">Sohe&apos;s Nation</p>
+              <p className="dashboard-brand-eyebrow">Sohe Nation</p>
               <h1 className="dashboard-brand-title">Control Desk</h1>
             </div>
             <p className="dashboard-brand-description">

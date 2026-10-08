@@ -4,7 +4,7 @@ import type { DashboardSeoOverrides } from "@/src/core/types/dashboard";
 import { SectionCard } from "@/src/core/ui/section-card";
 
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL ?? "https://sohenation.com";
-const BRAND_SUFFIX = " | Sohe's Nation";
+const BRAND_SUFFIX = " | Sohe Nation";
 
 // The storefront appends the brand, so the title guide leaves room for it.
 const TITLE_GUIDE = 60 - BRAND_SUFFIX.length;

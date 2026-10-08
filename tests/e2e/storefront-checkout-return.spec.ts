@@ -48,7 +48,7 @@ async function seedBag(page: Page) {
   );
 }
 
-function mockSessionStatus(page: Page, status: "authorized" | "failed") {
+function mockSessionStatus(page: Page, status: "authorized" | "failed", lines: unknown[] = []) {
   return page.route(`${STOREFRONT_API}/checkout/sessions/${SESSION_ID}/**`, (route) =>
     route.fulfill({
       status: 200,
@@ -62,10 +62,76 @@ function mockSessionStatus(page: Page, status: "authorized" | "failed") {
         currency: "NGN",
         approvalUrl: "",
         providerStatus: status === "authorized" ? "successful" : "failed",
+        lines,
       }),
     }),
   );
 }
+
+const PAID_LINE = {
+  product_id: "product-e2e",
+  variant_id: "variant-e2e",
+  title: "Lunar Utility Jacket",
+  variant_label: "Black / L",
+  quantity: 1,
+  unit_price: money(185000),
+};
+
+function storedLine(variantId: string, title: string) {
+  return {
+    productId: `product-${variantId}`,
+    variantId,
+    quantity: 1,
+    title,
+    variantLabel: "Black / L",
+    unitPriceAmount: 185000,
+    unitPriceCurrency: "NGN",
+    unitPriceFormatted: "NGN 185,000",
+    unitShippingAmount: 0,
+    unitShippingCurrency: "NGN",
+    unitShippingFormatted: "NGN 0",
+  };
+}
+
+/** Seeds the bag once (not on every page load, unlike seedBag). */
+async function seedBagOnce(page: Page, lines: unknown[]) {
+  await page.goto("/");
+  await page.evaluate((value) => window.localStorage.setItem("sohe-storefront-cart", JSON.stringify(value)), lines);
+  await page.reload(); // same-tab storage writes don't notify the open page
+}
+
+test.describe("bag after payment", () => {
+  test("a confirmed payment removes the paid items from the bag, keeping anything else", async ({ page }) => {
+    await signInCustomer(page);
+    await mockSessionStatus(page, "authorized", [PAID_LINE]);
+    await seedBagOnce(page, [storedLine("variant-e2e", "Lunar Utility Jacket"), storedLine("variant-other", "Varsity Crest Cap")]);
+    await expect(page.getByLabel("2 items in bag").first()).toBeAttached();
+
+    await page.goto(`/checkout/return?checkout_session_id=${SESSION_ID}`);
+    await expect(page.getByRole("heading", { name: "Payment confirmed." })).toBeVisible();
+    await expect(page.getByLabel("1 item in bag").first()).toBeAttached();
+
+    await page.goto("/bag");
+    await expect(page.getByRole("heading", { name: "Varsity Crest Cap" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lunar Utility Jacket" })).toHaveCount(0);
+  });
+
+  test("a failed payment keeps the bag so the customer can try again", async ({ page }) => {
+    await signInCustomer(page);
+    await mockSessionStatus(page, "failed", [PAID_LINE]);
+    await seedBagOnce(page, [storedLine("variant-e2e", "Lunar Utility Jacket")]);
+
+    await page.goto(`/checkout/return?checkout_session_id=${SESSION_ID}`);
+    await expect(page.getByText("Payment was not completed.")).toBeVisible();
+    await expect(page.getByLabel("1 item in bag").first()).toBeAttached();
+  });
+
+  test("an empty bag shows no count", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: "Bag" }).first()).toBeVisible();
+    await expect(page.getByLabel(/in bag$/)).toHaveCount(0);
+  });
+});
 
 test.describe("storefront checkout to provider and back", () => {
   test("checkout redirects to the provider and the return page confirms payment", async ({ page, baseURL }) => {

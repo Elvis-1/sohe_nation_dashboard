@@ -24,10 +24,10 @@ async function robotsContent(page: Page) {
 
 test.describe("catalog landing pages", () => {
   const landings = [
-    { path: "/men", heading: "Men's tactical streetwear.", title: "Men's Tactical Streetwear | Sohe's Nation" },
-    { path: "/women", heading: "Women's tactical streetwear.", title: "Women's Tactical Streetwear | Sohe's Nation" },
-    { path: "/collections/outerwear", heading: "Outerwear.", title: "Outerwear | Sohe's Nation" },
-    { path: "/collections/tracksuits", heading: "Tracksuits.", title: "Tracksuits | Sohe's Nation" },
+    { path: "/men", heading: "Men's tactical streetwear.", title: "Men's Tactical Streetwear | Sohe Nation" },
+    { path: "/women", heading: "Women's tactical streetwear.", title: "Women's Tactical Streetwear | Sohe Nation" },
+    { path: "/collections/outerwear", heading: "Outerwear.", title: "Outerwear | Sohe Nation" },
+    { path: "/collections/tracksuits", heading: "Tracksuits.", title: "Tracksuits | Sohe Nation" },
   ];
 
   for (const landing of landings) {
@@ -105,17 +105,17 @@ test.describe("old catalog URLs redirect permanently", () => {
 test.describe("page metadata and share previews", () => {
   test("product pages describe the product and share its photo", async ({ page }) => {
     await page.goto("/products/lunar-utility-jacket");
-    await expect(page).toHaveTitle("Lunar Utility Jacket: Weatherproof shell | Sohe's Nation");
+    await expect(page).toHaveTitle("Lunar Utility Jacket: Weatherproof shell | Sohe Nation");
     await expect(meta(page, 'meta[name="description"]')).toHaveAttribute("content", "Lunar Utility Jacket for e2e runs.");
     await expect(meta(page, 'link[rel="canonical"]')).toHaveAttribute("href", /\/products\/lunar-utility-jacket$/);
-    await expect(meta(page, 'meta[property="og:title"]')).toHaveAttribute("content", "Lunar Utility Jacket: Weatherproof shell | Sohe's Nation");
+    await expect(meta(page, 'meta[property="og:title"]')).toHaveAttribute("content", "Lunar Utility Jacket: Weatherproof shell | Sohe Nation");
     await expect(meta(page, 'meta[property="og:image"]')).not.toHaveAttribute("content", /share-card/);
     await expect(meta(page, 'meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
   });
 
   test("staff search and share overrides replace the defaults", async ({ page }) => {
     await page.goto("/products/rally-knit-set");
-    await expect(page).toHaveTitle("Rally Knit Set | Two-Piece Tracksuit | Sohe's Nation");
+    await expect(page).toHaveTitle("Rally Knit Set | Two-Piece Tracksuit | Sohe Nation");
     await expect(meta(page, 'meta[name="description"]')).toHaveAttribute(
       "content",
       "A two-piece knit tracksuit cut for movement.",
@@ -138,13 +138,13 @@ test.describe("page metadata and share previews", () => {
 
   test("story pages are articles with their own title", async ({ page }) => {
     await page.goto("/stories/built-like-an-army");
-    await expect(page).toHaveTitle("Built Like An Army | Sohe's Nation");
+    await expect(page).toHaveTitle("Built Like An Army | Sohe Nation");
     await expect(meta(page, 'meta[property="og:type"]')).toHaveAttribute("content", "article");
   });
 
   test("home page leads with the brand", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle("Sohe's Nation | Premium Tactical Streetwear, Built Like An Army");
+    await expect(page).toHaveTitle("Sohe Nation | Premium Tactical Streetwear, Built Like An Army");
     // The site root: the bare origin, with or without a trailing slash.
     await expect(meta(page, 'link[rel="canonical"]')).toHaveAttribute("href", /^https?:\/\/[^/]+\/?$/);
   });
@@ -208,7 +208,7 @@ test.describe("indexing control", () => {
 
   test("the web manifest is served", async ({ request }) => {
     const manifest = await (await request.get("/manifest.webmanifest")).json();
-    expect(manifest.name).toBe("Sohe's Nation");
+    expect(manifest.name).toBe("Sohe Nation");
     expect(manifest.theme_color).toBe("#0B0B0B");
   });
 });
@@ -251,7 +251,7 @@ test.describe("structured data", () => {
 
     expect(group.name).toBe("Lunar Utility Jacket");
     expect(group.url).toMatch(/\/products\/lunar-utility-jacket$/);
-    expect(group.brand).toEqual({ "@type": "Brand", name: "Sohe's Nation" });
+    expect(group.brand).toEqual({ "@type": "Brand", name: "Sohe Nation" });
     expect(group.image.length).toBeGreaterThan(0);
     expect(group.variesBy).toEqual(["https://schema.org/size"]);
     expect(group).not.toHaveProperty("aggregateRating");
@@ -310,7 +310,7 @@ test.describe("structured data", () => {
     await page.goto("/");
     const data = await jsonLd(page);
     const [org] = ofType(data, "Organization");
-    expect(org.name).toBe("Sohe's Nation");
+    expect(org.name).toBe("Sohe Nation");
     expect(org.logo).toMatch(/\/icon\.png$/);
     // seed_e2e sets one Instagram link; blank social fields are left out.
     expect(org.sameAs).toEqual(["https://www.instagram.com/sohe.e2e"]);

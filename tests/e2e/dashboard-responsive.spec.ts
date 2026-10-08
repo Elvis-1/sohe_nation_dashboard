@@ -222,7 +222,7 @@ const providerStatus = {
   port: 587,
   host_user_masked: "su***@sohenation.com",
   use_tls: true,
-  default_from_email: "Sohe's Nation <support@sohenation.com>",
+  default_from_email: "Sohe Nation <support@sohenation.com>",
   notes: "Responsive test fixture provider status",
 };
 

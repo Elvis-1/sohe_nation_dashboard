@@ -76,7 +76,7 @@ test.describe("storefront address capture and address book", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ store_name: "Sohe's Nation", support_email: "support@sohenation.com" }),
+        body: JSON.stringify({ store_name: "Sohe Nation", support_email: "support@sohenation.com" }),
       });
     });
     await page.route(`${API_BASE}/account/addresses/`, async (route) => {

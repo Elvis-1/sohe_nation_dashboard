@@ -1,6 +1,6 @@
-# Sohe's Nation Dashboard Engineering Spec
+# Sohe Nation Dashboard Engineering Spec
 
-You are building the Sohe's Nation back-office dashboard.
+You are building the Sohe Nation back-office dashboard.
 
 The dashboard is a staff-only operational surface for managing products, orders, content, returns, customers, settings, staff, and notifications. It is wired to the live API in `api/`.
 
