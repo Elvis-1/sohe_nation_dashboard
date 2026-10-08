@@ -1,4 +1,4 @@
-# Sohe's Nation Dashboard Implementation Plan
+# Sohe Nation Dashboard Implementation Plan
 
 > **Historical (fixture phase, completed 2026-04-16).** The dashboard has since moved to the live API.
 > Every module now reads through an API-backed repository (`src/features/*/data/repositories/*-repository.ts`),
@@ -7,7 +7,7 @@
 
 ## 0. Mission
 
-- Build a simple, high-clarity back-office dashboard for Sohe's Nation staff.
+- Build a simple, high-clarity back-office dashboard for Sohe Nation staff.
 - Keep the dashboard fixture-first until the API phase begins.
 - Match the already-built storefront flows closely enough that dashboard and storefront can meet at the parity checkpoint before API work begins.
 - Prioritize operational usefulness over breadth: products, orders, content, and returns come first.

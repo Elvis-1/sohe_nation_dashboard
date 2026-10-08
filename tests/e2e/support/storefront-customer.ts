@@ -65,6 +65,6 @@ export async function signInCustomer(
   );
   await page.route(`${STOREFRONT_API}/account/addresses/**`, (route) => json(route, { results: [] }));
   await page.route(`${STOREFRONT_API}/settings/storefront/`, (route) =>
-    json(route, { store_name: "Sohe's Nation", support_email: "support@sohenation.com" }),
+    json(route, { store_name: "Sohe Nation", support_email: "support@sohenation.com" }),
   );
 }

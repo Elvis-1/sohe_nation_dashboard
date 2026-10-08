@@ -21,7 +21,7 @@ test.describe("storefront information and legal pages (Slice 13B)", () => {
       expect(response?.status()).toBe(200);
 
       await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-      await expect(page).toHaveTitle(`${heading} | Sohe's Nation`);
+      await expect(page).toHaveTitle(`${heading} | Sohe Nation`);
       await expect(page.getByText("Last updated")).toBeVisible();
       // Store placeholders are filled in by the API, never shown raw.
       await expect(page.locator("article")).not.toContainText("{{");

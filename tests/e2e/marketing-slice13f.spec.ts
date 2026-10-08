@@ -92,7 +92,7 @@ test.describe("Slice 13F — search and sharing overrides", () => {
     const titleInput = page.getByLabel("Product search title");
     await expect(titleInput).toBeVisible({ timeout: 20000 });
     await titleInput.fill("Night Shift Cargo Trousers");
-    await expect(page.getByLabel("Search result preview")).toContainText("Night Shift Cargo Trousers | Sohe's Nation");
+    await expect(page.getByLabel("Search result preview")).toContainText("Night Shift Cargo Trousers | Sohe Nation");
 
     await page.getByLabel("Product share image URL").fill("http://not-secure.example.com/a.jpg");
     await expect(page.getByText("The image link must start with https://")).toBeVisible();
